@@ -119,8 +119,11 @@ export default function App() {
   const [newAdminCode, setNAC]      = useState("");
   const [payrollWorker, setPayrollWorker] = useState(null);
   const [paidMonths, setPaidMonths] = useState({}); // key: workerId_month
+  const [partialInput, setPartialInput] = useState({}); // key: workerId_month -> amount string
+  const [showPartial, setShowPartial] = useState({}); // key: workerId_month -> bool
+  const [payrollView, setPayrollView] = useState("pending"); // "pending" | "history"
 
-  const emptyProj = { name:"", status:"ממתין", progress:0, startDate:"", endDate:"", plannedDays:"", materialCost:"", totalCost:"", projectManager:"", plannedWorkers:"", highlights:"", phases:[], workers:[] };
+  const emptyProj = { name:"", status:"ממתין", progress:0, startDate:"", endDate:"", plannedDays:"", materialCost:"", totalCost:"", projectManager:"", plannedWorkers:"", highlights:"", phases:[], workers:[], expenses:[] };
   const [newProject, setNewProject] = useState(emptyProj);
   const [editProj,   setEditProj]   = useState(null);
   const [newWorker,  setNewWorker]  = useState({ name:"", code:"", role:"", dailyRate:"" });
@@ -134,10 +137,17 @@ export default function App() {
       const [p, w, r] = await Promise.all([dbGet("projects"), dbGet("workers"), dbGet("reports")]);
       setProjects(p);
       const realWorkers = w.filter(x => !x._isConfig);
-      // load payment records
-      const payRecs = r.filter(x => x._paymentRecord && x.paid);
+      // load payment records - keep only latest per key
+      const payRecs = r.filter(x => x._paymentRecord);
       const paidMap = {};
-      payRecs.forEach(x => { paidMap[`${x.workerId}_${x.month}`] = { amount: x.amount, paidAt: x.paidAt || "" }; });
+      payRecs.sort((a,b) => (a.id||0)-(b.id||0)).forEach(x => {
+        const key = `${x.workerId}_${x.month}`;
+        if (x.paid) {
+          paidMap[key] = { amount: x.amount, paidAmt: x.paidAmt||x.amount, partial: x.partial||false, fullyPaid: x.fullyPaid!==false, paidAt: x.paidAt||"" };
+        } else {
+          delete paidMap[key];
+        }
+      });
       setPaidMonths(paidMap);
       setWorkers(realWorkers);
       setReports(r.filter(x => !x._paymentRecord));
@@ -230,22 +240,24 @@ export default function App() {
     setDetailId(null);
   };
 
-  const togglePaid = async (workerId, month, amount) => {
+  const markPaid = async (workerId, month, amount, partial=false, partialAmt=0) => {
     const key = `${workerId}_${month}`;
-    const current = paidMonths[key];
-    if (current) {
-      // unpay
-      const newPaid = {...paidMonths};
-      delete newPaid[key];
-      setPaidMonths(newPaid);
-      // save to supabase in workers table as config
-      await dbInsert("reports", { _paymentRecord: true, workerId, month, paid: false, amount, id: Date.now() });
-    } else {
-      // mark paid
-      const newPaid = {...paidMonths, [key]: { amount, paidAt: new Date().toLocaleDateString("he-IL") }};
-      setPaidMonths(newPaid);
-      await dbInsert("reports", { _paymentRecord: true, workerId, month, paid: true, amount, id: Date.now() });
-    }
+    const paidAmt = partial ? Number(partialAmt) : amount;
+    const paidAt = new Date().toLocaleDateString("he-IL");
+    const entry = { amount, paidAmt, partial, paidAt, fullyPaid: !partial };
+    const newPaid = {...paidMonths, [key]: entry };
+    setPaidMonths(newPaid);
+    setShowPartial(p => ({...p, [key]: false}));
+    setPartialInput(p => ({...p, [key]: ""}));
+    await dbInsert("reports", { _paymentRecord: true, workerId, month, paid: true, partial, paidAmt, amount, paidAt, id: Date.now() });
+  };
+
+  const unmarkPaid = async (workerId, month) => {
+    const key = `${workerId}_${month}`;
+    const newPaid = {...paidMonths};
+    delete newPaid[key];
+    setPaidMonths(newPaid);
+    await dbInsert("reports", { _paymentRecord: true, workerId, month, paid: false, id: Date.now() });
   };
 
   const saveAdminCode = async () => {
@@ -600,6 +612,42 @@ export default function App() {
                   style={{ ...inp, resize:"vertical", fontSize:14, lineHeight:1.7 }}/>
               </div>
 
+              {/* EXPENSES */}
+              <div style={{ background:"#fff", borderRadius:14, padding:"16px 20px", marginBottom:14, boxShadow:"0 2px 8px rgba(0,0,0,0.07)" }}>
+                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:13 }}>
+                  <h3 style={{ margin:0, fontSize:15, fontWeight:700 }}>🧾 הוצאות</h3>
+                  <button onClick={()=>{ const expenses=[...(editProj.expenses||[]),{id:Date.now(),desc:"",amount:"",date:todayStr()}]; setEditProj(p=>({...p,expenses})); updateProjField(detailProject,{expenses}); }}
+                    style={{ background:"#1A1A2E", color:"#E8C547", border:"none", borderRadius:7, padding:"4px 12px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700 }}>+ הוסף הוצאה</button>
+                </div>
+                {(!editProj.expenses||editProj.expenses.length===0) && <p style={{ margin:0, fontSize:13, color:"#AAA" }}>אין הוצאות רשומות</p>}
+                {(editProj.expenses||[]).map((ex,idx) => {
+                  const updExp = (changes) => {
+                    const expenses=(editProj.expenses||[]).map((e,i)=>i===idx?{...e,...changes}:e);
+                    setEditProj(p=>({...p,expenses})); updateProjField(detailProject,{expenses});
+                  };
+                  return (
+                    <div key={ex.id} style={{ background:"#F9F9F9", borderRadius:12, padding:"11px 13px", marginBottom:8 }}>
+                      <div style={{ display:"flex", gap:8, alignItems:"center", marginBottom:7 }}>
+                        <input value={ex.desc} placeholder="תיאור ההוצאה" onChange={e=>updExp({desc:e.target.value})}
+                          style={{ flex:2, border:"1.5px solid #EEE", borderRadius:8, padding:"7px 10px", fontSize:13, fontFamily:"Heebo,sans-serif", outline:"none", background:"#fff" }}/>
+                        <input type="number" value={ex.amount} placeholder="סכום ₪" onChange={e=>updExp({amount:e.target.value})}
+                          style={{ flex:1, border:"1.5px solid #EEE", borderRadius:8, padding:"7px 10px", fontSize:13, fontFamily:"Heebo,sans-serif", outline:"none", background:"#fff" }}/>
+                        <button onClick={()=>{ const expenses=(editProj.expenses||[]).filter((_,i)=>i!==idx); setEditProj(p=>({...p,expenses})); updateProjField(detailProject,{expenses}); }}
+                          style={{ background:"none", border:"none", cursor:"pointer", color:"#CCC", fontSize:14, padding:0, flexShrink:0 }}>✕</button>
+                      </div>
+                      <input type="date" value={ex.date||""} onChange={e=>updExp({date:e.target.value})}
+                        style={{ border:"1.5px solid #EEE", borderRadius:8, padding:"5px 9px", fontSize:12, fontFamily:"Heebo,sans-serif", outline:"none", background:"#fff" }}/>
+                    </div>
+                  );
+                })}
+                {(editProj.expenses||[]).length>0 && (
+                  <div style={{ display:"flex", justifyContent:"space-between", paddingTop:10, borderTop:"1px solid #EEE", marginTop:4 }}>
+                    <span style={{ fontSize:13, fontWeight:700, color:"#555" }}>סה"כ הוצאות</span>
+                    <span style={{ fontSize:16, fontWeight:800, color:"#B71C1C" }}>₪{fmtNum((editProj.expenses||[]).reduce((s,e)=>s+Number(e.amount||0),0))}</span>
+                  </div>
+                )}
+              </div>
+
               <div style={{ background:"#fff", borderRadius:14, padding:"16px 20px", marginBottom:14, boxShadow:"0 2px 8px rgba(0,0,0,0.07)" }}>
                 <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:13 }}>
                   <h3 style={{ margin:0, fontSize:15, fontWeight:700 }}>🪜 שלבי ביצוע</h3>
@@ -708,91 +756,161 @@ export default function App() {
           </>
         )}
 
-        {/* ✅ PAYROLL TAB */}
-        {mgTab==="payroll" && (
+        {/* PAYROLL TAB */}
+        {mgTab==="payroll" && (() => {
+          // calc pending/paid per worker
+          const allWorkerData = workers.map(w => {
+            const { totalDays, totalPay, months } = calcWorkerPayroll(w, reports);
+            const hasRate = Number(w.dailyRate||0) > 0;
+            const pendingMonths = months.filter(m => {
+              const info = paidMonths[`${w.id}_${m.month}`];
+              return !info || !info.fullyPaid;
+            });
+            const historyMonths = months.filter(m => {
+              const info = paidMonths[`${w.id}_${m.month}`];
+              return info && (info.fullyPaid || info.partial);
+            });
+            const pendingPay = pendingMonths.reduce((s, m) => {
+              const info = paidMonths[`${w.id}_${m.month}`];
+              const already = info ? Number(info.paidAmt||0) : 0;
+              return s + m.pay - already;
+            }, 0);
+            const paidTotal = historyMonths.reduce((s, m) => {
+              const info = paidMonths[`${w.id}_${m.month}`];
+              return s + Number(info?.paidAmt||0);
+            }, 0) + pendingMonths.reduce((s, m) => {
+              const info = paidMonths[`${w.id}_${m.month}`];
+              return s + Number(info?.paidAmt||0);
+            }, 0);
+            return { w, totalDays, totalPay, months, hasRate, pendingMonths, historyMonths, pendingPay, paidTotal };
+          });
+
+          const grandPending = allWorkerData.reduce((s, d) => s + (d.hasRate ? d.pendingPay : 0), 0);
+          const grandPaid    = allWorkerData.reduce((s, d) => s + (d.hasRate ? d.paidTotal : 0), 0);
+
+          return (
           <>
-            <div style={{ marginBottom:16 }}>
+            <div style={{ marginBottom:14 }}>
               <h1 style={{ margin:0, fontSize:20, fontWeight:800 }}>💰 שכר עובדים</h1>
-              <p style={{ margin:"3px 0 0", color:"#777", fontSize:13 }}>סיכום תשלומים לפי עובד וחודש</p>
+            </div>
+
+            {/* toggle pending / history */}
+            <div style={{ display:"flex", background:"#F0F0EC", borderRadius:12, padding:3, marginBottom:14, gap:3 }}>
+              {[{k:"pending",l:"לתשלום"},{k:"history",l:"היסטוריה"}].map(t=>(
+                <button key={t.k} onClick={()=>setPayrollView(t.k)}
+                  style={{ flex:1, background:payrollView===t.k?"#1A1A2E":"transparent", color:payrollView===t.k?"#E8C547":"#888", border:"none", borderRadius:10, padding:"8px 0", fontWeight:700, fontSize:13, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>
+                  {t.l}
+                </button>
+              ))}
+            </div>
+
+            {/* summary bar */}
+            <div style={{ background:"#1A1A2E", borderRadius:14, padding:"12px 18px", marginBottom:14, display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+              <span style={{ color:"#AAA", fontSize:12 }}>{payrollView==="pending" ? 'סה"כ נשאר לתשלום' : 'סה"כ שולם עד כה'}</span>
+              <span style={{ color:"#E8C547", fontSize:20, fontWeight:800 }}>₪{fmtNum(payrollView==="pending" ? grandPending : grandPaid)}</span>
             </div>
 
             {workers.length===0 && <div style={{ background:"#fff", borderRadius:14, padding:44, textAlign:"center", border:"1.5px dashed #DDD", color:"#AAA" }}><p style={{ margin:0 }}>אין עובדים עדיין</p></div>}
 
-            {/* סיכום כולל */}
-            {workers.length>0 && (() => {
-              const totalAll = workers.reduce((sum, w) => {
-                const { totalPay } = calcWorkerPayroll(w, reports);
-                return sum + totalPay;
-              }, 0);
-              return (
-                <div style={{ background:"#1A1A2E", borderRadius:14, padding:"14px 20px", marginBottom:16, display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-                  <span style={{ color:"#AAA", fontSize:13 }}>סה"כ לתשלום לכל העובדים</span>
-                  <span style={{ color:"#E8C547", fontSize:22, fontWeight:800 }}>₪{fmtNum(totalAll)}</span>
-                </div>
-              );
-            })()}
-
-            {workers.map(w => {
-              const { totalDays, totalPay, months } = calcWorkerPayroll(w, reports);
+            {allWorkerData.map(({ w, months, hasRate, pendingMonths, historyMonths, pendingPay, paidTotal }) => {
               const isOpen = payrollWorker === w._dbid;
-              const hasRate = Number(w.dailyRate||0) > 0;
+              const shownMonths = payrollView==="pending" ? pendingMonths : historyMonths;
+              if (shownMonths.length===0 && !isOpen) return null;
+              const displayAmt = payrollView==="pending" ? pendingPay : paidTotal;
+
               return (
                 <div key={w._dbid} style={{ background:"#fff", borderRadius:14, marginBottom:11, boxShadow:"0 2px 8px rgba(0,0,0,0.07)", overflow:"hidden" }}>
-                  {/* כותרת עובד */}
                   <div onClick={()=>setPayrollWorker(isOpen ? null : w._dbid)}
                     style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"14px 18px", cursor:"pointer" }}>
                     <div style={{ display:"flex", alignItems:"center", gap:10 }}>
                       <div style={{ width:38, height:38, borderRadius:"50%", background:"#1A1A2E", color:"#E8C547", display:"flex", alignItems:"center", justifyContent:"center", fontWeight:800, fontSize:15, flexShrink:0 }}>{w.name[0]}</div>
                       <div>
                         <p style={{ margin:0, fontWeight:700, fontSize:15 }}>{w.name}</p>
-                        <p style={{ margin:0, fontSize:12, color:"#888" }}>{w.role} {hasRate ? `· ₪${fmtNum(w.dailyRate)}/יום` : "· אין שכר יומי"}</p>
+                        <p style={{ margin:0, fontSize:12, color:"#888" }}>{w.role}{hasRate ? ` · ₪${fmtNum(w.dailyRate)}/יום` : " · אין שכר יומי"}</p>
                       </div>
                     </div>
-                    <div style={{ textAlign:"left", display:"flex", alignItems:"center", gap:12 }}>
-                      <div>
-                        <p style={{ margin:0, fontSize:12, color:"#888" }}>{totalDays} ימים</p>
-                        {hasRate && <p style={{ margin:0, fontSize:18, fontWeight:800, color:"#1A1A2E" }}>₪{fmtNum(totalPay)}</p>}
-                        {!hasRate && <p style={{ margin:0, fontSize:12, color:"#E53935" }}>לא הוגדר שכר</p>}
+                    <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+                      <div style={{ textAlign:"left" }}>
+                        {hasRate
+                          ? <p style={{ margin:0, fontSize:17, fontWeight:800, color: payrollView==="pending"?"#E53935":"#2E7D32" }}>₪{fmtNum(displayAmt)}</p>
+                          : <p style={{ margin:0, fontSize:12, color:"#E53935" }}>לא הוגדר שכר</p>}
+                        <p style={{ margin:0, fontSize:11, color:"#AAA" }}>{shownMonths.length} חודשים</p>
                       </div>
-                      <span style={{ fontSize:18, color:"#BBB" }}>{isOpen?"▲":"▼"}</span>
+                      <span style={{ fontSize:16, color:"#BBB" }}>{isOpen?"▲":"▼"}</span>
                     </div>
                   </div>
 
-                  {/* פירוט לפי חודש */}
                   {isOpen && (
                     <div style={{ borderTop:"1px solid #EEE", padding:"12px 18px" }}>
-                      {months.length===0 && <p style={{ margin:0, fontSize:13, color:"#AAA", textAlign:"center", padding:"10px 0" }}>אין דיווחים עדיין</p>}
-                      {months.map(m => {
+                      {shownMonths.length===0 && <p style={{ margin:0, fontSize:13, color:"#AAA", textAlign:"center", padding:"10px 0" }}>אין נתונים</p>}
+                      {shownMonths.map(m => {
                         const pKey = `${w.id}_${m.month}`;
-                        const isPaid = !!paidMonths[pKey];
                         const paidInfo = paidMonths[pKey];
+                        const alreadyPaid = Number(paidInfo?.paidAmt||0);
+                        const remaining = m.pay - alreadyPaid;
+                        const isShowPartial = showPartial[pKey];
                         return (
-                        <div key={m.month} style={{ padding:"11px 0", borderBottom:"1px solid #F0F0EC" }}>
-                          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom: isPaid ? 4 : 0 }}>
-                            <div>
-                              <p style={{ margin:0, fontWeight:700, fontSize:14 }}>{m.label}</p>
-                              <p style={{ margin:"2px 0 0", fontSize:12, color:"#888" }}>{m.days} ימים · {m.projects}</p>
+                          <div key={m.month} style={{ padding:"12px 0", borderBottom:"1px solid #F5F5F0" }}>
+                            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:6 }}>
+                              <div>
+                                <p style={{ margin:0, fontWeight:700, fontSize:14 }}>{m.label}</p>
+                                <p style={{ margin:"2px 0 0", fontSize:12, color:"#888" }}>{m.days} ימים · {m.projects}</p>
+                                {paidInfo?.partial && !paidInfo.fullyPaid && (
+                                  <p style={{ margin:"3px 0 0", fontSize:12, color:"#F57F17" }}>שולם חלקית: ₪{fmtNum(alreadyPaid)} · נותר: ₪{fmtNum(remaining)}</p>
+                                )}
+                                {paidInfo?.paidAt && <p style={{ margin:"2px 0 0", fontSize:11, color:"#AAA" }}>{paidInfo.fullyPaid?"שולם":"שולם חלקית"} ב-{paidInfo.paidAt}</p>}
+                              </div>
+                              <div style={{ textAlign:"left" }}>
+                                <p style={{ margin:"0 0 4px", fontWeight:700, fontSize:14, color: paidInfo?.fullyPaid?"#2E7D32": paidInfo?.partial?"#F57F17":"#1A1A2E", textDecoration: paidInfo?.fullyPaid?"line-through":"none" }}>₪{fmtNum(m.pay)}</p>
+                              </div>
                             </div>
-                            <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-                              {hasRate && <span style={{ fontSize:14, fontWeight:700, color: isPaid?"#AAA":"#1A1A2E", textDecoration: isPaid?"line-through":"none" }}>₪{fmtNum(m.pay)}</span>}
-                              {hasRate && (
-                                <button onClick={()=>togglePaid(w.id, m.month, m.pay)}
-                                  style={{ background: isPaid?"#F0FDF4":"#1A1A2E", color: isPaid?"#2E7D32":"#E8C547", border:`1.5px solid ${isPaid?"#86EFAC":"transparent"}`, borderRadius:8, padding:"4px 10px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700, whiteSpace:"nowrap" }}>
-                                  {isPaid ? "✓ שולם" : "סמן כשולם"}
+
+                            {/* action buttons */}
+                            {payrollView==="pending" && hasRate && (
+                              <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
+                                {!paidInfo?.fullyPaid && (
+                                  <button onClick={()=>markPaid(w.id, m.month, m.pay, false, 0)}
+                                    style={{ background:"#1A1A2E", color:"#E8C547", border:"none", borderRadius:8, padding:"5px 12px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700 }}>
+                                    ✓ שולם במלואו
+                                  </button>
+                                )}
+                                {!paidInfo?.fullyPaid && (
+                                  <button onClick={()=>setShowPartial(p=>({...p,[pKey]:!isShowPartial}))}
+                                    style={{ background:"#FFF8E1", color:"#B26A00", border:"1.5px solid #FFD54F", borderRadius:8, padding:"5px 12px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700 }}>
+                                    שולם חלקית
+                                  </button>
+                                )}
+                                {paidInfo && (
+                                  <button onClick={()=>unmarkPaid(w.id, m.month)}
+                                    style={{ background:"#FCE4EC", color:"#B71C1C", border:"none", borderRadius:8, padding:"5px 10px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>
+                                    בטל
+                                  </button>
+                                )}
+                              </div>
+                            )}
+
+                            {/* partial amount input */}
+                            {isShowPartial && payrollView==="pending" && (
+                              <div style={{ display:"flex", gap:6, marginTop:8, alignItems:"center" }}>
+                                <input type="number" placeholder={`מתוך ₪${fmtNum(m.pay)}`}
+                                  value={partialInput[pKey]||""}
+                                  onChange={e=>setPartialInput(p=>({...p,[pKey]:e.target.value}))}
+                                  style={{ flex:1, border:"1.5px solid #FFD54F", borderRadius:8, padding:"6px 10px", fontSize:14, fontFamily:"Heebo,sans-serif", outline:"none" }}/>
+                                <button onClick={()=>{ if(partialInput[pKey]) markPaid(w.id, m.month, m.pay, true, partialInput[pKey]); }}
+                                  style={{ background:"#F57F17", color:"#fff", border:"none", borderRadius:8, padding:"6px 14px", fontSize:13, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700 }}>
+                                  אשר
                                 </button>
-                              )}
-                            </div>
+                              </div>
+                            )}
                           </div>
-                          {isPaid && paidInfo && (
-                            <p style={{ margin:0, fontSize:11, color:"#2E7D32", textAlign:"left" }}>שולם ב-{paidInfo.paidAt}</p>
-                          )}
-                        </div>
                         );
                       })}
-                      {months.length>0 && hasRate && (
-                        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", paddingTop:12 }}>
-                          <span style={{ fontSize:13, color:"#666", fontWeight:600 }}>סה"כ</span>
-                          <span style={{ fontSize:17, fontWeight:800, color:"#1A1A2E" }}>₪{fmtNum(totalPay)}</span>
+
+                      {/* total row */}
+                      {shownMonths.length>0 && hasRate && (
+                        <div style={{ display:"flex", justifyContent:"space-between", paddingTop:10 }}>
+                          <span style={{ fontSize:13, fontWeight:700, color:"#555" }}>סה"כ {payrollView==="pending"?"לתשלום":"שולם"}</span>
+                          <span style={{ fontSize:16, fontWeight:800, color: payrollView==="pending"?"#E53935":"#2E7D32" }}>₪{fmtNum(displayAmt)}</span>
                         </div>
                       )}
                     </div>
@@ -801,7 +919,8 @@ export default function App() {
               );
             })}
           </>
-        )}
+          );
+        })()}
 
         {/* SETTINGS */}
         {mgTab==="settings" && (
