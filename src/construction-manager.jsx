@@ -60,7 +60,7 @@ function workerDaysForProject(reports, projectId) {
 
 // ✅ חישוב שכר לעובד: ימים כולל + לפי חודש
 function calcWorkerPayroll(worker, reports) {
-  const myReports = reports.filter(r => !r._paymentRecord && (String(r.workerId) === String(worker.id) || r.workerName === worker.name));
+  const myReports = reports.filter(r => !r._paymentRecord && !r.pendingApproval && (String(r.workerId) === String(worker.id) || r.workerName === worker.name));
   const rate = Number(worker.dailyRate || 0);
 
   // כל הימים
@@ -107,6 +107,9 @@ export default function App() {
   const [repProject, setRepProject] = useState("");
   const [repNote,    setRepNote]    = useState("");
   const [repSent,    setRepSent]    = useState(false);
+  const [pendingDate, setPendingDate] = useState("");
+  const [showDateApproval, setShowDateApproval] = useState(false);
+  const [pendingReports, setPendingReports] = useState([]); // reports waiting manager approval
 
   const [mgTab,      setMgTab]      = useState("reports");
   const [detailId,   setDetailId]   = useState(null);
@@ -150,7 +153,10 @@ export default function App() {
       });
       setPaidMonths(paidMap);
       setWorkers(realWorkers);
-      setReports(r.filter(x => !x._paymentRecord));
+      const normalReports = r.filter(x => !x._paymentRecord && !x.pendingApproval);
+      const pendingReps = r.filter(x => !x._paymentRecord && x.pendingApproval);
+      setReports(normalReports);
+      setPendingReports(pendingReps);
       const configRow = w.find(x => x._isConfig && x._adminCode);
       if (configRow) { setAdminCode(configRow._adminCode); setAdminConfigDbid(configRow._dbid); }
     } catch(e) { console.error(e); }
@@ -175,9 +181,14 @@ export default function App() {
   const submitReport = async () => {
     if (!repProject) return;
     const proj = projects.find(p => String(p.id) === String(repProject));
-    const newRep = { workerId: loggedWorker.id, workerName: loggedWorker.name, projectId: repProject, projectName: proj?.name || "", date: repDate, note: repNote, days: 1, id: Date.now() };
+    const isPast = repDate < todayStr();
+    const newRep = { workerId: loggedWorker.id, workerName: loggedWorker.name, projectId: repProject, projectName: proj?.name || "", date: repDate, note: repNote, days: 1, id: Date.now(), pendingApproval: isPast };
     const saved = await dbInsert("reports", newRep);
-    setReports(prev => [...prev, saved]);
+    if (isPast) {
+      setPendingReports(prev => [...prev, saved]);
+    } else {
+      setReports(prev => [...prev, saved]);
+    }
     const uniqueDays = uniqueWorkDaysForProject([...reports, saved], repProject);
     const proj2 = projects.find(p => String(p.id) === String(repProject));
     if (proj2) {
@@ -227,6 +238,8 @@ export default function App() {
   };
 
   const delReport = async (rep) => {
+    if (!window.confirm(`למחוק את הדיווח של ${rep.workerName} מתאריך ${rep.date}?`)) return;
+    if (!window.confirm("אישור סופי — פעולה זו בלתי הפיכה. האם למחוק?")) return;
     await dbDelete("reports", rep._dbid);
     setReports(prev => prev.filter(r => r._dbid!==rep._dbid));
   };
@@ -258,6 +271,20 @@ export default function App() {
     delete newPaid[key];
     setPaidMonths(newPaid);
     await dbInsert("reports", { _paymentRecord: true, workerId, month, paid: false, id: Date.now() });
+  };
+
+  const approveReport = async (rep) => {
+    const updated = { ...rep, pendingApproval: false };
+    delete updated._dbid;
+    await dbUpdate("reports", rep._dbid, updated);
+    setPendingReports(prev => prev.filter(r => r._dbid !== rep._dbid));
+    setReports(prev => [...prev, { ...updated, _dbid: rep._dbid }]);
+  };
+
+  const rejectReport = async (rep) => {
+    if (!window.confirm(`לדחות את הדיווח של ${rep.workerName} מתאריך ${rep.date}?`)) return;
+    await dbDelete("reports", rep._dbid);
+    setPendingReports(prev => prev.filter(r => r._dbid !== rep._dbid));
   };
 
   const saveAdminCode = async () => {
@@ -362,7 +389,15 @@ export default function App() {
           <div style={{ background:"#fff", borderRadius:16, padding:22, boxShadow:"0 2px 8px rgba(0,0,0,0.07)" }}>
             <label style={{ display:"block", marginBottom:14 }}>
               <LBL t="📅 תאריך"/>
-              <input type="date" value={repDate} onChange={e=>setRepDate(e.target.value)} style={{ ...inp, fontSize:15 }}/>
+              <input type="date" value={repDate} max={todayStr()} onChange={e=>{
+                if(e.target.value < todayStr()) {
+                  setPendingDate(e.target.value);
+                  setShowDateApproval(true);
+                } else {
+                  setRepDate(e.target.value);
+                }
+              }} style={{ ...inp, fontSize:15 }}/>
+              {repDate < todayStr() && <p style={{ margin:"4px 0 0", fontSize:12, color:"#F57F17", background:"#FFF8E1", borderRadius:6, padding:"3px 8px" }}>⚠️ דיווח על תאריך עבר — ממתין לאישור מנהל</p>}
             </label>
             <label style={{ display:"block", marginBottom:14 }}>
               <LBL t="🏗️ באיזה אתר עבדת?"/>
@@ -380,6 +415,21 @@ export default function App() {
           </div>
         )}
       </div>
+
+      {/* Modal: approve past date */}
+      {showDateApproval && (
+        <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.5)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:999, padding:16 }}>
+          <div style={{ background:"#fff", borderRadius:18, padding:26, width:"100%", maxWidth:320, direction:"rtl" }}>
+            <div style={{ fontSize:32, textAlign:"center", marginBottom:10 }}>📅</div>
+            <h3 style={{ margin:"0 0 8px", textAlign:"center", fontSize:16, fontWeight:800 }}>תאריך עבר</h3>
+            <p style={{ margin:"0 0 16px", color:"#777", fontSize:13, textAlign:"center" }}>דיווח על {pendingDate} יישלח למנהל לאישור לפני שיופיע במערכת.</p>
+            <div style={{ display:"flex", gap:10 }}>
+              <button onClick={()=>{ setRepDate(pendingDate); setShowDateApproval(false); }} style={{ flex:1, background:"#1A1A2E", color:"#E8C547", border:"none", borderRadius:10, padding:"10px 0", fontWeight:700, fontSize:14, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>שלח לאישור</button>
+              <button onClick={()=>setShowDateApproval(false)} style={{ flex:1, background:"#F0F0EC", color:"#555", border:"none", borderRadius:10, padding:"10px 0", fontWeight:600, fontSize:14, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>ביטול</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 
@@ -420,7 +470,30 @@ export default function App() {
               </div>
               <button onClick={loadAll} style={{ ...btnG, padding:"7px 14px", fontSize:13 }}>🔄 רענן</button>
             </div>
-            {reports.length===0 && <div style={{ background:"#fff", borderRadius:14, padding:44, textAlign:"center", border:"1.5px dashed #DDD", color:"#AAA" }}><div style={{ fontSize:34, marginBottom:8 }}>📋</div><p style={{ margin:0 }}>אין דיווחים עדיין</p></div>}
+            {/* Pending approval section */}
+            {pendingReports.length>0 && (
+              <div style={{ background:"#FFF8E1", borderRadius:14, padding:"14px 18px", marginBottom:14, border:"1.5px solid #FFD54F" }}>
+                <h3 style={{ margin:"0 0 10px", fontSize:14, fontWeight:700, color:"#B26A00" }}>⏳ ממתינים לאישור ({pendingReports.length})</h3>
+                {pendingReports.map(r => (
+                  <div key={r._dbid} style={{ background:"#fff", borderRadius:10, padding:"10px 14px", marginBottom:7, display:"flex", justifyContent:"space-between", alignItems:"flex-start", gap:8 }}>
+                    <div style={{ flex:1 }}>
+                      <div style={{ display:"flex", gap:8, flexWrap:"wrap", alignItems:"center", marginBottom:3 }}>
+                        <span style={{ fontWeight:700, fontSize:13 }}>{r.workerName}</span>
+                        <span style={{ background:"#F0F0EC", borderRadius:6, padding:"2px 7px", fontSize:11, color:"#555" }}>{r.projectName}</span>
+                        <span style={{ fontSize:11, color:"#999" }}>📅 {r.date}</span>
+                      </div>
+                      {r.note && <p style={{ margin:0, fontSize:12, color:"#666" }}>{r.note}</p>}
+                    </div>
+                    <div style={{ display:"flex", gap:6, flexShrink:0 }}>
+                      <button onClick={()=>approveReport(r)} style={{ background:"#1A1A2E", color:"#E8C547", border:"none", borderRadius:7, padding:"4px 10px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700 }}>✓ אשר</button>
+                      <button onClick={()=>rejectReport(r)} style={{ background:"#FCE4EC", color:"#B71C1C", border:"none", borderRadius:7, padding:"4px 10px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>✕ דחה</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {reports.length===0 && pendingReports.length===0 && <div style={{ background:"#fff", borderRadius:14, padding:44, textAlign:"center", border:"1.5px dashed #DDD", color:"#AAA" }}><div style={{ fontSize:34, marginBottom:8 }}>📋</div><p style={{ margin:0 }}>אין דיווחים עדיין</p></div>}
             {[...reports].reverse().map(r => (
               <div key={r._dbid} style={{ background:"#fff", borderRadius:12, padding:"13px 18px", marginBottom:9, borderRight:"4px solid #E8C547", boxShadow:"0 1px 5px rgba(0,0,0,0.06)", display:"flex", justifyContent:"space-between", alignItems:"flex-start", gap:10 }}>
                 <div style={{ flex:1 }}>
@@ -881,11 +954,27 @@ export default function App() {
                                   </button>
                                 )}
                                 {paidInfo && (
-                                  <button onClick={()=>unmarkPaid(w.id, m.month)}
+                                  <button onClick={()=>{ if(window.confirm("לבטל את סימון התשלום?") && window.confirm("אישור סופי — האם לבטל?")) unmarkPaid(w.id, m.month); }}
                                     style={{ background:"#FCE4EC", color:"#B71C1C", border:"none", borderRadius:8, padding:"5px 10px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>
                                     בטל
                                   </button>
                                 )}
+                              </div>
+                            )}
+                            {payrollView==="history" && hasRate && paidInfo && (
+                              <div style={{ display:"flex", gap:6, flexWrap:"wrap", marginTop:6 }}>
+                                <button onClick={()=>{
+                                  const newAmt = window.prompt(`ערוך סכום ששולם עבור ${m.label}:`, paidInfo.paidAmt);
+                                  if (!newAmt) return;
+                                  if (!window.confirm(`לשנות לסכום ₪${Number(newAmt).toLocaleString("he-IL")}?`)) return;
+                                  markPaid(w.id, m.month, m.pay, Number(newAmt) < m.pay, newAmt);
+                                }} style={{ background:"#E3F2FD", color:"#1565C0", border:"none", borderRadius:8, padding:"5px 12px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700 }}>
+                                  ✏️ ערוך סכום
+                                </button>
+                                <button onClick={()=>{ if(window.confirm("לבטל את סימון התשלום?") && window.confirm("אישור סופי — האם לבטל?")) unmarkPaid(w.id, m.month); }}
+                                  style={{ background:"#FCE4EC", color:"#B71C1C", border:"none", borderRadius:8, padding:"5px 10px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>
+                                  🗑 בטל תשלום
+                                </button>
                               </div>
                             )}
 
