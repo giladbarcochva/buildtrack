@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 
 const SUPABASE_URL = "https://rkjcrhywhoixdkqlfnko.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJramNyaHl3aG9peGRrcWxmbmtvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwMzA2NzQsImV4cCI6MjA5NDYwNjY3NH0.yKZzdMCNOyWJClmip03QY617HX2IB-xKPKGUZtKT_Z0";
@@ -135,6 +135,21 @@ export default function App() {
 
   const detailProject = projects.find(p => String(p.id) === String(detailId)) || null;
   const assignProject = projects.find(p => String(p.id) === String(assignPid)) || null;
+
+  // Debounce ref for Supabase updates
+  const debounceRef = useRef({});
+  const updateProjFieldDebounced = useCallback((proj, changes) => {
+    // Update local state immediately (no cursor jump)
+    setEditProj(p => p ? {...p, ...changes} : p);
+    setProjects(prev => prev.map(p => p._dbid===proj._dbid ? {...p,...changes} : p));
+    // Debounce the Supabase call by 800ms
+    const key = proj._dbid;
+    if (debounceRef.current[key]) clearTimeout(debounceRef.current[key]);
+    debounceRef.current[key] = setTimeout(async () => {
+      const latest = { ...proj, ...changes };
+      await dbUpdate("projects", proj._dbid, latest);
+    }, 800);
+  }, []);
 
   const loadAll = useCallback(async () => {
     setLoading(true);
@@ -696,16 +711,21 @@ export default function App() {
                 </div>
                 {(!editProj.expenses||editProj.expenses.length===0) && <p style={{ margin:0, fontSize:13, color:"#AAA" }}>אין הוצאות רשומות</p>}
                 {(editProj.expenses||[]).map((ex,idx) => {
-                  const updExp = (changes) => {
+                  const updExp = (changes, isText=false) => {
                     const expenses=(editProj.expenses||[]).map((e,i)=>i===idx?{...e,...changes}:e);
-                    setEditProj(p=>({...p,expenses})); updateProjField(detailProject,{expenses});
+                    setEditProj(p=>({...p,expenses}));
+                    if (isText) {
+                      updateProjFieldDebounced(detailProject,{expenses});
+                    } else {
+                      updateProjField(detailProject,{expenses});
+                    }
                   };
                   return (
                     <div key={ex.id} style={{ background:"#F9F9F9", borderRadius:12, padding:"11px 13px", marginBottom:8 }}>
                       <div style={{ display:"flex", gap:8, alignItems:"center", marginBottom:7 }}>
-                        <input value={ex.desc} placeholder="תיאור ההוצאה" onChange={e=>updExp({desc:e.target.value})}
+                        <input value={ex.desc} placeholder="תיאור ההוצאה" onChange={e=>updExp({desc:e.target.value}, true)}
                           style={{ flex:2, border:"1.5px solid #EEE", borderRadius:8, padding:"7px 10px", fontSize:13, fontFamily:"Heebo,sans-serif", outline:"none", background:"#fff" }}/>
-                        <input type="number" value={ex.amount} placeholder="סכום ₪" onChange={e=>updExp({amount:e.target.value})}
+                        <input type="number" value={ex.amount} placeholder="סכום ₪" onChange={e=>updExp({amount:e.target.value}, true)}
                           style={{ flex:1, border:"1.5px solid #EEE", borderRadius:8, padding:"7px 10px", fontSize:13, fontFamily:"Heebo,sans-serif", outline:"none", background:"#fff" }}/>
                         <button onClick={()=>{ const expenses=(editProj.expenses||[]).filter((_,i)=>i!==idx); setEditProj(p=>({...p,expenses})); updateProjField(detailProject,{expenses}); }}
                           style={{ background:"none", border:"none", cursor:"pointer", color:"#CCC", fontSize:14, padding:0, flexShrink:0 }}>✕</button>
@@ -731,15 +751,20 @@ export default function App() {
                 </div>
                 {(!editProj.phases||editProj.phases.length===0) && <p style={{ margin:0, fontSize:13, color:"#AAA" }}>אין שלבים עדיין</p>}
                 {(editProj.phases||[]).map((ph,idx) => {
-                  const updPhase = (changes) => {
+                  const updPhase = (changes, isText=false) => {
                     const phases=(editProj.phases||[]).map((p,i)=>i===idx?{...p,...changes}:p);
-                    setEditProj(p=>({...p,phases})); updateProjField(detailProject,{phases});
+                    setEditProj(p=>({...p,phases}));
+                    if (isText) {
+                      updateProjFieldDebounced(detailProject,{phases});
+                    } else {
+                      updateProjField(detailProject,{phases});
+                    }
                   };
                   return (
                     <div key={ph.id} style={{ marginBottom:10, background:"#F9F9F9", borderRadius:12, padding:"12px 14px", borderRight:ph.done?"4px solid #22C55E":"4px solid #DDD" }}>
                       <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:8 }}>
                         <input type="checkbox" checked={!!ph.done} onChange={e=>updPhase({done:e.target.checked})} style={{ width:18, height:18, accentColor:"#22C55E", cursor:"pointer", flexShrink:0 }}/>
-                        <input value={ph.name} placeholder={`שם השלב ${idx+1}`} onChange={e=>updPhase({name:e.target.value})}
+                        <input value={ph.name} placeholder={`שם השלב ${idx+1}`} onChange={e=>updPhase({name:e.target.value}, true)}
                           style={{ flex:1, border:"none", background:"transparent", fontSize:14, fontFamily:"Heebo,sans-serif", outline:"none", fontWeight:700, textDecoration:ph.done?"line-through":"none", color:ph.done?"#AAA":"#1A1A2E" }}/>
                         <button onClick={()=>{ const phases=(editProj.phases||[]).filter((_,i)=>i!==idx); setEditProj(p=>({...p,phases})); updateProjField(detailProject,{phases}); }}
                           style={{ background:"none", border:"none", cursor:"pointer", color:"#CCC", fontSize:14, padding:0, flexShrink:0 }}>✕</button>
@@ -751,7 +776,7 @@ export default function App() {
                         {ph.targetDate && ph.done && <span style={{ background:"#F0FDF4", color:"#2E7D32", borderRadius:6, padding:"2px 8px", fontSize:11, fontWeight:600 }}>✓ הושלם</span>}
                         {ph.targetDate && !ph.done && new Date(ph.targetDate)<new Date() && <span style={{ background:"#FCE4EC", color:"#B71C1C", borderRadius:6, padding:"2px 8px", fontSize:11, fontWeight:600 }}>⚠ באיחור</span>}
                       </div>
-                      <textarea value={ph.notes||""} placeholder="הערות, פירוט..." onChange={e=>updPhase({notes:e.target.value})} rows={2}
+                      <textarea value={ph.notes||""} placeholder="הערות, פירוט..." onChange={e=>updPhase({notes:e.target.value}, true)} rows={2}
                         style={{ width:"100%", border:"1px solid #E8E8E8", borderRadius:8, padding:"7px 10px", fontSize:13, fontFamily:"Heebo,sans-serif", background:"#fff", outline:"none", resize:"vertical", boxSizing:"border-box", lineHeight:1.6 }}/>
                     </div>
                   );
