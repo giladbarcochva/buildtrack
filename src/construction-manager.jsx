@@ -60,7 +60,7 @@ function workerDaysForProject(reports, projectId) {
 
 // ✅ חישוב שכר לעובד: ימים כולל + לפי חודש
 function calcWorkerPayroll(worker, reports) {
-  const myReports = reports.filter(r => String(r.workerId) === String(worker.id));
+  const myReports = reports.filter(r => !r._paymentRecord && (String(r.workerId) === String(worker.id) || r.workerName === worker.name));
   const rate = Number(worker.dailyRate || 0);
 
   // כל הימים
@@ -730,7 +730,7 @@ export default function App() {
             {workers.length===0 && <div style={{ background:"#fff", borderRadius:14, padding:44, textAlign:"center", border:"1.5px dashed #DDD", color:"#AAA" }}><div style={{ fontSize:34, marginBottom:8 }}>👷</div><p style={{ margin:0 }}>אין עובדים — הוסף את הצוות</p></div>}
             <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(220px,1fr))", gap:11 }}>
               {workers.map(w => {
-                const wr = reports.filter(r=>r.workerId===w.id);
+                const wr = reports.filter(r=>!r._paymentRecord && (String(r.workerId)===String(w.id) || r.workerName===w.name));
                 return (
                   <div key={w._dbid} style={{ background:"#fff", borderRadius:14, padding:16, boxShadow:"0 2px 8px rgba(0,0,0,0.07)" }}>
                     <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:9 }}>
