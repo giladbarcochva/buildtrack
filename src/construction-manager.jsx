@@ -125,6 +125,8 @@ export default function App() {
   const [partialInput, setPartialInput] = useState({}); // key: workerId_month -> amount string
   const [showPartial, setShowPartial] = useState({}); // key: workerId_month -> bool
   const [payrollView, setPayrollView] = useState("pending"); // "pending" | "history"
+  const [editPaymentKey, setEditPaymentKey] = useState(null); // key being edited
+  const [editPaymentAmt, setEditPaymentAmt] = useState("");
 
   const emptyProj = { name:"", status:"ממתין", progress:0, startDate:"", endDate:"", plannedDays:"", materialCost:"", totalCost:"", projectManager:"", plannedWorkers:"", highlights:"", phases:[], workers:[], expenses:[] };
   const [newProject, setNewProject] = useState(emptyProj);
@@ -837,11 +839,13 @@ export default function App() {
             const hasRate = Number(w.dailyRate||0) > 0;
             const pendingMonths = months.filter(m => {
               const info = paidMonths[`${w.id}_${m.month}`];
-              return !info || !info.fullyPaid;
+              // pending = not paid at all, OR partial (still has remaining balance)
+              return !info || (!info.fullyPaid);
             });
             const historyMonths = months.filter(m => {
               const info = paidMonths[`${w.id}_${m.month}`];
-              return info && (info.fullyPaid || info.partial);
+              // history = only fully paid months
+              return info && info.fullyPaid === true;
             });
             const pendingPay = pendingMonths.reduce((s, m) => {
               const info = paidMonths[`${w.id}_${m.month}`];
@@ -888,7 +892,7 @@ export default function App() {
             {allWorkerData.map(({ w, months, hasRate, pendingMonths, historyMonths, pendingPay, paidTotal }) => {
               const isOpen = payrollWorker === w._dbid;
               const shownMonths = payrollView==="pending" ? pendingMonths : historyMonths;
-              if (shownMonths.length===0 && !isOpen) return null;
+              if (shownMonths.length===0) return null;
               const displayAmt = payrollView==="pending" ? pendingPay : paidTotal;
 
               return (
@@ -962,19 +966,42 @@ export default function App() {
                               </div>
                             )}
                             {payrollView==="history" && hasRate && paidInfo && (
-                              <div style={{ display:"flex", gap:6, flexWrap:"wrap", marginTop:6 }}>
-                                <button onClick={()=>{
-                                  const newAmt = window.prompt(`ערוך סכום ששולם עבור ${m.label}:`, paidInfo.paidAmt);
-                                  if (!newAmt) return;
-                                  if (!window.confirm(`לשנות לסכום ₪${Number(newAmt).toLocaleString("he-IL")}?`)) return;
-                                  markPaid(w.id, m.month, m.pay, Number(newAmt) < m.pay, newAmt);
-                                }} style={{ background:"#E3F2FD", color:"#1565C0", border:"none", borderRadius:8, padding:"5px 12px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700 }}>
-                                  ✏️ ערוך סכום
-                                </button>
-                                <button onClick={()=>{ if(window.confirm("לבטל את סימון התשלום?") && window.confirm("אישור סופי — האם לבטל?")) unmarkPaid(w.id, m.month); }}
-                                  style={{ background:"#FCE4EC", color:"#B71C1C", border:"none", borderRadius:8, padding:"5px 10px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>
-                                  🗑 בטל תשלום
-                                </button>
+                              <div style={{ marginTop:6 }}>
+                                {editPaymentKey !== pKey ? (
+                                  <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
+                                    <button onClick={()=>{ setEditPaymentKey(pKey); setEditPaymentAmt(String(paidInfo.paidAmt||"")); }}
+                                      style={{ background:"#E3F2FD", color:"#1565C0", border:"none", borderRadius:8, padding:"5px 12px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700 }}>
+                                      ✏️ ערוך סכום
+                                    </button>
+                                    <button onClick={()=>{ if(window.confirm("לבטל את סימון התשלום?") && window.confirm("אישור סופי — האם לבטל?")) unmarkPaid(w.id, m.month); }}
+                                      style={{ background:"#FCE4EC", color:"#B71C1C", border:"none", borderRadius:8, padding:"5px 10px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>
+                                      🗑 בטל
+                                    </button>
+                                  </div>
+                                ) : (
+                                  <div style={{ background:"#F0F8FF", borderRadius:10, padding:"10px 12px", border:"1.5px solid #90CAF9" }}>
+                                    <p style={{ margin:"0 0 8px", fontSize:12, fontWeight:700, color:"#1565C0" }}>עריכת סכום ששולם</p>
+                                    <div style={{ display:"flex", gap:8, alignItems:"center" }}>
+                                      <input type="number" value={editPaymentAmt}
+                                        onChange={e=>setEditPaymentAmt(e.target.value)}
+                                        placeholder={`מתוך ₪${fmtNum(m.pay)}`}
+                                        style={{ flex:1, border:"1.5px solid #90CAF9", borderRadius:8, padding:"7px 10px", fontSize:14, fontFamily:"Heebo,sans-serif", outline:"none", background:"#fff" }}/>
+                                      <button onClick={()=>{
+                                        if (!editPaymentAmt) return;
+                                        if (!window.confirm(`לשנות לסכום ₪${Number(editPaymentAmt).toLocaleString("he-IL")}?`)) return;
+                                        markPaid(w.id, m.month, m.pay, Number(editPaymentAmt) < m.pay, editPaymentAmt);
+                                        setEditPaymentKey(null);
+                                        setEditPaymentAmt("");
+                                      }} style={{ background:"#1565C0", color:"#fff", border:"none", borderRadius:8, padding:"7px 14px", fontSize:13, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700 }}>
+                                        שמור
+                                      </button>
+                                      <button onClick={()=>{ setEditPaymentKey(null); setEditPaymentAmt(""); }}
+                                        style={{ background:"#F0F0EC", color:"#555", border:"none", borderRadius:8, padding:"7px 12px", fontSize:13, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>
+                                        ביטול
+                                      </button>
+                                    </div>
+                                  </div>
+                                )}
                               </div>
                             )}
 
