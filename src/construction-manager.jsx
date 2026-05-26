@@ -1198,4 +1198,3 @@ export default function App() {
     </div>
   );
 }
-ף
