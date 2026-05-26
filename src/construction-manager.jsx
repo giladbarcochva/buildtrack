@@ -37,7 +37,13 @@ const STATUS_COLORS = {
   "מושהה":  { bg:"#FCE4EC", text:"#B71C1C", dot:"#E53935" },
 };
 
-const todayStr = () => new Date().toISOString().split("T")[0];
+const todayStr = () => {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const day = String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+};
 const fmtNum   = n => Number(n||0).toLocaleString("he-IL");
 
 // ✅ ימים ייחודיים בפרויקט (לפי תאריך, לא לפי עובד)
@@ -1192,3 +1198,4 @@ export default function App() {
     </div>
   );
 }
+ף
