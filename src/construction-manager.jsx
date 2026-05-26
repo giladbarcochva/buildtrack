@@ -1011,15 +1011,19 @@ export default function App() {
                             </div>
 
                             {/* action buttons */}
-                            {payrollView==="pending" && hasRate && (
+                            {payrollView==="pending" && hasRate && (() => {
+                              const alreadyPaid = Number(paidInfo?.paidAmt||0);
+                              const remaining = m.pay - alreadyPaid;
+                              const hasRemaining = remaining > 0;
+                              return (
                               <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
-                                {!paidInfo?.fullyPaid && (
+                                {hasRemaining && (
                                   <button onClick={()=>markPaid(w.id, m.month, m.pay, false, 0)}
                                     style={{ background:"#1A1A2E", color:"#E8C547", border:"none", borderRadius:8, padding:"5px 12px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700 }}>
-                                    ✓ שולם במלואו
+                                    ✓ שולם במלואו {alreadyPaid>0 ? `(יתרה ₪${fmtNum(remaining)})` : ""}
                                   </button>
                                 )}
-                                {!paidInfo?.fullyPaid && (
+                                {hasRemaining && (
                                   <button onClick={()=>setShowPartial(p=>({...p,[pKey]:!isShowPartial}))}
                                     style={{ background:"#FFF8E1", color:"#B26A00", border:"1.5px solid #FFD54F", borderRadius:8, padding:"5px 12px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700 }}>
                                     שולם חלקית
@@ -1028,11 +1032,12 @@ export default function App() {
                                 {paidInfo && (
                                   <button onClick={()=>{ if(window.confirm("לבטל את סימון התשלום?") && window.confirm("אישור סופי — האם לבטל?")) unmarkPaid(w.id, m.month); }}
                                     style={{ background:"#FCE4EC", color:"#B71C1C", border:"none", borderRadius:8, padding:"5px 10px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>
-                                    בטל
+                                    בטל הכל
                                   </button>
                                 )}
                               </div>
-                            )}
+                              );
+                            })()}
                             {payrollView==="history" && hasRate && paidInfo && (
                               <div style={{ marginTop:6 }}>
                                 {editPaymentKey !== pKey ? (
