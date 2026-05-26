@@ -176,8 +176,9 @@ export default function App() {
       });
       setPaidMonths(paidMap);
       setWorkers(realWorkers);
-      const normalReports = r.filter(x => !x._paymentRecord && !x.pendingApproval);
-      const pendingReps = r.filter(x => !x._paymentRecord && x.pendingApproval);
+      // Reports: anything without _paymentRecord goes to normal OR pending
+      const normalReports = r.filter(x => !x._paymentRecord && x.pendingApproval !== true);
+      const pendingReps = r.filter(x => !x._paymentRecord && x.pendingApproval === true);
       setReports(normalReports);
       setPendingReports(pendingReps);
       const configRow = w.find(x => x._isConfig && x._adminCode);
@@ -492,7 +493,23 @@ export default function App() {
                 <h1 style={{ margin:0, fontSize:20, fontWeight:800 }}>דיווחי עובדים</h1>
                 <p style={{ margin:"3px 0 0", color:"#777", fontSize:13 }}>{reports.length} דיווחים סה"כ</p>
               </div>
-              <button onClick={loadAll} style={{ ...btnG, padding:"7px 14px", fontSize:13 }}>🔄 רענן</button>
+              <div style={{ display:"flex", gap:8 }}>
+                <button onClick={async ()=>{
+                  // Force approve ALL reports that have pendingApproval=true directly from DB
+                  const allR = await fetch(`${SUPABASE_URL}/rest/v1/reports?select=*`, { headers: hdrs });
+                  const allRows = await allR.json();
+                  const pending = allRows.filter(row => row.data && row.data.pendingApproval === true);
+                  for (const row of pending) {
+                    const updated = { ...row.data, pendingApproval: false };
+                    await fetch(`${SUPABASE_URL}/rest/v1/reports?id=eq.${row.id}`, {
+                      method: "PATCH", headers: hdrs, body: JSON.stringify({ data: updated })
+                    });
+                  }
+                  await loadAll();
+                  alert(`✅ אושרו ${pending.length} דיווחים`);
+                }} style={{ ...btnY, padding:"7px 14px", fontSize:13 }}>✓ אשר הכל</button>
+                <button onClick={loadAll} style={{ ...btnG, padding:"7px 14px", fontSize:13 }}>🔄 רענן</button>
+              </div>
             </div>
             {/* Pending approval section */}
             {pendingReports.length>0 && (
