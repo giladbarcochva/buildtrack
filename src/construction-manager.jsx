@@ -204,7 +204,8 @@ export default function App() {
   const submitReport = async () => {
     if (!repProject) return;
     const proj = projects.find(p => String(p.id) === String(repProject));
-    const isPast = repDate < todayStr();
+    const today = todayStr();
+    const isPast = repDate < today; // only strictly BEFORE today
     const newRep = { workerId: loggedWorker.id, workerName: loggedWorker.name, projectId: repProject, projectName: proj?.name || "", date: repDate, note: repNote, days: 1, id: Date.now(), pendingApproval: isPast };
     const saved = await dbInsert("reports", newRep);
     if (isPast) {
@@ -413,14 +414,14 @@ export default function App() {
             <label style={{ display:"block", marginBottom:14 }}>
               <LBL t="📅 תאריך"/>
               <input type="date" value={repDate} max={todayStr()} onChange={e=>{
-                if(e.target.value < todayStr()) {
+                const _today = todayStr(); if(e.target.value < _today) {
                   setPendingDate(e.target.value);
                   setShowDateApproval(true);
                 } else {
                   setRepDate(e.target.value);
                 }
               }} style={{ ...inp, fontSize:15 }}/>
-              {repDate < todayStr() && <p style={{ margin:"4px 0 0", fontSize:12, color:"#F57F17", background:"#FFF8E1", borderRadius:6, padding:"3px 8px" }}>⚠️ דיווח על תאריך עבר — ממתין לאישור מנהל</p>}
+              {repDate < todayStr() && repDate !== todayStr() && <p style={{ margin:"4px 0 0", fontSize:12, color:"#F57F17", background:"#FFF8E1", borderRadius:6, padding:"3px 8px" }}>⚠️ דיווח על תאריך עבר — ממתין לאישור מנהל</p>}
             </label>
             <label style={{ display:"block", marginBottom:14 }}>
               <LBL t="🏗️ באיזה אתר עבדת?"/>
@@ -496,7 +497,10 @@ export default function App() {
             {/* Pending approval section */}
             {pendingReports.length>0 && (
               <div style={{ background:"#FFF8E1", borderRadius:14, padding:"14px 18px", marginBottom:14, border:"1.5px solid #FFD54F" }}>
-                <h3 style={{ margin:"0 0 10px", fontSize:14, fontWeight:700, color:"#B26A00" }}>⏳ ממתינים לאישור ({pendingReports.length})</h3>
+                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:10 }}>
+                  <h3 style={{ margin:0, fontSize:14, fontWeight:700, color:"#B26A00" }}>⏳ ממתינים לאישור ({pendingReports.length})</h3>
+                  <button onClick={async ()=>{ for(const rep of pendingReports){ await approveReport(rep); } }} style={{ background:"#1A1A2E", color:"#E8C547", border:"none", borderRadius:7, padding:"4px 12px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700 }}>✓ אשר הכל</button>
+                </div>
                 {pendingReports.map(r => (
                   <div key={r._dbid} style={{ background:"#fff", borderRadius:10, padding:"10px 14px", marginBottom:7, display:"flex", justifyContent:"space-between", alignItems:"flex-start", gap:8 }}>
                     <div style={{ flex:1 }}>
