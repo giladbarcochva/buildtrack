@@ -280,14 +280,19 @@ export default function App() {
 
   const markPaid = async (workerId, month, amount, partial=false, partialAmt=0) => {
     const key = `${workerId}_${month}`;
-    const paidAmt = partial ? Number(partialAmt) : amount;
     const paidAt = new Date().toLocaleDateString("he-IL");
-    const entry = { amount, paidAmt, partial, paidAt, fullyPaid: !partial };
+    // Add to existing paid amount (don't replace)
+    const existing = paidMonths[key];
+    const prevPaid = existing ? Number(existing.paidAmt||0) : 0;
+    const addAmt = partial ? Number(partialAmt) : (amount - prevPaid);
+    const newPaidAmt = prevPaid + addAmt;
+    const isFullyPaid = newPaidAmt >= amount;
+    const entry = { amount, paidAmt: newPaidAmt, partial: !isFullyPaid, paidAt, fullyPaid: isFullyPaid };
     const newPaid = {...paidMonths, [key]: entry };
     setPaidMonths(newPaid);
     setShowPartial(p => ({...p, [key]: false}));
     setPartialInput(p => ({...p, [key]: ""}));
-    await dbInsert("reports", { _paymentRecord: true, workerId, month, paid: true, partial, paidAmt, amount, paidAt, id: Date.now() });
+    await dbInsert("reports", { _paymentRecord: true, workerId, month, paid: true, partial: !isFullyPaid, paidAmt: newPaidAmt, amount, paidAt, id: Date.now() });
   };
 
   const unmarkPaid = async (workerId, month) => {
