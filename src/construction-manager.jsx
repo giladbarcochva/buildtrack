@@ -495,18 +495,27 @@ export default function App() {
               </div>
               <div style={{ display:"flex", gap:8 }}>
                 <button onClick={async ()=>{
-                  // Force approve ALL reports that have pendingApproval=true directly from DB
-                  const allR = await fetch(`${SUPABASE_URL}/rest/v1/reports?select=*`, { headers: hdrs });
-                  const allRows = await allR.json();
-                  const pending = allRows.filter(row => row.data && row.data.pendingApproval === true);
-                  for (const row of pending) {
-                    const updated = { ...row.data, pendingApproval: false };
-                    await fetch(`${SUPABASE_URL}/rest/v1/reports?id=eq.${row.id}`, {
-                      method: "PATCH", headers: hdrs, body: JSON.stringify({ data: updated })
-                    });
+                  try {
+                    // Get ALL rows from reports table
+                    const res = await fetch(`https://rkjcrhywhoixdkqlfnko.supabase.co/rest/v1/reports?select=*&order=id.asc`, { headers: hdrs });
+                    const rows = await res.json();
+                    let count = 0;
+                    for (const row of rows) {
+                      if (row.data && row.data.pendingApproval === true) {
+                        const newData = { ...row.data, pendingApproval: false };
+                        await fetch(`https://rkjcrhywhoixdkqlfnko.supabase.co/rest/v1/reports?id=eq.${row.id}`, {
+                          method: "PATCH",
+                          headers: { "Content-Type": "application/json", "apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJramNyaHl3aG9peGRrcWxmbmtvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwMzA2NzQsImV4cCI6MjA5NDYwNjY3NH0.yKZzdMCNOyWJClmip03QY617HX2IB-xKPKGUZtKT_Z0", "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJramNyaHl3aG9peGRrcWxmbmtvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwMzA2NzQsImV4cCI6MjA5NDYwNjY3NH0.yKZzdMCNOyWJClmip03QY617HX2IB-xKPKGUZtKT_Z0" },
+                          body: JSON.stringify({ data: newData })
+                        });
+                        count++;
+                      }
+                    }
+                    await loadAll();
+                    alert(`✅ אושרו ${count} דיווחים`);
+                  } catch(e) {
+                    alert("שגיאה: " + e.message);
                   }
-                  await loadAll();
-                  alert(`✅ אושרו ${pending.length} דיווחים`);
                 }} style={{ ...btnY, padding:"7px 14px", fontSize:13 }}>✓ אשר הכל</button>
                 <button onClick={loadAll} style={{ ...btnG, padding:"7px 14px", fontSize:13 }}>🔄 רענן</button>
               </div>
@@ -889,25 +898,27 @@ export default function App() {
           const allWorkerData = workers.map(w => {
             const { totalDays, totalPay, months } = calcWorkerPayroll(w, reports);
             const hasRate = Number(w.dailyRate||0) > 0;
+            // For each month, calculate remaining balance (total earned - already paid)
             const pendingMonths = months.filter(m => {
               const info = paidMonths[`${w.id}_${m.month}`];
-              // pending = not paid at all, OR partial (still has remaining balance)
-              return !info || (!info.fullyPaid);
+              if (!info) return true; // not paid at all
+              const alreadyPaid = Number(info.paidAmt||0);
+              const remaining = m.pay - alreadyPaid;
+              return remaining > 0; // still has balance to pay
             });
             const historyMonths = months.filter(m => {
               const info = paidMonths[`${w.id}_${m.month}`];
-              // history = only fully paid months
-              return info && info.fullyPaid === true;
+              if (!info) return false;
+              const alreadyPaid = Number(info.paidAmt||0);
+              const remaining = m.pay - alreadyPaid;
+              return remaining <= 0; // fully covered
             });
             const pendingPay = pendingMonths.reduce((s, m) => {
               const info = paidMonths[`${w.id}_${m.month}`];
               const already = info ? Number(info.paidAmt||0) : 0;
               return s + m.pay - already;
             }, 0);
-            const paidTotal = historyMonths.reduce((s, m) => {
-              const info = paidMonths[`${w.id}_${m.month}`];
-              return s + Number(info?.paidAmt||0);
-            }, 0) + pendingMonths.reduce((s, m) => {
+            const paidTotal = months.reduce((s, m) => {
               const info = paidMonths[`${w.id}_${m.month}`];
               return s + Number(info?.paidAmt||0);
             }, 0);
