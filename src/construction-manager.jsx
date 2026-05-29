@@ -119,6 +119,7 @@ export default function App() {
 
   const [mgTab,      setMgTab]      = useState("reports");
   const [detailId,   setDetailId]   = useState(null);
+  const [projTab,    setProjTab]    = useState("active"); // "active" | "completed"
   const [newPM,      setNewPM]      = useState(false);
   const [newWM,      setNewWM]      = useState(false);
   const [editWM,     setEditWM]     = useState(false);
@@ -571,15 +572,31 @@ export default function App() {
         {/* PROJECTS LIST */}
         {mgTab==="projects" && !detailProject && (
           <>
-            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:16 }}>
+            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12 }}>
               <div>
                 <h1 style={{ margin:0, fontSize:20, fontWeight:800 }}>פרויקטים</h1>
                 <p style={{ margin:"3px 0 0", color:"#777", fontSize:13 }}>{projects.length} פרויקטים</p>
               </div>
               <button onClick={()=>setNewPM(true)} style={btnY}>+ פרויקט חדש</button>
             </div>
-            {projects.length===0 && <div style={{ background:"#fff", borderRadius:14, padding:44, textAlign:"center", border:"1.5px dashed #DDD", color:"#AAA" }}><div style={{ fontSize:34, marginBottom:8 }}>🏗️</div><p style={{ margin:0 }}>אין פרויקטים — הוסף את הראשון</p></div>}
-            {projects.map(p => {
+
+            {/* Active / Completed toggle */}
+            <div style={{ display:"flex", background:"#F0F0EC", borderRadius:12, padding:3, marginBottom:14, gap:3 }}>
+              {[{k:"active",l:"פעילים 🏗️"},{k:"completed",l:"הושלמו ✅"}].map(t=>(
+                <button key={t.k} onClick={()=>setProjTab(t.k)}
+                  style={{ flex:1, background:projTab===t.k?"#1A1A2E":"transparent", color:projTab===t.k?"#E8C547":"#888", border:"none", borderRadius:10, padding:"8px 0", fontWeight:700, fontSize:13, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>
+                  {t.l}
+                </button>
+              ))}
+            </div>
+
+            {projects.filter(p => projTab==="completed" ? p.status==="הושלם" : p.status!=="הושלם").length===0 && (
+              <div style={{ background:"#fff", borderRadius:14, padding:44, textAlign:"center", border:"1.5px dashed #DDD", color:"#AAA" }}>
+                <div style={{ fontSize:34, marginBottom:8 }}>{projTab==="completed"?"✅":"🏗️"}</div>
+                <p style={{ margin:0 }}>{projTab==="completed"?"אין פרויקטים שהושלמו עדיין":"אין פרויקטים פעילים"}</p>
+              </div>
+            )}
+            {projects.filter(p => projTab==="completed" ? p.status==="הושלם" : p.status!=="הושלם").map(p => {
               const sc = STATUS_COLORS[p.status]||STATUS_COLORS["ממתין"];
               const pr = projReports(p.id);
               // ✅ ימים ייחודיים
@@ -802,20 +819,32 @@ export default function App() {
                     }
                   };
                   return (
-                    <div key={ph.id} style={{ marginBottom:10, background:"#F9F9F9", borderRadius:12, padding:"12px 14px", borderRight:ph.done?"4px solid #22C55E":"4px solid #DDD" }}>
+                    <div key={ph.id} style={{ marginBottom:10, background:"#F9F9F9", borderRadius:12, padding:"12px 14px", borderRight:(ph.status==="הושלם"||ph.done)?"4px solid #22C55E":ph.status==="בביצוע"?"4px solid #E8C547":"4px solid #DDD" }}>
                       <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:8 }}>
-                        <input type="checkbox" checked={!!ph.done} onChange={e=>updPhase({done:e.target.checked})} style={{ width:18, height:18, accentColor:"#22C55E", cursor:"pointer", flexShrink:0 }}/>
                         <input value={ph.name} placeholder={`שם השלב ${idx+1}`} onChange={e=>updPhase({name:e.target.value}, true)}
-                          style={{ flex:1, border:"none", background:"transparent", fontSize:14, fontFamily:"Heebo,sans-serif", outline:"none", fontWeight:700, textDecoration:ph.done?"line-through":"none", color:ph.done?"#AAA":"#1A1A2E" }}/>
+                          style={{ flex:1, border:"none", background:"transparent", fontSize:14, fontFamily:"Heebo,sans-serif", outline:"none", fontWeight:700, textDecoration:ph.status==="הושלם"?"line-through":"none", color:ph.status==="הושלם"?"#AAA":"#1A1A2E" }}/>
                         <button onClick={()=>{ const phases=(editProj.phases||[]).filter((_,i)=>i!==idx); setEditProj(p=>({...p,phases})); updateProjField(detailProject,{phases}); }}
                           style={{ background:"none", border:"none", cursor:"pointer", color:"#CCC", fontSize:14, padding:0, flexShrink:0 }}>✕</button>
+                      </div>
+                      <div style={{ display:"flex", gap:6, marginBottom:8 }}>
+                        {["ממתין","בביצוע","הושלם"].map(st => (
+                          <button key={st} onClick={()=>updPhase({status:st, done:st==="הושלם"})}
+                            style={{
+                              background: ph.status===st ? (st==="הושלם"?"#22C55E":st==="בביצוע"?"#E8C547":"#DDD") : "#F5F5F0",
+                              color: ph.status===st ? (st==="הושלם"?"#fff":st==="בביצוע"?"#1A1A2E":"#555") : "#888",
+                              border:"none", borderRadius:7, padding:"3px 10px", fontSize:12,
+                              cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:ph.status===st?700:400
+                            }}>
+                            {st==="ממתין"?"⏳":st==="בביצוע"?"🔨":"✅"} {st}
+                          </button>
+                        ))}
                       </div>
                       <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:8 }}>
                         <span style={{ fontSize:12, color:"#888", whiteSpace:"nowrap" }}>🎯 יעד:</span>
                         <input type="date" value={ph.targetDate||""} onChange={e=>updPhase({targetDate:e.target.value})}
                           style={{ border:"1px solid #DDD", borderRadius:7, padding:"4px 8px", fontSize:13, fontFamily:"Heebo,sans-serif", background:"#fff", outline:"none" }}/>
-                        {ph.targetDate && ph.done && <span style={{ background:"#F0FDF4", color:"#2E7D32", borderRadius:6, padding:"2px 8px", fontSize:11, fontWeight:600 }}>✓ הושלם</span>}
-                        {ph.targetDate && !ph.done && new Date(ph.targetDate)<new Date() && <span style={{ background:"#FCE4EC", color:"#B71C1C", borderRadius:6, padding:"2px 8px", fontSize:11, fontWeight:600 }}>⚠ באיחור</span>}
+                        {ph.targetDate && (ph.status==="הושלם"||ph.done) && <span style={{ background:"#F0FDF4", color:"#2E7D32", borderRadius:6, padding:"2px 8px", fontSize:11, fontWeight:600 }}>✓ הושלם</span>}
+                        {ph.targetDate && ph.status!=="הושלם" && !ph.done && new Date(ph.targetDate)<new Date() && <span style={{ background:"#FCE4EC", color:"#B71C1C", borderRadius:6, padding:"2px 8px", fontSize:11, fontWeight:600 }}>⚠ באיחור</span>}
                       </div>
                       <textarea value={ph.notes||""} placeholder="הערות, פירוט..." onChange={e=>updPhase({notes:e.target.value}, true)} rows={2}
                         style={{ width:"100%", border:"1px solid #E8E8E8", borderRadius:8, padding:"7px 10px", fontSize:13, fontFamily:"Heebo,sans-serif", background:"#fff", outline:"none", resize:"vertical", boxSizing:"border-box", lineHeight:1.6 }}/>
@@ -824,9 +853,9 @@ export default function App() {
                 })}
                 {(editProj.phases||[]).length>0 && (
                   <div style={{ marginTop:10, paddingTop:10, borderTop:"1px solid #EEE", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-                    <span style={{ fontSize:13, color:"#666" }}>{(editProj.phases||[]).filter(p=>p.done).length} / {(editProj.phases||[]).length} שלבים הושלמו</span>
+                    <span style={{ fontSize:13, color:"#666" }}>{(editProj.phases||[]).filter(p=>p.status==="הושלם"||p.done).length} / {(editProj.phases||[]).length} שלבים הושלמו</span>
                     <div style={{ background:"#EEE", borderRadius:99, height:7, width:120 }}>
-                      <div style={{ height:"100%", borderRadius:99, background:"#22C55E", width:`${Math.round(((editProj.phases||[]).filter(p=>p.done).length/Math.max((editProj.phases||[]).length,1))*100)}%` }}/>
+                      <div style={{ height:"100%", borderRadius:99, background:"#22C55E", width:`${Math.round(((editProj.phases||[]).filter(p=>p.status==="הושלם"||p.done).length/Math.max((editProj.phases||[]).length,1))*100)}%` }}/>
                     </div>
                   </div>
                 )}
