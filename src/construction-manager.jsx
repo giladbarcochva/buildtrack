@@ -660,7 +660,20 @@ export default function App() {
                     <h2 style={{ margin:0, fontSize:19, fontWeight:800 }}>{detailProject.name}</h2>
                     {(detailProject.startDate||detailProject.endDate) && <p style={{ margin:"4px 0 0", color:"#AAA", fontSize:12 }}>📅 {detailProject.startDate} — {detailProject.endDate}</p>}
                   </div>
-                  <span style={{ background:STATUS_COLORS[detailProject.status]?.bg, color:STATUS_COLORS[detailProject.status]?.text, borderRadius:20, padding:"4px 13px", fontSize:12, fontWeight:700 }}>{detailProject.status}</span>
+                  <div style={{ display:"flex", gap:5, flexWrap:"wrap" }}>
+                    {["ממתין","בביצוע","מושהה","הושלם"].map(st => (
+                      <button key={st} onClick={()=>updateProjField(detailProject,{status:st})}
+                        style={{
+                          background: detailProject.status===st ? STATUS_COLORS[st]?.bg : "rgba(255,255,255,0.08)",
+                          color: detailProject.status===st ? STATUS_COLORS[st]?.text : "#AAA",
+                          border: detailProject.status===st ? `1.5px solid ${STATUS_COLORS[st]?.dot}` : "1.5px solid transparent",
+                          borderRadius:20, padding:"4px 12px", fontSize:12, fontWeight:detailProject.status===st?700:400,
+                          cursor:"pointer", fontFamily:"Heebo,sans-serif"
+                        }}>
+                        {st}
+                      </button>
+                    ))}
+                  </div>
                 </div>
                 <div>
                   <div style={{ display:"flex", justifyContent:"space-between", marginBottom:5 }}>
