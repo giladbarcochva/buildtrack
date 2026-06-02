@@ -3,12 +3,11 @@ import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig({
-  base: '/buildtrack/',
   plugins: [
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['icon-192x192.svg', 'icon-512x512.svg'],
+      includeAssets: ['apple-touch-icon.png', 'icon-192x192.svg', 'icon-512x512.svg'],
       manifest: {
         name: 'ניהול פסגת הגלעד',
         short_name: 'פסגת הגלעד',
@@ -21,9 +20,9 @@ export default defineConfig({
         dir: 'rtl',
         icons: [
           {
-            src: 'icon-192x192.svg',
+            src: 'apple-touch-icon.png',
             sizes: '192x192',
-            type: 'image/svg+xml',
+            type: 'image/png',
             purpose: 'any maskable'
           },
           {
