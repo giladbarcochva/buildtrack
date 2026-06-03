@@ -445,7 +445,7 @@ export default function App() {
               <LBL t="🏗️ באיזה אתר עבדת?"/>
               <select value={repProject} onChange={e=>setRepProject(e.target.value)} style={{ ...inp, fontSize:15 }}>
                 <option value="">— בחר פרויקט —</option>
-                {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                {projects.filter(p => p.status !== "הושלם").map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
               </select>
               {projects.length===0 && <p style={{ margin:"5px 0 0", fontSize:12, color:"#E53935" }}>המנהל עדיין לא הוסיף פרויקטים</p>}
             </label>
