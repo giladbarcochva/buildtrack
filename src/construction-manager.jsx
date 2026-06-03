@@ -116,6 +116,8 @@ export default function App() {
   const [pendingDate, setPendingDate] = useState("");
   const [showDateApproval, setShowDateApproval] = useState(false);
   const [pendingReports, setPendingReports] = useState([]); // reports waiting manager approval
+  const [repFuel,  setRepFuel]  = useState(false);
+  const [repError, setRepError] = useState("");
 
   const [mgTab,      setMgTab]      = useState("reports");
   const [detailId,   setDetailId]   = useState(null);
@@ -205,22 +207,31 @@ export default function App() {
 
   const submitReport = async () => {
     if (!repProject) return;
+    // Prevent duplicate: same worker, same date
+    const alreadyReported = [...reports, ...pendingReports].some(
+      r => r.workerId === loggedWorker.id && r.date === repDate
+    );
+    if (alreadyReported) { setRepError("כבר שלחת דיווח ליום זה"); return; }
+    setRepError("");
     const proj = projects.find(p => String(p.id) === String(repProject));
     const today = todayStr();
-    const isPast = repDate < today; // only strictly BEFORE today
-    const newRep = { workerId: loggedWorker.id, workerName: loggedWorker.name, projectId: repProject, projectName: proj?.name || "", date: repDate, note: repNote, days: 1, id: Date.now(), pendingApproval: isPast };
+    const isPast = repDate < today;
+    const needsApproval = isPast || repFuel;
+    const newRep = { workerId: loggedWorker.id, workerName: loggedWorker.name, projectId: repProject, projectName: proj?.name || "", date: repDate, note: repNote, days: 1, id: Date.now(), pendingApproval: needsApproval, fuelExpense: repFuel };
     const saved = await dbInsert("reports", newRep);
-    if (isPast) {
+    if (needsApproval) {
       setPendingReports(prev => [...prev, saved]);
     } else {
       setReports(prev => [...prev, saved]);
     }
-    const uniqueDays = uniqueWorkDaysForProject([...reports, saved], repProject);
-    const proj2 = projects.find(p => String(p.id) === String(repProject));
-    if (proj2) {
-      const updated = { ...proj2, actualDays: uniqueDays };
-      await dbUpdate("projects", proj2._dbid, updated);
-      setProjects(prev => prev.map(p => String(p.id)===String(repProject) ? updated : p));
+    if (!isPast) {
+      const uniqueDays = uniqueWorkDaysForProject([...reports, saved], repProject);
+      const proj2 = projects.find(p => String(p.id) === String(repProject));
+      if (proj2) {
+        const updated = { ...proj2, actualDays: uniqueDays };
+        await dbUpdate("projects", proj2._dbid, updated);
+        setProjects(prev => prev.map(p => String(p.id)===String(repProject) ? updated : p));
+      }
     }
     setRepSent(true);
   };
@@ -414,7 +425,7 @@ export default function App() {
             <div style={{ fontSize:46, marginBottom:10 }}>✅</div>
             <h3 style={{ margin:"0 0 6px", fontWeight:800, fontSize:19 }}>הדיווח נשלח!</h3>
             <p style={{ margin:"0 0 22px", color:"#777" }}>יום העבודה שלך נרשם בהצלחה.</p>
-            <button onClick={()=>{ setRepSent(false); setRepDate(todayStr()); setRepProject(""); setRepNote(""); }} style={btnD}>דיווח נוסף</button>
+            <button onClick={()=>{ setRepSent(false); setRepDate(todayStr()); setRepProject(""); setRepNote(""); setRepFuel(false); setRepError(""); }} style={btnD}>דיווח נוסף</button>
           </div>
         ) : (
           <div style={{ background:"#fff", borderRadius:16, padding:22, boxShadow:"0 2px 8px rgba(0,0,0,0.07)" }}>
@@ -442,6 +453,12 @@ export default function App() {
               <LBL t="📝 הערה (אופציונלי)"/>
               <textarea value={repNote} onChange={e=>setRepNote(e.target.value)} placeholder="מה בוצע היום?" rows={3} style={{ ...inp, resize:"vertical" }}/>
             </label>
+            <label style={{ display:"flex", alignItems:"center", gap:10, marginBottom:14, cursor:"pointer", background:"#FFFDE7", borderRadius:10, padding:"12px 14px", border:"1.5px solid #FFD54F" }}>
+              <input type="checkbox" checked={repFuel} onChange={e=>setRepFuel(e.target.checked)} style={{ width:18, height:18, cursor:"pointer", flexShrink:0 }}/>
+              <span style={{ fontWeight:700, fontSize:14 }}>⛽ דלק יומי — <span style={{ color:"#E65100" }}>₪50</span></span>
+              <span style={{ fontSize:11, color:"#999", marginRight:"auto" }}>ממתין לאישור מנהל</span>
+            </label>
+            {repError && <p style={{ margin:"0 0 12px", fontSize:13, color:"#C62828", background:"#FFEBEE", borderRadius:8, padding:"8px 12px" }}>⚠️ {repError}</p>}
             <button onClick={submitReport} disabled={!repProject} style={{ ...btnD, width:"100%", fontSize:15, opacity:repProject?1:0.4 }}>שלח דיווח יומי ✓</button>
           </div>
         )}
@@ -540,6 +557,7 @@ export default function App() {
                         <span style={{ fontWeight:700, fontSize:13 }}>{r.workerName}</span>
                         <span style={{ background:"#F0F0EC", borderRadius:6, padding:"2px 7px", fontSize:11, color:"#555" }}>{r.projectName}</span>
                         <span style={{ fontSize:11, color:"#999" }}>📅 {r.date}</span>
+                        {r.fuelExpense && <span style={{ background:"#FFF9C4", border:"1px solid #F9A825", borderRadius:6, padding:"2px 7px", fontSize:11, color:"#E65100", fontWeight:700 }}>⛽ דלק ₪50</span>}
                       </div>
                       {r.note && <p style={{ margin:0, fontSize:12, color:"#666" }}>{r.note}</p>}
                     </div>
