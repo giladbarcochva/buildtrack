@@ -116,8 +116,9 @@ export default function App() {
   const [pendingDate, setPendingDate] = useState("");
   const [showDateApproval, setShowDateApproval] = useState(false);
   const [pendingReports, setPendingReports] = useState([]); // reports waiting manager approval
-  const [repFuel,  setRepFuel]  = useState(false);
-  const [repError, setRepError] = useState("");
+  const [repFuel,       setRepFuel]       = useState(false);
+  const [repError,      setRepError]      = useState("");
+  const [repSubmitting, setRepSubmitting] = useState(false);
 
   const [mgTab,      setMgTab]      = useState("reports");
   const [detailId,   setDetailId]   = useState(null);
@@ -206,13 +207,14 @@ export default function App() {
   };
 
   const submitReport = async () => {
-    if (!repProject) return;
+    if (!repProject || repSubmitting) return;
     // Prevent duplicate: same worker, same date
     const alreadyReported = [...reports, ...pendingReports].some(
       r => r.workerId === loggedWorker.id && r.date === repDate
     );
     if (alreadyReported) { setRepError("כבר שלחת דיווח ליום זה"); return; }
     setRepError("");
+    setRepSubmitting(true);
     const proj = projects.find(p => String(p.id) === String(repProject));
     const today = todayStr();
     const isPast = repDate < today;
@@ -233,6 +235,7 @@ export default function App() {
         setProjects(prev => prev.map(p => String(p.id)===String(repProject) ? updated : p));
       }
     }
+    setRepSubmitting(false);
     setRepSent(true);
   };
 
@@ -459,7 +462,7 @@ export default function App() {
               <span style={{ fontSize:11, color:"#999", marginRight:"auto" }}>ממתין לאישור מנהל</span>
             </label>
             {repError && <p style={{ margin:"0 0 12px", fontSize:13, color:"#C62828", background:"#FFEBEE", borderRadius:8, padding:"8px 12px" }}>⚠️ {repError}</p>}
-            <button onClick={submitReport} disabled={!repProject} style={{ ...btnD, width:"100%", fontSize:15, opacity:repProject?1:0.4 }}>שלח דיווח יומי ✓</button>
+            <button onClick={submitReport} disabled={!repProject || repSubmitting} style={{ ...btnD, width:"100%", fontSize:15, opacity:(!repProject||repSubmitting)?0.4:1 }}>{repSubmitting ? "שולח..." : "שלח דיווח יומי ✓"}</button>
           </div>
         )}
       </div>
