@@ -64,22 +64,24 @@ function workerDaysForProject(reports, projectId) {
   return map;
 }
 
-// ✅ חישוב שכר לעובד: ימים כולל + לפי חודש
+const FUEL_RATE = 50;
+
+// ✅ חישוב שכר לעובד: ימים כולל + לפי חודש + דלק
 function calcWorkerPayroll(worker, reports) {
   const myReports = reports.filter(r => !r._paymentRecord && !r.pendingApproval && (String(r.workerId) === String(worker.id) || r.workerName === worker.name));
   const rate = Number(worker.dailyRate || 0);
 
-  // כל הימים
-  const totalDays = myReports.length;
-  const totalPay  = totalDays * rate;
+  const totalDays     = myReports.length;
+  const totalFuelDays = myReports.filter(r => r.fuelExpense).length;
+  const totalPay      = totalDays * rate + totalFuelDays * FUEL_RATE;
 
-  // לפי חודש
   const byMonth = {};
   myReports.forEach(r => {
     if (!r.date) return;
-    const month = r.date.slice(0, 7); // "2024-03"
-    if (!byMonth[month]) byMonth[month] = { days: 0, projects: new Set() };
+    const month = r.date.slice(0, 7);
+    if (!byMonth[month]) byMonth[month] = { days: 0, fuelDays: 0, projects: new Set() };
     byMonth[month].days += 1;
+    if (r.fuelExpense) byMonth[month].fuelDays += 1;
     byMonth[month].projects.add(r.projectName || r.projectId);
   });
 
@@ -89,11 +91,12 @@ function calcWorkerPayroll(worker, reports) {
       month,
       label: new Date(month + "-01").toLocaleDateString("he-IL", { year:"numeric", month:"long" }),
       days: v.days,
-      pay: v.days * rate,
+      fuelDays: v.fuelDays,
+      pay: v.days * rate + v.fuelDays * FUEL_RATE,
       projects: [...v.projects].join(", "),
     }));
 
-  return { totalDays, totalPay, months };
+  return { totalDays, totalFuelDays, totalPay, months };
 }
 
 export default function App() {
@@ -1063,6 +1066,7 @@ export default function App() {
                               <div>
                                 <p style={{ margin:0, fontWeight:700, fontSize:14 }}>{m.label}</p>
                                 <p style={{ margin:"2px 0 0", fontSize:12, color:"#888" }}>{m.days} ימים · {m.projects}</p>
+                                {m.fuelDays > 0 && <p style={{ margin:"3px 0 0", fontSize:12, color:"#E65100" }}>⛽ דלק: {m.fuelDays} יום × ₪{FUEL_RATE} = ₪{fmtNum(m.fuelDays * FUEL_RATE)}</p>}
                                 {paidInfo?.partial && !paidInfo.fullyPaid && (
                                   <p style={{ margin:"3px 0 0", fontSize:12, color:"#F57F17" }}>שולם חלקית: ₪{fmtNum(alreadyPaid)} · נותר: ₪{fmtNum(remaining)}</p>
                                 )}
