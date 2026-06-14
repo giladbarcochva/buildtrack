@@ -71,15 +71,17 @@ function calcWorkerPayroll(worker, reports) {
 
   // כל הימים (כולל חצאי ימים)
   const totalDays = myReports.reduce((s, r) => s + Number(r.days||1), 0);
-  const totalPay  = totalDays * rate;
+  const totalFuel = myReports.filter(r => r.fuel).length * 50;
+  const totalPay  = totalDays * rate + totalFuel;
 
   // לפי חודש
   const byMonth = {};
   myReports.forEach(r => {
     if (!r.date) return;
     const month = r.date.slice(0, 7);
-    if (!byMonth[month]) byMonth[month] = { days: 0, projects: new Set() };
+    if (!byMonth[month]) byMonth[month] = { days: 0, fuel: 0, projects: new Set() };
     byMonth[month].days += Number(r.days||1);
+    if (r.fuel) byMonth[month].fuel += 50;
     byMonth[month].projects.add(r.projectName || r.projectId);
   });
 
@@ -89,7 +91,8 @@ function calcWorkerPayroll(worker, reports) {
       month,
       label: new Date(month + "-01").toLocaleDateString("he-IL", { year:"numeric", month:"long" }),
       days: v.days,
-      pay: v.days * rate,
+      fuel: v.fuel||0,
+      pay: v.days * rate + (v.fuel||0),
       projects: [...v.projects].join(", "),
     }));
 
@@ -113,6 +116,7 @@ export default function App() {
   const [repProject, setRepProject] = useState("");
   const [repNote,    setRepNote]    = useState("");
   const [dayType,    setDayType]    = useState("full"); // "full" | "half"
+  const [repFuel,    setRepFuel]    = useState(false); // true = 50 ₪ fuel
   const [repSent,    setRepSent]    = useState(false);
   const [pendingDate, setPendingDate] = useState("");
   const [showDateApproval, setShowDateApproval] = useState(false);
@@ -196,7 +200,7 @@ export default function App() {
 
   const workerLogin = () => {
     const w = workers.find(w => w.code === codeInput.trim());
-    if (w) { setLoggedWorker(w); setCodeInput(""); setCodeError(false); setScreen("worker"); setRepSent(false); setRepDate(todayStr()); setRepProject(""); setRepNote(""); setDayType("full"); }
+    if (w) { setLoggedWorker(w); setCodeInput(""); setCodeError(false); setScreen("worker"); setRepSent(false); setRepDate(todayStr()); setRepProject(""); setRepNote(""); setDayType("full"); setRepFuel(false); }
     else setCodeError(true);
   };
   const managerLogin = () => {
@@ -209,7 +213,7 @@ export default function App() {
     const proj = projects.find(p => String(p.id) === String(repProject));
     const today = todayStr();
     const isPast = repDate < today; // only strictly BEFORE today
-    const newRep = { workerId: loggedWorker.id, workerName: loggedWorker.name, projectId: repProject, projectName: proj?.name || "", date: repDate, note: repNote, days: dayType==="half" ? 0.5 : 1, dayType, id: Date.now(), pendingApproval: isPast };
+    const newRep = { workerId: loggedWorker.id, workerName: loggedWorker.name, projectId: repProject, projectName: proj?.name || "", date: repDate, note: repNote, days: dayType==="half" ? 0.5 : 1, dayType, fuel: repFuel, id: Date.now(), pendingApproval: isPast };
     const saved = await dbInsert("reports", newRep);
     if (isPast) {
       setPendingReports(prev => [...prev, saved]);
@@ -415,7 +419,7 @@ export default function App() {
             <div style={{ fontSize:46, marginBottom:10 }}>✅</div>
             <h3 style={{ margin:"0 0 6px", fontWeight:800, fontSize:19 }}>הדיווח נשלח!</h3>
             <p style={{ margin:"0 0 22px", color:"#777" }}>יום העבודה שלך נרשם בהצלחה.</p>
-            <button onClick={()=>{ setRepSent(false); setRepDate(todayStr()); setRepProject(""); setRepNote(""); setDayType("full"); }} style={btnD}>דיווח נוסף</button>
+            <button onClick={()=>{ setRepSent(false); setRepDate(todayStr()); setRepProject(""); setRepNote(""); setDayType("full"); setRepFuel(false); }} style={btnD}>דיווח נוסף</button>
           </div>
         ) : (
           <div style={{ background:"#fff", borderRadius:16, padding:22, boxShadow:"0 2px 8px rgba(0,0,0,0.07)" }}>
@@ -455,6 +459,13 @@ export default function App() {
               <LBL t="📝 הערה (אופציונלי)"/>
               <textarea value={repNote} onChange={e=>setRepNote(e.target.value)} placeholder="מה בוצע היום?" rows={3} style={{ ...inp, resize:"vertical" }}/>
             </label>
+            <div style={{ marginBottom:18 }}>
+              <LBL t="⛽ דלק"/>
+              <button type="button" onClick={()=>setRepFuel(f=>!f)}
+                style={{ width:"100%", background:repFuel?"#1A1A2E":"#F0F0EC", color:repFuel?"#E8C547":"#888", border:"none", borderRadius:10, padding:"11px 0", fontWeight:700, fontSize:15, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>
+                {repFuel ? "✅ כן — ₪50 דלק" : "לא נסעתי באוטו"}
+              </button>
+            </div>
             <button onClick={submitReport} disabled={!repProject} style={{ ...btnD, width:"100%", fontSize:15, opacity:repProject?1:0.4 }}>שלח דיווח יומי ✓</button>
           </div>
         )}
@@ -576,6 +587,7 @@ export default function App() {
                     {r.dayType==="half" && <span style={{ background:"#FFF8E1", color:"#B26A00", borderRadius:6, padding:"2px 7px", fontSize:11, fontWeight:600 }}>חצי יום</span>}
                   </div>
                   {r.note && <p style={{ margin:0, fontSize:13, color:"#666", lineHeight:1.5 }}>{r.note}</p>}
+                  {r.fuel && <span style={{ background:"#FFF8E1", color:"#B26A00", borderRadius:6, padding:"2px 7px", fontSize:11, fontWeight:600 }}>⛽ +₪50 דלק</span>}
                 </div>
                 <button onClick={()=>delReport(r)} style={{ background:"none", border:"none", cursor:"pointer", color:"#CCC", fontSize:15, padding:0, flexShrink:0 }}>✕</button>
               </div>
@@ -1055,7 +1067,7 @@ export default function App() {
                             <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:6 }}>
                               <div>
                                 <p style={{ margin:0, fontWeight:700, fontSize:14 }}>{m.label}</p>
-                                <p style={{ margin:"2px 0 0", fontSize:12, color:"#888" }}>{m.days} ימים · {m.projects}</p>
+                                <p style={{ margin:"2px 0 0", fontSize:12, color:"#888" }}>{m.days} ימים{m.fuel>0 ? ` · ⛽ ₪${m.fuel} דלק` : ""} · {m.projects}</p>
                                 {paidInfo?.partial && !paidInfo.fullyPaid && (
                                   <p style={{ margin:"3px 0 0", fontSize:12, color:"#F57F17" }}>שולם חלקית: ₪{fmtNum(alreadyPaid)} · נותר: ₪{fmtNum(remaining)}</p>
                                 )}
