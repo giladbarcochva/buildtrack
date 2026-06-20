@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BuildAI — מערכת 1: מחשבון חומרים לקבלן</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+<style>
+  :root {
+    --teal:        #1D9E75;
+    --teal-light:  #E1F5EE;
+    --teal-dark:   #085041;
+    --blue:        #378ADD;
+    --blue-light:  #E6F1FB;
+    --blue-dark:   #1A4D8A;
+    --amber:       #BA7517;
+    --amber-light: #FAEEDA;
+    --green:       #639922;
+    --green-light: #EAF3DE;
+    --green-dark:  #3A5A10;
+    --red:         #E24B4A;
+    --red-light:   #FCEBEB;
+    --bg:          #F8F7F4;
+    --card:        #FFFFFF;
+    --border:      rgba(0,0,0,.08);
+    --text:        #1A1A1A;
+    --muted:       #666;
+    --radius:      12px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, 'Segoe UI', Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.6;
+    padding: 2rem 1rem 4rem;
+  }
+
+  .container { max-width: 1100px; margin: 0 auto; }
+
+  /* ── HERO ─────────────────────────────────────────────────────────── */
+  .hero { text-align: center; margin-bottom: 2.5rem; }
+  .hero h1 { font-size: 32px; font-weight: 800; color: var(--teal); margin-bottom: 6px; letter-spacing: -.5px; }
+  .hero p { font-size: 14px; color: var(--muted); }
+
+  /* ── ALERTS ───────────────────────────────────────────────────────── */
+  .alert {
+    display: none;
+    padding: 12px 14px;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    font-size: 13px;
+    border-right: 4px solid;
+    animation: slideIn .3s ease;
+  }
+  @keyframes slideIn { from { transform: translateX(16px); opacity: 0; } to { transform: none; opacity: 1; } }
+  .alert.show   { display: block; }
+  .alert.success{ background: var(--green-light);  color: var(--green-dark); border-color: var(--green); }
+  .alert.error  { background: var(--red-light);    color: #791F1F;           border-color: var(--red);   }
+  .alert.info   { background: var(--blue-light);   color: var(--blue-dark);  border-color: var(--blue);  }
+
+  /* ── DROPZONE ─────────────────────────────────────────────────────── */
+  .dropzone {
+    border: 3px dashed var(--teal);
+    background: var(--teal-light);
+    border-radius: var(--radius);
+    padding: 2.5rem;
+    text-align: center;
+    margin-bottom: 1.5rem;
+    cursor: pointer;
+    transition: all .25s;
+    position: relative;
+  }
+  .dropzone:hover, .dropzone.dragging {
+    border-color: var(--teal-dark);
+    background: rgba(29,158,117,.18);
+    transform: translateY(-2px);
+  }
+  .dropzone.dragging { border-color: var(--blue); background: var(--blue-light); }
+
+  .dz-icon   { font-size: 48px; margin-bottom: 10px; pointer-events: none; }
+  .dz-title  { font-size: 16px; font-weight: 700; color: var(--teal-dark); margin-bottom: 4px; }
+  .dz-sub    { font-size: 12px; color: var(--muted); margin-bottom: 14px; }
+  .dz-types  { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
+  .dz-type   {
+    font-size: 11px; font-weight: 600;
+    background: white; border: 1px solid var(--teal);
+    color: var(--teal-dark); border-radius: 99px;
+    padding: 3px 10px;
+  }
+
+  /* image preview inside dropzone */
+  .dz-preview {
+    display: none;
+    max-height: 160px;
+    border-radius: 8px;
+    margin-top: 12px;
+    object-fit: contain;
+    border: 2px solid var(--teal);
+  }
+
+  /* progress */
+  .progress-wrap { display: none; margin-top: 14px; }
+  .progress-wrap.active { display: block; }
+  .progress-bar  {
+    width: 100%; height: 8px;
+    background: rgba(0,0,0,.1);
+    border-radius: 99px; overflow: hidden;
+    margin-bottom: 5px;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--teal), var(--blue));
+    width: 0%; transition: width .25s ease;
+  }
+  .progress-text { font-size: 12px; color: var(--muted); font-weight: 500; }
+
+  /* file info badge */
+  .file-badge {
+    display: none;
+    align-items: center; gap: 10px;
+    background: var(--blue-light);
+    border: 1px solid var(--blue);
+    padding: 10px 14px; border-radius: 8px;
+    margin-bottom: 1.5rem; font-size: 13px;
+  }
+  .file-badge.show { display: flex; }
+  .file-badge-icon { font-size: 22px; }
+  .file-badge-name { font-weight: 700; color: var(--blue-dark); }
+  .file-badge-status { font-size: 12px; color: var(--muted); }
+
+  /* extracted text panel */
+  .extracted-panel {
+    display: none;
+    background: #fafafa;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 1.5rem;
+    font-size: 12px;
+    color: var(--muted);
+    max-height: 120px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    direction: ltr; text-align: left;
+  }
+  .extracted-panel.show { display: block; }
+
+  /* ── SECTION TITLE ─────────────────────────────────────────────────── */
+  .section-title {
+    font-size: 11px; font-weight: 700;
+    color: var(--muted); text-transform: uppercase;
+    letter-spacing: .07em; margin: 2rem 0 .8rem;
+  }
+
+  /* ── PROJECT GRID ─────────────────────────────────────────────────── */
+  .project-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 8px; margin-bottom: 2rem;
+  }
+  .proj-btn {
+    padding: 10px 8px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    cursor: pointer; font-size: 12px; font-weight: 600;
+    color: var(--muted); text-align: center; transition: all .18s;
+    line-height: 1.4;
+  }
+  .proj-btn:hover { border-color: var(--teal); background: var(--teal-light); }
+  .proj-btn.active { background: var(--teal); color: white; border-color: var(--teal); }
+
+  /* ── MAIN GRID ────────────────────────────────────────────────────── */
+  .main-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.4fr;
+    gap: 1.5rem; margin-bottom: 2rem;
+    align-items: start;
+  }
+
+  /* ── CARDS ────────────────────────────────────────────────────────── */
+  .card {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    border: 1px solid var(--border);
+  }
+  .card-title {
+    font-size: 14px; font-weight: 700;
+    margin-bottom: 1rem;
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  /* ── INPUTS ───────────────────────────────────────────────────────── */
+  .input-block { display: none; }
+  .input-block.active { display: block; }
+  .input-group { margin-bottom: 12px; }
+  .input-group label {
+    display: block; font-size: 12px;
+    color: var(--muted); margin-bottom: 4px; font-weight: 500;
+  }
+  .input-group input,
+  .input-group select {
+    width: 100%; padding: 9px 11px;
+    border-radius: 7px; border: 1px solid var(--border);
+    font-size: 13px; background: white; font-family: inherit;
+    transition: border-color .15s, background .15s;
+  }
+  .input-group input:focus,
+  .input-group select:focus {
+    outline: none;
+    border-color: var(--teal);
+    background: var(--teal-light);
+  }
+  input::-webkit-outer-spin-button,
+  input::-webkit-inner-spin-button { -webkit-appearance: none; }
+  input[type=number] { -moz-appearance: textfield; }
+
+  /* ── TABLE ────────────────────────────────────────────────────────── */
+  .table-wrap { overflow-x: auto; }
+  .materials-table {
+    width: 100%; border-collapse: collapse; font-size: 12.5px;
+  }
+  .materials-table th {
+    background: #f1f0ea; color: var(--text);
+    padding: 10px 11px; text-align: right;
+    font-weight: 700; border-bottom: 2px solid var(--border);
+    white-space: nowrap;
+  }
+  .materials-table td {
+    padding: 9px 11px; border-bottom: 1px solid var(--border);
+    text-align: right;
+  }
+  .materials-table tr:hover td { background: rgba(29,158,117,.04); }
+  .materials-table .cat-row td {
+    background: var(--teal-light);
+    font-weight: 700; color: var(--teal-dark);
+    font-size: 11px; text-transform: uppercase; letter-spacing: .04em;
+  }
+  .materials-table .total-row td {
+    background: var(--green-light);
+    font-weight: 700; color: var(--green-dark);
+    border-top: 2px solid var(--green);
+    font-size: 13px;
+  }
+  .screw-mark { color: var(--teal); font-size: 13px; }
+
+  /* ── SUMMARY ──────────────────────────────────────────────────────── */
+  .summary-box {
+    background: linear-gradient(135deg, var(--teal-light), var(--blue-light));
+    border-radius: var(--radius);
+    padding: 1.25rem 1.5rem;
+    margin-top: 1rem;
+    border-right: 4px solid var(--teal);
+  }
+  .sum-row {
+    display: flex; justify-content: space-between;
+    padding: 7px 0; font-size: 13px;
+    border-bottom: 1px solid rgba(0,0,0,.08);
+  }
+  .sum-row:last-child { border-bottom: none; }
+  .sum-row.total {
+    font-size: 17px; font-weight: 800;
+    color: var(--teal-dark); margin-top: 8px;
+    padding-top: 12px;
+  }
+
+  /* ── RESPONSIVE ───────────────────────────────────────────────────── */
+  @media (max-width: 800px) {
+    .main-grid { grid-template-columns: 1fr; }
+    .project-grid { grid-template-columns: repeat(2, 1fr); }
+    .hero h1 { font-size: 24px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <div class="hero">
+    <h1>🏗️ BuildAI — מערכת 1</h1>
+    <p>מחשבון חומרים לקבלן · 10 סוגי פרויקטים · קריאת PDF / Word / תמונה</p>
+  </div>
+
+  <!-- ALERTS -->
+  <div class="alert success" id="aSuccess"></div>
+  <div class="alert error"   id="aError"></div>
+  <div class="alert info"    id="aInfo"></div>
+
+  <!-- DROPZONE -->
+  <div class="dropzone" id="dropzone">
+    <img class="dz-preview" id="dzPreview" alt="תצוגה מקדימה">
+    <div id="dzContent">
+      <div class="dz-icon">📄</div>
+      <div class="dz-title">העלה תוכנית בנייה או שרטוט</div>
+      <div class="dz-sub">גרור ושחרר, או לחץ לבחירת קובץ</div>
+      <div class="dz-types">
+        <span class="dz-type">PDF</span>
+        <span class="dz-type">Word (.docx)</span>
+        <span class="dz-type">תמונה (JPG/PNG)</span>
+        <span class="dz-type">טקסט (.txt)</span>
+      </div>
+    </div>
+    <div class="progress-wrap" id="progressWrap">
+      <div class="progress-bar"><div class="progress-fill" id="pFill"></div></div>
+      <div class="progress-text" id="pText">מעבד...</div>
+    </div>
+    <input type="file" id="fileInput" style="display:none"
+      accept=".pdf,.doc,.docx,.txt,.csv,.jpg,.jpeg,.png,.webp,.bmp">
+  </div>
+
+  <!-- FILE BADGE -->
+  <div class="file-badge" id="fileBadge">
+    <span class="file-badge-icon" id="badgeIcon">📄</span>
+    <div>
+      <div class="file-badge-name" id="badgeName"></div>
+      <div class="file-badge-status" id="badgeStatus"></div>
+    </div>
+  </div>
+
+  <!-- EXTRACTED TEXT (collapsed) -->
+  <details style="margin-bottom:1.5rem;" id="extractedDetails" hidden>
+    <summary style="font-size:12px;color:var(--muted);cursor:pointer;padding:6px 0;">
+      📃 טקסט שנקרא מהקובץ (לחץ להרחבה)
+    </summary>
+    <div class="extracted-panel show" id="extractedPanel"></div>
+  </details>
+
+  <!-- PROJECT SELECTOR -->
+  <div class="section-title">בחר סוג פרויקט</div>
+  <div class="project-grid">
+    <button class="proj-btn active" data-proj="drywall"      onclick="switchProject(this)">🧱 גבס פנים</button>
+    <button class="proj-btn"        data-proj="grass"        onclick="switchProject(this)">🟢 דשא סינטטי</button>
+    <button class="proj-btn"        data-proj="pergola_wood" onclick="switchProject(this)">🌳 פרגולה עץ</button>
+    <button class="proj-btn"        data-proj="pergola_iron" onclick="switchProject(this)">⬜ פרגולה ברזל</button>
+    <button class="proj-btn"        data-proj="construction" onclick="switchProject(this)">🏢 בנייה קשה</button>
+    <button class="proj-btn"        data-proj="plumbing"     onclick="switchProject(this)">🚰 אינסטלציה</button>
+    <button class="proj-btn"        data-proj="flooring"     onclick="switchProject(this)">🧩 ריצוף וחיפוי</button>
+    <button class="proj-btn"        data-proj="electricity"  onclick="switchProject(this)">⚡ חשמל</button>
+    <button class="proj-btn"        data-proj="insulation"   onclick="switchProject(this)">🛡️ בידוד</button>
+    <button class="proj-btn"        data-proj="paint"        onclick="switchProject(this)">🎨 צבע וגימור</button>
+  </div>
+
+  <!-- MAIN GRID -->
+  <div class="main-grid">
+
+    <!-- LEFT: INPUTS -->
+    <div class="card">
+      <div class="card-title">⚙️ פרמטרים לחישוב</div>
+
+      <div id="inputs-drywall" class="input-block active">
+        <div class="input-group"><label>אורך קירות כולל (מ')</label>
+          <input type="number" value="6" min="0" step="0.5" oninput="calculate()"></div>
+        <div class="input-group"><label>גובה קיר (מ')</label>
+          <input type="number" value="2.7" min="0" step="0.1" oninput="calculate()"></div>
+        <div class="input-group"><label>מספר צדדים (1 או 2)</label>
+          <input type="number" value="1" min="1" max="2" oninput="calculate()"></div>
+      </div>
+
+      <div id="inputs-grass" class="input-block">
+        <div class="input-group"><label>אורך גינה (מ')</label>
+          <input type="number" value="10" min="0" step="0.5" oninput="calculate()"></div>
+        <div class="input-group"><label>רוחב גינה (מ')</label>
+          <input type="number" value="5" min="0" step="0.5" oninput="calculate()"></div>
+      </div>
+
+      <div id="inputs-pergola_wood" class="input-block">
+        <div class="input-group"><label>רוחב פרגולה (מ')</label>
+          <input type="number" value="4" min="0" step="0.5" oninput="calculate()"></div>
+        <div class="input-group"><label>אורך פרגולה (מ')</label>
+          <input type="number" value="3" min="0" step="0.5" oninput="calculate()"></div>
+      </div>
+
+      <div id="inputs-pergola_iron" class="input-block">
+        <div class="input-group"><label>רוחב מבנה (מ')</label>
+          <input type="number" value="5" min="0" step="0.5" oninput="calculate()"></div>
+        <div class="input-group"><label>אורך מבנה (מ')</label>
+          <input type="number" value="4" min="0" step="0.5" oninput="calculate()"></div>
+      </div>
+
+      <div id="inputs-construction" class="input-block">
+        <div class="input-group"><label>שטח רצפה (מ"ר)</label>
+          <input type="number" value="50" min="0" oninput="calculate()"></div>
+        <div class="input-group"><label>עובי יציקה (ס"מ)</label>
+          <input type="number" value="20" min="10" max="60" oninput="calculate()"></div>
+      </div>
+
+      <div id="inputs-plumbing" class="input-block">
+        <div class="input-group"><label>מספר נקודות מים</label>
+          <input type="number" value="4" min="1" oninput="calculate()"></div>
+        <div class="input-group"><label>אורך קו ניקוז ראשי (מ')</label>
+          <input type="number" value="12" min="0" oninput="calculate()"></div>
+      </div>
+
+      <div id="inputs-flooring" class="input-block">
+        <div class="input-group"><label>שטח ריצוף (מ"ר)</label>
+          <input type="number" value="40" min="0" oninput="calculate()"></div>
+        <div class="input-group"><label>גודל אריח</label>
+          <select onchange="calculate()">
+            <option value="0.36">60×60 ס"מ (0.36 מ"ר)</option>
+            <option value="0.64">80×80 ס"מ (0.64 מ"ר)</option>
+            <option value="0.72">120×60 ס"מ (0.72 מ"ר)</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="inputs-electricity" class="input-block">
+        <div class="input-group"><label>מספר נקודות חשמל</label>
+          <input type="number" value="15" min="1" oninput="calculate()"></div>
+        <div class="input-group"><label>אורך מסלול כבלים (מ')</label>
+          <input type="number" value="40" min="0" oninput="calculate()"></div>
+      </div>
+
+      <div id="inputs-insulation" class="input-block">
+        <div class="input-group"><label>שטח בידוד (מ"ר)</label>
+          <input type="number" value="35" min="0" oninput="calculate()"></div>
+        <div class="input-group"><label>סוג בידוד</label>
+          <select onchange="calculate()">
+            <option>ביטומן (גג שטוח)</option>
+            <option>פוליסטירן (קיר)</option>
+            <option>רדיד אלומיניום (גג רעפים)</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="inputs-paint" class="input-block">
+        <div class="input-group"><label>שטח צביעה (מ"ר)</label>
+          <input type="number" value="80" min="0" oninput="calculate()"></div>
+        <div class="input-group"><label>מספר שכבות</label>
+          <select onchange="calculate()">
+            <option value="2">2 שכבות</option>
+            <option value="3">3 שכבות</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: TABLE + SUMMARY -->
+    <div class="card" style="border:2px solid var(--teal);">
+      <div class="card-title" style="color:var(--teal);">📋 רשימת חומרים מפורטת</div>
+      <div class="table-wrap">
+        <table class="materials-table">
+          <thead>
+            <tr>
+              <th style="width:55%">חומר / ברגים ספציפיים</th>
+              <th>כמות</th>
+              <th>יח'</th>
+              <th>מחיר</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+      <div class="summary-box">
+        <div class="sum-row"><span>פריטים ייחודיים</span><span id="sumItems">0</span></div>
+        <div class="sum-row"><span>שטח / כמות בסיס</span><span id="sumBase">—</span></div>
+        <div class="sum-row total"><span>סה"כ תקציב מוערך</span><span id="sumTotal">₪0</span></div>
+      </div>
+    </div>
+
+  </div><!-- /main-grid -->
+
+</div><!-- /container -->
+
+<script>
+/* ═══════════════════════════════════════════════════════════
+   PDF.JS SETUP
+════════════════════════════════════════════════════════════ */
+if (typeof pdfjsLib !== 'undefined') {
+  pdfjsLib.GlobalWorkerOptions.workerSrc =
+    'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+}
+
+/* ═══════════════════════════════════════════════════════════
+   CALCULATION DATA
+════════════════════════════════════════════════════════════ */
+let currentProject = 'drywall';
+
+function v(blockId, idx) {
+  const els = document.querySelectorAll(`#inputs-${blockId} input[type="number"]`);
+  return parseFloat(els[idx]?.value) || 0;
+}
+function sel(blockId, idx) {
+  const els = document.querySelectorAll(`#inputs-${blockId} select`);
+  return els[idx]?.value || '';
+}
+
+const PROJECTS = {
+
+  drywall: {
+    label: 'גבס פנים',
+    calc() {
+      const len   = v('drywall', 0);
+      const h     = v('drywall', 1);
+      const sides = v('drywall', 2);
+      const area  = len * h * sides;
+      const boards       = Math.ceil(area / 2.88);
+      const profiles     = Math.ceil(len * 2 + h * 2);
+      const boardScrews  = Math.ceil(boards * 40);
+      const metalScrews  = Math.ceil(profiles * 3);
+      const puttyKg      = Math.ceil(area * 1.5);
+      const paintL       = Math.ceil(area / 15);
+      return {
+        base: `${area.toFixed(1)} מ"ר קיר`,
+        rows: [
+          { cat: 'מבנה וקשיחות' },
+          { name: 'לוחות גבס 240×120 סטנדרטי',     qty: boards,      unit: 'יח\'', price: 48 },
+          { name: 'פרופילי מסגרת C + מסלול U',      qty: profiles,    unit: 'מ\'',  price: 22 },
+          { cat: 'ברגים וקיבוע' },
+          { name: '🔩 בורג גבס קדח 25 מ"מ TN',      qty: boardScrews, unit: 'יח\'', price: 0.12, screw: true },
+          { name: '🔩 בורג פח–פח ראש פטרייה 13 מ"מ',qty: metalScrews, unit: 'יח\'', price: 0.15, screw: true },
+          { cat: 'גימור' },
+          { name: 'שפכטל אקרילי מוכן',               qty: puttyKg,    unit: 'ק"ג', price: 7 },
+          { name: 'צבע סופרקריל מט',                  qty: paintL,     unit: 'ליטר',price: 35 },
+        ]
+      };
+    }
+  },
+
+  grass: {
+    label: 'דשא סינטטי',
+    calc() {
+      const len  = v('grass', 0);
+      const w    = v('grass', 1);
+      const area = len * w;
+      const grassM2 = Math.ceil(area * 1.05);
+      const subTon  = Math.ceil(area * 0.08 * 10) / 10;
+      const pins    = Math.ceil(area * 4);
+      const glueL   = Math.ceil(area * 0.2);
+      return {
+        base: `${area.toFixed(1)} מ"ר`,
+        rows: [
+          { cat: 'חומרי בסיס' },
+          { name: 'דשא סינטטי 42 מ"מ',               qty: grassM2, unit: 'מ"ר',  price: 65 },
+          { name: 'מצע שומשום (כריסטוביה)',             qty: subTon,  unit: 'טון',  price: 120 },
+          { cat: 'קיבוע' },
+          { name: '🔩 מסמרי מתכת מגולוון 20 ס"מ',     qty: pins,    unit: 'יח\'', price: 1.5, screw: true },
+          { name: 'דבק פוליאוריתן דו-רכיבי',           qty: glueL,   unit: 'ליטר', price: 35 },
+        ]
+      };
+    }
+  },
+
+  pergola_wood: {
+    label: 'פרגולה עץ',
+    calc() {
+      const w    = v('pergola_wood', 0);
+      const l    = v('pergola_wood', 1);
+      const area = w * l;
+      const beams        = Math.ceil((w * 2 + l * 2));
+      const torxScrews   = Math.ceil(area * 8);
+      const conusScrews  = 32;
+      const jumboAnchors = 12;
+      return {
+        base: `${area.toFixed(1)} מ"ר`,
+        rows: [
+          { cat: 'עץ ומבנה' },
+          { name: 'עמודי עץ גושני 15×15 ס"מ',        qty: 4,            unit: 'יח\'', price: 180 },
+          { name: 'קורות עץ אורן לחי 10×10',          qty: beams,        unit: 'מ\'',  price: 45 },
+          { name: 'תושבות מתכת מגולוון L',             qty: 4,            unit: 'יח\'', price: 35 },
+          { cat: 'ברגים וחומרה' },
+          { name: '🔩 בורג עץ טורקס צהוב 6×80',       qty: torxScrews,   unit: 'יח\'', price: 1.2,  screw: true },
+          { name: '🔩 בורג ראש חרוט סיבית 5×50',      qty: conusScrews,  unit: 'יח\'', price: 0.4,  screw: true },
+          { name: '🔩 עוגן ג\'מבו לבטון M10×100',      qty: jumboAnchors, unit: 'יח\'', price: 4.5,  screw: true },
+        ]
+      };
+    }
+  },
+
+  pergola_iron: {
+    label: 'פרגולה ברזל',
+    calc() {
+      const w    = v('pergola_iron', 0);
+      const l    = v('pergola_iron', 1);
+      const area = w * l;
+      const ironKg       = Math.ceil(area * 25);
+      const weldingKg    = Math.ceil(ironKg * 0.05);
+      const anchors      = 12;
+      const boltsM12     = 24;
+      return {
+        base: `${area.toFixed(1)} מ"ר`,
+        rows: [
+          { cat: 'ברזל ועיבוד' },
+          { name: 'פרופיל RHS 80×40 מגולוון',         qty: ironKg,    unit: 'ק"ג', price: 9 },
+          { name: 'אלקטרודות E6013 לריתוך',            qty: weldingKg, unit: 'ק"ג', price: 12 },
+          { name: 'צבע אנטי-קורוזיה אפוקסי',           qty: Math.ceil(area * 0.1), unit: 'ליטר', price: 42 },
+          { cat: 'קיבוע לבטון' },
+          { name: '🔩 עוגן כימי קרטריג HIT-HY M16',   qty: anchors,   unit: 'יח\'', price: 22, screw: true },
+          { name: '🔩 בורג מוט שקוע M12×120',          qty: boltsM12,  unit: 'יח\'', price: 8,  screw: true },
+        ]
+      };
+    }
+  },
+
+  construction: {
+    label: 'בנייה קשה',
+    calc() {
+      const area    = v('construction', 0);
+      const thickCm = v('construction', 1);
+      const vol     = Math.ceil(area * thickCm / 100 * 1.05 * 10) / 10;
+      const meshPcs = Math.ceil(area / 12);
+      const woodM   = Math.ceil(area * 0.4);
+      const screws  = Math.ceil(woodM * 4);
+      return {
+        base: `${vol} מ"ק בטון`,
+        rows: [
+          { cat: 'בטון וזיון' },
+          { name: 'בטון מובא B30 (כולל שאיבה)',        qty: vol,     unit: 'מ"ק', price: 390 },
+          { name: 'רשת ברזל זיון Q335 (Ø8 20/20)',    qty: meshPcs, unit: 'יח\'', price: 240 },
+          { name: 'פלסטיק ריצוף (מפריד)',              qty: Math.ceil(area / 50), unit: 'גלילים', price: 85 },
+          { cat: 'טפסנות וקיבוע' },
+          { name: 'לוחות עץ 50×100 לטפסנות',           qty: woodM,   unit: 'מ\'',  price: 35 },
+          { name: '🔩 בורג ספירלה + ממסר לטפסנות',    qty: screws,  unit: 'יח\'', price: 0.25, screw: true },
+        ]
+      };
+    }
+  },
+
+  plumbing: {
+    label: 'אינסטלציה',
+    calc() {
+      const pts   = v('plumbing', 0);
+      const drain = v('plumbing', 1);
+      const pexM        = pts * 15;
+      const manifolds   = Math.ceil(pts / 5);
+      const clampScrews = Math.ceil(pexM * 2);
+      return {
+        base: `${pts} נקודות מים`,
+        rows: [
+          { cat: 'צנרת אספקה' },
+          { name: 'צינור פקסגול SP 20 מ"מ',            qty: pexM,        unit: 'מ\'',  price: 6 },
+          { name: 'מוקד חלוקה עם ברזים',                qty: manifolds,   unit: 'יח\'', price: 220 },
+          { name: 'אביזרי חיבור + זווית קיר',           qty: pts,         unit: 'סט',   price: 85 },
+          { cat: 'ניקוז' },
+          { name: 'צינור ניקוז PVC 110 מ"מ',            qty: drain,       unit: 'מ\'',  price: 18 },
+          { name: 'מפצל / אחיזה PVC',                   qty: Math.ceil(drain / 2), unit: 'יח\'', price: 14 },
+          { cat: 'קיבוע' },
+          { name: '🔩 בורג נירוסטה לתפס צנרת M5',      qty: clampScrews, unit: 'יח\'', price: 0.4, screw: true },
+        ]
+      };
+    }
+  },
+
+  flooring: {
+    label: 'ריצוף וחיפוי',
+    calc() {
+      const area     = v('flooring', 0);
+      const tileSize = parseFloat(sel('flooring', 0)) || 0.36;
+      const tiles    = Math.ceil(area / tileSize * 1.1);
+      const glue     = Math.ceil(area / 4);
+      const grout    = Math.ceil(area * 0.4);
+      return {
+        base: `${area} מ"ר`,
+        rows: [
+          { cat: 'חומרי ריצוף' },
+          { name: 'אריחי גרניט פורצלן',                qty: tiles, unit: 'יח\'',  price: 75 },
+          { name: 'דבק קרמיקה שק 25 ק"ג',              qty: glue,  unit: 'שקים',  price: 45 },
+          { name: 'רובה אקרילית לריווח',                qty: grout, unit: 'ק"ג',   price: 14 },
+          { name: 'רצועות פינה PVC',                    qty: Math.ceil(Math.sqrt(area) * 4), unit: 'מ\'', price: 8 },
+        ]
+      };
+    }
+  },
+
+  electricity: {
+    label: 'חשמל',
+    calc() {
+      const pts      = v('electricity', 0);
+      const cableLen = v('electricity', 1);
+      const conduits = cableLen;
+      const wires    = Math.ceil(conduits * 3);
+      const boxScrews= pts * 2;
+      return {
+        base: `${pts} נקודות`,
+        rows: [
+          { cat: 'צנרת וכבלים' },
+          { name: 'צינור PVC גמיש 3/4 (לקיר)',         qty: conduits,   unit: 'מ\'',  price: 3 },
+          { name: 'כבל נחושת NYY 3×2.5 מ"מ',           qty: wires,      unit: 'מ\'',  price: 14 },
+          { cat: 'ציוד' },
+          { name: 'קופסאות חיבור + נגד לחות',          qty: pts,        unit: 'יח\'', price: 25 },
+          { name: 'שקע שטוח / מפסק מדורגים',           qty: pts,        unit: 'יח\'', price: 35 },
+          { cat: 'קיבוע' },
+          { name: '🔩 בורג מכונה קופסה M3.5×25',       qty: boxScrews,  unit: 'יח\'', price: 0.2, screw: true },
+        ]
+      };
+    }
+  },
+
+  insulation: {
+    label: 'בידוד',
+    calc() {
+      const area  = v('insulation', 0);
+      const type  = sel('insulation', 0);
+      const rolls = Math.ceil(area / 10);
+      const primerKg = Math.ceil(area * 0.3);
+      const pricePerRoll = type.includes('ביטומן') ? 210 : type.includes('פוליסטירן') ? 90 : 150;
+      return {
+        base: `${area} מ"ר`,
+        rows: [
+          { cat: 'חומרי בידוד' },
+          { name: type.includes('ביטומן')      ? 'יריעה ביטומנית 5 מ"מ SBS'   :
+                  type.includes('פוליסטירן')   ? 'לוחות פוליסטירן EPS 5 ס"מ'  :
+                                                 'רדיד אלומיניום דו-שכבתי',
+            qty: rolls, unit: 'גלילים', price: pricePerRoll },
+          { name: 'פריימר ביטומני בסיסי',       qty: primerKg, unit: 'ק"ג',   price: 18 },
+          { name: 'חומר אטם נוזלי (פינות)',      qty: Math.ceil(area * 0.05), unit: 'ק"ג', price: 35 },
+        ]
+      };
+    }
+  },
+
+  paint: {
+    label: 'צבע וגימור',
+    calc() {
+      const area   = v('paint', 0);
+      const coats  = parseInt(sel('paint', 0)) || 2;
+      const paintL = Math.ceil(area * 0.12 * coats);
+      const primer = Math.ceil(area * 0.1);
+      const tapeM  = Math.ceil(area * 0.1);
+      return {
+        base: `${area} מ"ר (${coats} שכבות)`,
+        rows: [
+          { cat: 'צבעים' },
+          { name: 'בסיס (פריימר) אקרילי',              qty: primer,  unit: 'ליטר', price: 22 },
+          { name: 'צבע סופרקריל מט פנים',               qty: paintL,  unit: 'ליטר', price: 16 },
+          { cat: 'חומרי עזר' },
+          { name: 'רשת ומסטיק לסדקים',                  qty: Math.ceil(area * 0.03), unit: 'מ"ר', price: 12 },
+          { name: 'סרט הדבקה פרוגייד 48 מ"מ',           qty: tapeM,   unit: 'מ\'',  price: 8 },
+          { name: 'גלילים + מברשות',                    qty: Math.ceil(area / 40), unit: 'סט', price: 55 },
+        ]
+      };
+    }
+  },
+};
+
+/* ═══════════════════════════════════════════════════════════
+   CALCULATE
+════════════════════════════════════════════════════════════ */
+function calculate() {
+  const proj = PROJECTS[currentProject];
+  if (!proj) return;
+  const { base, rows } = proj.calc();
+
+  const tbody = document.getElementById('tableBody');
+  tbody.innerHTML = '';
+  let totalPrice = 0;
+  let itemCount  = 0;
+
+  rows.forEach(item => {
+    const tr = tbody.insertRow();
+    if (item.cat) {
+      tr.className = 'cat-row';
+      tr.innerHTML = `<td colspan="4">${item.cat}</td>`;
+    } else {
+      const lineTotal = Math.round(item.qty * item.price);
+      totalPrice += lineTotal;
+      itemCount++;
+      tr.innerHTML = `
+        <td class="${item.screw ? 'screw-mark' : ''}">${item.name}</td>
+        <td>${typeof item.qty === 'number' ? item.qty.toFixed(item.qty % 1 ? 1 : 0) : item.qty}</td>
+        <td>${item.unit}</td>
+        <td>₪${lineTotal.toLocaleString('he-IL')}</td>`;
+    }
+  });
+
+  const tfoot = tbody.insertRow();
+  tfoot.className = 'total-row';
+  tfoot.innerHTML = `<td>סה"כ</td><td colspan="2">${itemCount} פריטים</td><td>₪${totalPrice.toLocaleString('he-IL')}</td>`;
+
+  document.getElementById('sumItems').textContent = itemCount;
+  document.getElementById('sumBase').textContent  = base;
+  document.getElementById('sumTotal').textContent = '₪' + totalPrice.toLocaleString('he-IL');
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SWITCH PROJECT
+════════════════════════════════════════════════════════════ */
+function switchProject(btn) {
+  const projId = btn.dataset.proj;
+  currentProject = projId;
+  document.querySelectorAll('.proj-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.input-block').forEach(b => b.classList.remove('active'));
+  document.getElementById(`inputs-${projId}`).classList.add('active');
+  calculate();
+}
+
+/* ═══════════════════════════════════════════════════════════
+   FILE UPLOAD
+════════════════════════════════════════════════════════════ */
+const dropzone  = document.getElementById('dropzone');
+const fileInput = document.getElementById('fileInput');
+
+dropzone.addEventListener('click', () => fileInput.click());
+
+dropzone.addEventListener('dragover', e => {
+  e.preventDefault();
+  dropzone.classList.add('dragging');
+});
+dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragging'));
+dropzone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropzone.classList.remove('dragging');
+  if (e.dataTransfer.files[0]) processFile(e.dataTransfer.files[0]);
+});
+fileInput.addEventListener('change', e => {
+  if (e.target.files[0]) processFile(e.target.files[0]);
+});
+
+/* ── File type helpers ──────────────────────────────────── */
+function fileExt(name) { return name.split('.').pop().toLowerCase(); }
+function fileIcon(ext) {
+  return { pdf: '📕', doc: '📘', docx: '📘', txt: '📄', csv: '📊',
+           jpg: '🖼️', jpeg: '🖼️', png: '🖼️', webp: '🖼️', bmp: '🖼️' }[ext] || '📎';
+}
+
+/* ── Progress helpers ───────────────────────────────────── */
+function showProgress() {
+  document.getElementById('progressWrap').classList.add('active');
+  setProgress(0, 'מכין...');
+}
+function setProgress(pct, label) {
+  document.getElementById('pFill').style.width = pct + '%';
+  document.getElementById('pText').textContent = label || `${pct}%`;
+}
+function hideProgress() {
+  document.getElementById('progressWrap').classList.remove('active');
+}
+
+/* ── Alert helper ───────────────────────────────────────── */
+function showAlert(msg, type) {
+  const ids = { success: 'aSuccess', error: 'aError', info: 'aInfo' };
+  const el  = document.getElementById(ids[type]);
+  if (!el) return;
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 5000);
+}
+
+/* ── Set file badge ─────────────────────────────────────── */
+function setBadge(name, status) {
+  const ext = fileExt(name);
+  document.getElementById('badgeIcon').textContent   = fileIcon(ext);
+  document.getElementById('badgeName').textContent   = name;
+  document.getElementById('badgeStatus').textContent = status;
+  document.getElementById('fileBadge').classList.add('show');
+}
+
+/* ── Show image preview inside dropzone ─────────────────── */
+function showImagePreview(file) {
+  const img = document.getElementById('dzPreview');
+  img.src = URL.createObjectURL(file);
+  img.style.display = 'block';
+  document.getElementById('dzContent').style.display = 'none';
+}
+
+/* ── PDF extraction via PDF.js ──────────────────────────── */
+async function extractPDF(arrayBuffer) {
+  if (typeof pdfjsLib === 'undefined') throw new Error('PDF.js לא נטען');
+  const pdf   = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+  let text    = '';
+  for (let i = 1; i <= pdf.numPages; i++) {
+    setProgress(10 + Math.round((i / pdf.numPages) * 75), `קורא עמוד ${i} מתוך ${pdf.numPages}...`);
+    const page    = await pdf.getPage(i);
+    const content = await page.getTextContent();
+    text += content.items.map(it => it.str).join(' ') + '\n';
+  }
+  return text;
+}
+
+/* ── DOCX extraction via mammoth ────────────────────────── */
+async function extractDOCX(arrayBuffer) {
+  if (typeof mammoth === 'undefined') throw new Error('mammoth.js לא נטען');
+  const result = await mammoth.extractRawText({ arrayBuffer });
+  return result.value;
+}
+
+/* ── Hebrew dimension parser ────────────────────────────── */
+function parseDimensions(text) {
+  const nums = [];
+
+  // Pattern: "4×5 מטר" / "4x5" / "4 x 5"
+  const multiDim = text.match(/(\d+(?:[.,]\d+)?)\s*[×xX]\s*(\d+(?:[.,]\d+)?)/g) || [];
+  multiDim.forEach(m => {
+    const parts = m.split(/[×xX]/);
+    parts.forEach(p => {
+      const n = parseFloat(p.replace(',', '.'));
+      if (n > 0 && n < 200) nums.push(n);
+    });
+  });
+
+  // Pattern: numbers followed by מ / מטר / מ"ר / ס"מ
+  const unitPat = /(\d+(?:[.,]\d+)?)\s*(?:מ(?:טר|"ר)?|ס"מ|meter|m\b)/gi;
+  let m;
+  while ((m = unitPat.exec(text)) !== null) {
+    const n = parseFloat(m[1].replace(',', '.'));
+    if (n > 0 && n < 500) nums.push(n);
+  }
+
+  // Deduplicate and sort
+  return [...new Set(nums)].sort((a, b) => a - b).slice(0, 6);
+}
+
+/* ── Auto-fill first two inputs with found dimensions ────── */
+function autoFill(dims) {
+  const block  = document.querySelector(`#inputs-${currentProject}`);
+  const inputs = block?.querySelectorAll('input[type="number"]') || [];
+  let filled   = 0;
+  dims.forEach(d => {
+    if (inputs[filled]) {
+      inputs[filled].value = d;
+      inputs[filled].style.background = '#fff9c4';
+      setTimeout(() => { inputs[filled].style.background = ''; }, 2000);
+      filled++;
+    }
+  });
+  return filled;
+}
+
+/* ── Main processFile ────────────────────────────────────── */
+async function processFile(file) {
+  const MAX = 20 * 1024 * 1024; // 20 MB
+  if (file.size > MAX) {
+    showAlert('הקובץ גדול מ-20 MB — אנא צמצם את גודל הקובץ', 'error');
+    return;
+  }
+
+  showProgress();
+  const ext = fileExt(file.name);
+
+  try {
+    let text = '';
+
+    if (ext === 'pdf') {
+      setProgress(5, 'קורא PDF...');
+      const buf = await file.arrayBuffer();
+      text = await extractPDF(buf);
+
+    } else if (ext === 'docx' || ext === 'doc') {
+      setProgress(20, 'קורא Word...');
+      const buf = await file.arrayBuffer();
+      text = await extractDOCX(buf);
+      setProgress(90, 'מנתח...');
+
+    } else if (['jpg','jpeg','png','webp','bmp'].includes(ext)) {
+      setProgress(80, 'טוען תמונה...');
+      showImagePreview(file);
+      setProgress(100, 'מוכן');
+      setTimeout(() => {
+        hideProgress();
+        setBadge(file.name, 'תמונה הועלתה');
+        showAlert('תמונה הועלתה ✓ — לחישוב מדויק עדכן את המידות ידנית', 'info');
+      }, 600);
+      return;
+
+    } else {
+      // TXT / CSV / etc.
+      setProgress(40, 'קורא טקסט...');
+      text = await new Promise((res, rej) => {
+        const r = new FileReader();
+        r.onload  = e => res(e.target.result);
+        r.onerror = rej;
+        r.readAsText(file, 'UTF-8');
+      });
+      setProgress(90, 'מנתח...');
+    }
+
+    setProgress(95, 'מוצא מידות...');
+
+    // Show extracted text
+    const panel   = document.getElementById('extractedPanel');
+    const details = document.getElementById('extractedDetails');
+    panel.textContent = text.slice(0, 2000) + (text.length > 2000 ? '\n...' : '');
+    details.hidden = false;
+
+    // Parse & auto-fill
+    const dims  = parseDimensions(text);
+    const filled = dims.length ? autoFill(dims) : 0;
+    if (filled > 0) calculate();
+
+    setProgress(100, 'הושלם');
+    setTimeout(() => {
+      hideProgress();
+      setBadge(file.name, '✓ נסרק בהצלחה');
+      if (filled > 0) {
+        showAlert(`✓ נמצאו ${dims.length} מידות — ${filled} שדות מולאו אוטומטית`, 'success');
+      } else {
+        showAlert('הקובץ נקרא אך לא נמצאו מידות — עדכן את הערכים ידנית', 'info');
+      }
+    }, 500);
+
+  } catch (err) {
+    hideProgress();
+    setBadge(file.name, '✗ שגיאה בקריאה');
+    showAlert('שגיאה: ' + (err.message || 'לא ניתן לקרוא את הקובץ'), 'error');
+    console.error(err);
+  }
+}
+
+/* ── Init ────────────────────────────────────────────────── */
+calculate();
+</script>
+</body>
+</html>
