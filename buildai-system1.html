@@ -14,8 +14,6 @@
     --blue:        #378ADD;
     --blue-light:  #E6F1FB;
     --blue-dark:   #1A4D8A;
-    --amber:       #BA7517;
-    --amber-light: #FAEEDA;
     --green:       #639922;
     --green-light: #EAF3DE;
     --green-dark:  #3A5A10;
@@ -42,244 +40,201 @@
 
   .container { max-width: 1100px; margin: 0 auto; }
 
-  /* ── HERO ─────────────────────────────────────────────────────────── */
   .hero { text-align: center; margin-bottom: 2.5rem; }
   .hero h1 { font-size: 32px; font-weight: 800; color: var(--teal); margin-bottom: 6px; letter-spacing: -.5px; }
   .hero p { font-size: 14px; color: var(--muted); }
 
-  /* ── ALERTS ───────────────────────────────────────────────────────── */
+  /* ALERTS */
   .alert {
-    display: none;
-    padding: 12px 14px;
-    border-radius: 8px;
-    margin-bottom: 1rem;
-    font-size: 13px;
-    border-right: 4px solid;
+    display: none; padding: 12px 14px; border-radius: 8px;
+    margin-bottom: 1rem; font-size: 13px; border-right: 4px solid;
     animation: slideIn .3s ease;
   }
   @keyframes slideIn { from { transform: translateX(16px); opacity: 0; } to { transform: none; opacity: 1; } }
-  .alert.show   { display: block; }
-  .alert.success{ background: var(--green-light);  color: var(--green-dark); border-color: var(--green); }
-  .alert.error  { background: var(--red-light);    color: #791F1F;           border-color: var(--red);   }
-  .alert.info   { background: var(--blue-light);   color: var(--blue-dark);  border-color: var(--blue);  }
+  .alert.show    { display: block; }
+  .alert.success { background: var(--green-light); color: var(--green-dark); border-color: var(--green); }
+  .alert.error   { background: var(--red-light);   color: #791F1F;           border-color: var(--red);   }
+  .alert.info    { background: var(--blue-light);  color: var(--blue-dark);  border-color: var(--blue);  }
 
-  /* ── DROPZONE ─────────────────────────────────────────────────────── */
+  /* DROPZONE */
   .dropzone {
-    border: 3px dashed var(--teal);
-    background: var(--teal-light);
-    border-radius: var(--radius);
-    padding: 2.5rem;
-    text-align: center;
-    margin-bottom: 1.5rem;
-    cursor: pointer;
-    transition: all .25s;
-    position: relative;
+    border: 3px dashed var(--teal); background: var(--teal-light);
+    border-radius: var(--radius); padding: 2.5rem; text-align: center;
+    margin-bottom: 1.5rem; cursor: pointer; transition: all .25s; position: relative;
   }
-  .dropzone:hover, .dropzone.dragging {
-    border-color: var(--teal-dark);
-    background: rgba(29,158,117,.18);
-    transform: translateY(-2px);
-  }
+  .dropzone:hover  { border-color: var(--teal-dark); background: rgba(29,158,117,.18); transform: translateY(-2px); }
   .dropzone.dragging { border-color: var(--blue); background: var(--blue-light); }
+  .dropzone.has-file { cursor: default; }
+  .dropzone.has-file:hover { transform: none; }
 
-  .dz-icon   { font-size: 48px; margin-bottom: 10px; pointer-events: none; }
-  .dz-title  { font-size: 16px; font-weight: 700; color: var(--teal-dark); margin-bottom: 4px; }
-  .dz-sub    { font-size: 12px; color: var(--muted); margin-bottom: 14px; }
-  .dz-types  { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
-  .dz-type   {
-    font-size: 11px; font-weight: 600;
-    background: white; border: 1px solid var(--teal);
-    color: var(--teal-dark); border-radius: 99px;
-    padding: 3px 10px;
+  .dz-icon  { font-size: 48px; margin-bottom: 10px; }
+  .dz-title { font-size: 16px; font-weight: 700; color: var(--teal-dark); margin-bottom: 4px; }
+  .dz-sub   { font-size: 12px; color: var(--muted); margin-bottom: 14px; }
+  .dz-types { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
+  .dz-type  {
+    font-size: 11px; font-weight: 600; background: white;
+    border: 1px solid var(--teal); color: var(--teal-dark);
+    border-radius: 99px; padding: 3px 10px;
   }
 
-  /* image preview inside dropzone */
   .dz-preview {
-    display: none;
-    max-height: 160px;
-    border-radius: 8px;
-    margin-top: 12px;
-    object-fit: contain;
-    border: 2px solid var(--teal);
+    display: none; max-height: 160px; border-radius: 8px;
+    margin-bottom: 10px; object-fit: contain; border: 2px solid var(--teal);
   }
 
   /* progress */
   .progress-wrap { display: none; margin-top: 14px; }
   .progress-wrap.active { display: block; }
-  .progress-bar  {
-    width: 100%; height: 8px;
-    background: rgba(0,0,0,.1);
-    border-radius: 99px; overflow: hidden;
-    margin-bottom: 5px;
-  }
-  .progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--teal), var(--blue));
-    width: 0%; transition: width .25s ease;
-  }
+  .progress-bar  { width: 100%; height: 8px; background: rgba(0,0,0,.1); border-radius: 99px; overflow: hidden; margin-bottom: 5px; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, var(--teal), var(--blue)); width: 0%; transition: width .25s ease; }
   .progress-text { font-size: 12px; color: var(--muted); font-weight: 500; }
 
-  /* file info badge */
+  /* file badge */
   .file-badge {
-    display: none;
-    align-items: center; gap: 10px;
-    background: var(--blue-light);
-    border: 1px solid var(--blue);
-    padding: 10px 14px; border-radius: 8px;
-    margin-bottom: 1.5rem; font-size: 13px;
+    display: none; align-items: center; gap: 10px;
+    background: var(--blue-light); border: 1px solid var(--blue);
+    padding: 10px 14px; border-radius: 8px; margin-bottom: 1.5rem; font-size: 13px;
   }
   .file-badge.show { display: flex; }
-  .file-badge-icon { font-size: 22px; }
-  .file-badge-name { font-weight: 700; color: var(--blue-dark); }
+  .file-badge-icon   { font-size: 22px; flex-shrink: 0; }
+  .file-badge-info   { flex: 1; }
+  .file-badge-name   { font-weight: 700; color: var(--blue-dark); }
   .file-badge-status { font-size: 12px; color: var(--muted); }
+  .file-remove-btn {
+    background: var(--red-light); color: var(--red); border: 1px solid var(--red);
+    border-radius: 6px; padding: 4px 10px; font-size: 12px; font-weight: 700;
+    cursor: pointer; white-space: nowrap; flex-shrink: 0; transition: background .15s;
+  }
+  .file-remove-btn:hover { background: var(--red); color: white; }
 
-  /* extracted text panel */
+  /* extracted text */
   .extracted-panel {
-    display: none;
-    background: #fafafa;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 12px;
-    margin-bottom: 1.5rem;
-    font-size: 12px;
-    color: var(--muted);
-    max-height: 120px;
-    overflow-y: auto;
-    white-space: pre-wrap;
+    background: #fafafa; border: 1px solid var(--border); border-radius: 8px;
+    padding: 12px; font-size: 12px; color: var(--muted);
+    max-height: 120px; overflow-y: auto; white-space: pre-wrap;
     direction: ltr; text-align: left;
   }
-  .extracted-panel.show { display: block; }
 
-  /* ── SECTION TITLE ─────────────────────────────────────────────────── */
+  /* section title */
   .section-title {
-    font-size: 11px; font-weight: 700;
-    color: var(--muted); text-transform: uppercase;
-    letter-spacing: .07em; margin: 2rem 0 .8rem;
+    font-size: 11px; font-weight: 700; color: var(--muted);
+    text-transform: uppercase; letter-spacing: .07em; margin: 2rem 0 .8rem;
   }
 
-  /* ── PROJECT GRID ─────────────────────────────────────────────────── */
+  /* project grid */
   .project-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
     gap: 8px; margin-bottom: 2rem;
   }
   .proj-btn {
-    padding: 10px 8px;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    cursor: pointer; font-size: 12px; font-weight: 600;
-    color: var(--muted); text-align: center; transition: all .18s;
-    line-height: 1.4;
+    padding: 10px 8px; background: var(--card); border: 1px solid var(--border);
+    border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: 600;
+    color: var(--muted); text-align: center; transition: all .18s; line-height: 1.4;
   }
-  .proj-btn:hover { border-color: var(--teal); background: var(--teal-light); }
+  .proj-btn:hover  { border-color: var(--teal); background: var(--teal-light); }
   .proj-btn.active { background: var(--teal); color: white; border-color: var(--teal); }
 
-  /* ── MAIN GRID ────────────────────────────────────────────────────── */
+  /* main grid */
   .main-grid {
-    display: grid;
-    grid-template-columns: 1fr 1.4fr;
-    gap: 1.5rem; margin-bottom: 2rem;
-    align-items: start;
+    display: grid; grid-template-columns: 1fr 1.4fr;
+    gap: 1.5rem; margin-bottom: 2rem; align-items: start;
   }
 
-  /* ── CARDS ────────────────────────────────────────────────────────── */
-  .card {
-    background: var(--card);
-    border-radius: var(--radius);
-    padding: 1.5rem;
-    border: 1px solid var(--border);
-  }
-  .card-title {
-    font-size: 14px; font-weight: 700;
-    margin-bottom: 1rem;
-    display: flex; align-items: center; gap: 8px;
-  }
+  /* cards */
+  .card { background: var(--card); border-radius: var(--radius); padding: 1.5rem; border: 1px solid var(--border); }
+  .card-title { font-size: 14px; font-weight: 700; margin-bottom: 1rem; display: flex; align-items: center; gap: 8px; }
 
-  /* ── INPUTS ───────────────────────────────────────────────────────── */
+  /* inputs */
   .input-block { display: none; }
   .input-block.active { display: block; }
   .input-group { margin-bottom: 12px; }
-  .input-group label {
-    display: block; font-size: 12px;
-    color: var(--muted); margin-bottom: 4px; font-weight: 500;
-  }
+  .input-group label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 4px; font-weight: 500; }
   .input-group input,
   .input-group select {
-    width: 100%; padding: 9px 11px;
-    border-radius: 7px; border: 1px solid var(--border);
+    width: 100%; padding: 9px 11px; border-radius: 7px; border: 1px solid var(--border);
     font-size: 13px; background: white; font-family: inherit;
     transition: border-color .15s, background .15s;
   }
   .input-group input:focus,
-  .input-group select:focus {
-    outline: none;
-    border-color: var(--teal);
-    background: var(--teal-light);
-  }
+  .input-group select:focus { outline: none; border-color: var(--teal); background: var(--teal-light); }
   input::-webkit-outer-spin-button,
   input::-webkit-inner-spin-button { -webkit-appearance: none; }
   input[type=number] { -moz-appearance: textfield; }
 
-  /* ── TABLE ────────────────────────────────────────────────────────── */
+  /* table */
   .table-wrap { overflow-x: auto; }
-  .materials-table {
-    width: 100%; border-collapse: collapse; font-size: 12.5px;
-  }
+  .materials-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
   .materials-table th {
-    background: #f1f0ea; color: var(--text);
-    padding: 10px 11px; text-align: right;
-    font-weight: 700; border-bottom: 2px solid var(--border);
-    white-space: nowrap;
+    background: #f1f0ea; color: var(--text); padding: 10px 11px;
+    text-align: right; font-weight: 700; border-bottom: 2px solid var(--border); white-space: nowrap;
   }
-  .materials-table td {
-    padding: 9px 11px; border-bottom: 1px solid var(--border);
-    text-align: right;
-  }
+  .materials-table td { padding: 7px 11px; border-bottom: 1px solid var(--border); text-align: right; }
   .materials-table tr:hover td { background: rgba(29,158,117,.04); }
   .materials-table .cat-row td {
-    background: var(--teal-light);
-    font-weight: 700; color: var(--teal-dark);
+    background: var(--teal-light); font-weight: 700; color: var(--teal-dark);
     font-size: 11px; text-transform: uppercase; letter-spacing: .04em;
   }
   .materials-table .total-row td {
-    background: var(--green-light);
-    font-weight: 700; color: var(--green-dark);
-    border-top: 2px solid var(--green);
-    font-size: 13px;
+    background: var(--green-light); font-weight: 700; color: var(--green-dark);
+    border-top: 2px solid var(--green); font-size: 13px;
   }
-  .screw-mark { color: var(--teal); font-size: 13px; }
+  .screw-mark { color: var(--teal); }
 
-  /* ── SUMMARY ──────────────────────────────────────────────────────── */
+  /* editable qty input in table */
+  .qty-edit {
+    width: 70px; padding: 4px 6px; border-radius: 5px;
+    border: 1px solid var(--border); font-size: 12px; font-family: inherit;
+    text-align: center; background: white;
+  }
+  .qty-edit:focus { outline: none; border-color: var(--teal); background: var(--teal-light); }
+  .qty-edit::-webkit-outer-spin-button,
+  .qty-edit::-webkit-inner-spin-button { -webkit-appearance: none; }
+  .qty-edit { -moz-appearance: textfield; }
+
+  /* summary */
   .summary-box {
     background: linear-gradient(135deg, var(--teal-light), var(--blue-light));
-    border-radius: var(--radius);
-    padding: 1.25rem 1.5rem;
-    margin-top: 1rem;
-    border-right: 4px solid var(--teal);
+    border-radius: var(--radius); padding: 1.25rem 1.5rem;
+    margin-top: 1rem; border-right: 4px solid var(--teal);
   }
-  .sum-row {
-    display: flex; justify-content: space-between;
-    padding: 7px 0; font-size: 13px;
-    border-bottom: 1px solid rgba(0,0,0,.08);
-  }
+  .sum-row { display: flex; justify-content: space-between; padding: 7px 0; font-size: 13px; border-bottom: 1px solid rgba(0,0,0,.08); }
   .sum-row:last-child { border-bottom: none; }
-  .sum-row.total {
-    font-size: 17px; font-weight: 800;
-    color: var(--teal-dark); margin-top: 8px;
-    padding-top: 12px;
-  }
+  .sum-row.total { font-size: 17px; font-weight: 800; color: var(--teal-dark); margin-top: 8px; padding-top: 12px; }
 
-  /* ── RESPONSIVE ───────────────────────────────────────────────────── */
+  /* export toolbar */
+  .export-toolbar {
+    display: flex; gap: 10px; flex-wrap: wrap; margin-top: 1rem;
+  }
+  .export-btn {
+    flex: 1; min-width: 100px; padding: 10px 12px; border-radius: 8px; border: none;
+    font-size: 13px; font-weight: 700; cursor: pointer; transition: opacity .15s;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .export-btn:hover { opacity: .85; }
+  .btn-wa    { background: #25D366; color: white; }
+  .btn-print { background: #475569; color: white; }
+  .btn-csv   { background: var(--green); color: white; }
+
+  /* responsive */
   @media (max-width: 800px) {
     .main-grid { grid-template-columns: 1fr; }
     .project-grid { grid-template-columns: repeat(2, 1fr); }
     .hero h1 { font-size: 24px; }
+    .export-toolbar { flex-direction: column; }
+  }
+
+  /* print */
+  @media print {
+    body { background: white; padding: 1rem; }
+    .dropzone, .file-badge, details, .project-grid, .section-title,
+    .export-toolbar, .alert { display: none !important; }
+    .main-grid { grid-template-columns: 1fr 1.6fr; }
+    .card { box-shadow: none; border: 1px solid #ccc; }
+    .qty-edit { border: none; background: transparent; }
   }
 </style>
 </head>
 <body>
-
 <div class="container">
 
   <div class="hero">
@@ -287,14 +242,13 @@
     <p>מחשבון חומרים לקבלן · 10 סוגי פרויקטים · קריאת PDF / Word / תמונה</p>
   </div>
 
-  <!-- ALERTS -->
   <div class="alert success" id="aSuccess"></div>
   <div class="alert error"   id="aError"></div>
   <div class="alert info"    id="aInfo"></div>
 
   <!-- DROPZONE -->
   <div class="dropzone" id="dropzone">
-    <img class="dz-preview" id="dzPreview" alt="תצוגה מקדימה">
+    <img class="dz-preview" id="dzPreview" alt="">
     <div id="dzContent">
       <div class="dz-icon">📄</div>
       <div class="dz-title">העלה תוכנית בנייה או שרטוט</div>
@@ -314,24 +268,24 @@
       accept=".pdf,.doc,.docx,.txt,.csv,.jpg,.jpeg,.png,.webp,.bmp">
   </div>
 
-  <!-- FILE BADGE -->
+  <!-- FILE BADGE (with remove button) -->
   <div class="file-badge" id="fileBadge">
     <span class="file-badge-icon" id="badgeIcon">📄</span>
-    <div>
-      <div class="file-badge-name" id="badgeName"></div>
+    <div class="file-badge-info">
+      <div class="file-badge-name"   id="badgeName"></div>
       <div class="file-badge-status" id="badgeStatus"></div>
     </div>
+    <button class="file-remove-btn" onclick="resetFile()">✕ הסר קובץ</button>
   </div>
 
-  <!-- EXTRACTED TEXT (collapsed) -->
-  <details style="margin-bottom:1.5rem;" id="extractedDetails" hidden>
+  <!-- EXTRACTED TEXT -->
+  <details id="extractedDetails" style="margin-bottom:1.5rem;" hidden>
     <summary style="font-size:12px;color:var(--muted);cursor:pointer;padding:6px 0;">
-      📃 טקסט שנקרא מהקובץ (לחץ להרחבה)
+      📃 טקסט שנקרא מהקובץ (לחץ לצפייה)
     </summary>
-    <div class="extracted-panel show" id="extractedPanel"></div>
+    <div class="extracted-panel" id="extractedPanel"></div>
   </details>
 
-  <!-- PROJECT SELECTOR -->
   <div class="section-title">בחר סוג פרויקט</div>
   <div class="project-grid">
     <button class="proj-btn active" data-proj="drywall"      onclick="switchProject(this)">🧱 גבס פנים</button>
@@ -346,10 +300,9 @@
     <button class="proj-btn"        data-proj="paint"        onclick="switchProject(this)">🎨 צבע וגימור</button>
   </div>
 
-  <!-- MAIN GRID -->
   <div class="main-grid">
 
-    <!-- LEFT: INPUTS -->
+    <!-- INPUTS -->
     <div class="card">
       <div class="card-title">⚙️ פרמטרים לחישוב</div>
 
@@ -402,9 +355,9 @@
           <input type="number" value="40" min="0" oninput="calculate()"></div>
         <div class="input-group"><label>גודל אריח</label>
           <select onchange="calculate()">
-            <option value="0.36">60×60 ס"מ (0.36 מ"ר)</option>
-            <option value="0.64">80×80 ס"מ (0.64 מ"ר)</option>
-            <option value="0.72">120×60 ס"מ (0.72 מ"ר)</option>
+            <option value="0.36">60×60 ס"מ</option>
+            <option value="0.64">80×80 ס"מ</option>
+            <option value="0.72">120×60 ס"מ</option>
           </select>
         </div>
       </div>
@@ -440,47 +393,58 @@
       </div>
     </div>
 
-    <!-- RIGHT: TABLE + SUMMARY -->
+    <!-- TABLE + SUMMARY -->
     <div class="card" style="border:2px solid var(--teal);">
-      <div class="card-title" style="color:var(--teal);">📋 רשימת חומרים מפורטת</div>
+      <div class="card-title" style="color:var(--teal);">📋 רשימת חומרים — ניתן לעריכה ידנית</div>
       <div class="table-wrap">
         <table class="materials-table">
           <thead>
             <tr>
-              <th style="width:55%">חומר / ברגים ספציפיים</th>
-              <th>כמות</th>
-              <th>יח'</th>
-              <th>מחיר</th>
+              <th style="width:50%">חומר</th>
+              <th style="width:16%">כמות</th>
+              <th style="width:10%">יח'</th>
+              <th style="width:14%">מחיר</th>
             </tr>
           </thead>
           <tbody id="tableBody"></tbody>
         </table>
       </div>
+
       <div class="summary-box">
         <div class="sum-row"><span>פריטים ייחודיים</span><span id="sumItems">0</span></div>
-        <div class="sum-row"><span>שטח / כמות בסיס</span><span id="sumBase">—</span></div>
-        <div class="sum-row total"><span>סה"כ תקציב מוערך</span><span id="sumTotal">₪0</span></div>
+        <div class="sum-row"><span>שטח / בסיס חישוב</span><span id="sumBase">—</span></div>
+        <div class="sum-row total"><span>💰 סה"כ תקציב מוערך</span><span id="sumTotal">₪0</span></div>
+      </div>
+
+      <!-- EXPORT TOOLBAR -->
+      <div class="export-toolbar">
+        <button class="export-btn btn-wa"    onclick="exportWhatsApp()">💬 שלח בווצאפ</button>
+        <button class="export-btn btn-print" onclick="window.print()">🖨️ הדפס / PDF</button>
+        <button class="export-btn btn-csv"   onclick="exportCSV()">📊 ייצא Excel</button>
       </div>
     </div>
 
-  </div><!-- /main-grid -->
-
-</div><!-- /container -->
+  </div>
+</div>
 
 <script>
-/* ═══════════════════════════════════════════════════════════
-   PDF.JS SETUP
-════════════════════════════════════════════════════════════ */
+/* ══════════════════════════════════════════════
+   PDF.JS
+══════════════════════════════════════════════ */
 if (typeof pdfjsLib !== 'undefined') {
   pdfjsLib.GlobalWorkerOptions.workerSrc =
     'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 }
 
-/* ═══════════════════════════════════════════════════════════
-   CALCULATION DATA
-════════════════════════════════════════════════════════════ */
+/* ══════════════════════════════════════════════
+   STATE
+══════════════════════════════════════════════ */
 let currentProject = 'drywall';
+let tableData = []; // {cat?} | {name, qty, price, unit, screw?}
 
+/* ══════════════════════════════════════════════
+   INPUT HELPERS
+══════════════════════════════════════════════ */
 function v(blockId, idx) {
   const els = document.querySelectorAll(`#inputs-${blockId} input[type="number"]`);
   return parseFloat(els[idx]?.value) || 0;
@@ -490,33 +454,29 @@ function sel(blockId, idx) {
   return els[idx]?.value || '';
 }
 
+/* ══════════════════════════════════════════════
+   PROJECT DEFINITIONS
+══════════════════════════════════════════════ */
 const PROJECTS = {
 
   drywall: {
     label: 'גבס פנים',
     calc() {
-      const len   = v('drywall', 0);
-      const h     = v('drywall', 1);
-      const sides = v('drywall', 2);
-      const area  = len * h * sides;
-      const boards       = Math.ceil(area / 2.88);
-      const profiles     = Math.ceil(len * 2 + h * 2);
-      const boardScrews  = Math.ceil(boards * 40);
-      const metalScrews  = Math.ceil(profiles * 3);
-      const puttyKg      = Math.ceil(area * 1.5);
-      const paintL       = Math.ceil(area / 15);
+      const len = v('drywall', 0), h = v('drywall', 1), sides = v('drywall', 2);
+      const area = len * h * sides;
+      const boards = Math.ceil(area / 2.88), profiles = Math.ceil(len * 2 + h * 2);
       return {
         base: `${area.toFixed(1)} מ"ר קיר`,
         rows: [
           { cat: 'מבנה וקשיחות' },
-          { name: 'לוחות גבס 240×120 סטנדרטי',     qty: boards,      unit: 'יח\'', price: 48 },
-          { name: 'פרופילי מסגרת C + מסלול U',      qty: profiles,    unit: 'מ\'',  price: 22 },
+          { name: 'לוחות גבס 240×120 סטנדרט',           qty: boards,              unit: "יח'",  price: 48 },
+          { name: 'פרופיל מסגרת C + מסלול U',            qty: profiles,            unit: "מ'",   price: 22 },
           { cat: 'ברגים וקיבוע' },
-          { name: '🔩 בורג גבס קדח 25 מ"מ TN',      qty: boardScrews, unit: 'יח\'', price: 0.12, screw: true },
-          { name: '🔩 בורג פח–פח ראש פטרייה 13 מ"מ',qty: metalScrews, unit: 'יח\'', price: 0.15, screw: true },
+          { name: '🔩 בורג גבס קדח 25 מ"מ TN',           qty: Math.ceil(boards*40),unit: "יח'",  price: 0.12, screw: true },
+          { name: '🔩 בורג פח–פח ראש פטרייה 13 מ"מ',     qty: Math.ceil(profiles*3),unit:"יח'", price: 0.15, screw: true },
           { cat: 'גימור' },
-          { name: 'שפכטל אקרילי מוכן',               qty: puttyKg,    unit: 'ק"ג', price: 7 },
-          { name: 'צבע סופרקריל מט',                  qty: paintL,     unit: 'ליטר',price: 35 },
+          { name: 'שפכטל אקרילי מוכן',                   qty: Math.ceil(area*1.5), unit: 'ק"ג', price: 7 },
+          { name: 'צבע סופרקריל מט',                      qty: Math.ceil(area/15),  unit: 'ליטר',price: 35 },
         ]
       };
     }
@@ -525,22 +485,16 @@ const PROJECTS = {
   grass: {
     label: 'דשא סינטטי',
     calc() {
-      const len  = v('grass', 0);
-      const w    = v('grass', 1);
-      const area = len * w;
-      const grassM2 = Math.ceil(area * 1.05);
-      const subTon  = Math.ceil(area * 0.08 * 10) / 10;
-      const pins    = Math.ceil(area * 4);
-      const glueL   = Math.ceil(area * 0.2);
+      const len = v('grass',0), w = v('grass',1), area = len*w;
       return {
         base: `${area.toFixed(1)} מ"ר`,
         rows: [
           { cat: 'חומרי בסיס' },
-          { name: 'דשא סינטטי 42 מ"מ',               qty: grassM2, unit: 'מ"ר',  price: 65 },
-          { name: 'מצע שומשום (כריסטוביה)',             qty: subTon,  unit: 'טון',  price: 120 },
+          { name: 'דשא סינטטי 42 מ"מ',                   qty: Math.ceil(area*1.05),unit: 'מ"ר', price: 65 },
+          { name: 'מצע שומשום',                           qty: Math.ceil(area*0.08*10)/10, unit:'טון', price: 120 },
           { cat: 'קיבוע' },
-          { name: '🔩 מסמרי מתכת מגולוון 20 ס"מ',     qty: pins,    unit: 'יח\'', price: 1.5, screw: true },
-          { name: 'דבק פוליאוריתן דו-רכיבי',           qty: glueL,   unit: 'ליטר', price: 35 },
+          { name: '🔩 מסמרי מתכת מגולוון 20 ס"מ',        qty: Math.ceil(area*4),   unit: "יח'", price: 1.5, screw: true },
+          { name: 'דבק פוליאוריתן דו-רכיבי',              qty: Math.ceil(area*0.2), unit: 'ליטר',price: 35 },
         ]
       };
     }
@@ -549,24 +503,25 @@ const PROJECTS = {
   pergola_wood: {
     label: 'פרגולה עץ',
     calc() {
-      const w    = v('pergola_wood', 0);
-      const l    = v('pergola_wood', 1);
+      const w = v('pergola_wood',0), l = v('pergola_wood',1);
       const area = w * l;
-      const beams        = Math.ceil((w * 2 + l * 2));
-      const torxScrews   = Math.ceil(area * 8);
-      const conusScrews  = 32;
-      const jumboAnchors = 12;
+      const perimeterM = (w*2 + l*2);
+      const crossBeams = Math.ceil(w / 0.6) * Math.ceil(l) + Math.ceil(l / 0.6) * Math.ceil(w);
+      const torx = Math.ceil(area * 8);
       return {
-        base: `${area.toFixed(1)} מ"ר`,
+        base: `${w}×${l} מ' (${area.toFixed(1)} מ"ר)`,
         rows: [
           { cat: 'עץ ומבנה' },
-          { name: 'עמודי עץ גושני 15×15 ס"מ',        qty: 4,            unit: 'יח\'', price: 180 },
-          { name: 'קורות עץ אורן לחי 10×10',          qty: beams,        unit: 'מ\'',  price: 45 },
-          { name: 'תושבות מתכת מגולוון L',             qty: 4,            unit: 'יח\'', price: 35 },
+          { name: 'עמודי עץ גושני 15×15 ס"מ',            qty: 4,                   unit: "יח'", price: 180 },
+          { name: 'קורות ראשיות עץ 10×10 (היקף)',         qty: Math.ceil(perimeterM*1.1), unit:"מ'",price: 45 },
+          { name: 'קורות צלע 5×10 (רשת גג)',             qty: crossBeams,          unit: "מ'", price: 28 },
+          { name: 'תושבות מתכת מגולוון L',                qty: 4,                   unit: "יח'", price: 35 },
           { cat: 'ברגים וחומרה' },
-          { name: '🔩 בורג עץ טורקס צהוב 6×80',       qty: torxScrews,   unit: 'יח\'', price: 1.2,  screw: true },
-          { name: '🔩 בורג ראש חרוט סיבית 5×50',      qty: conusScrews,  unit: 'יח\'', price: 0.4,  screw: true },
-          { name: '🔩 עוגן ג\'מבו לבטון M10×100',      qty: jumboAnchors, unit: 'יח\'', price: 4.5,  screw: true },
+          { name: '🔩 בורג עץ טורקס צהוב 6×80',          qty: torx,                unit: "יח'", price: 1.2, screw: true },
+          { name: '🔩 בורג ראש חרוט סיבית 5×50',         qty: 32,                  unit: "יח'", price: 0.4, screw: true },
+          { name: "🔩 עוגן ג'מבו לבטון M10×100",          qty: 12,                  unit: "יח'", price: 4.5, screw: true },
+          { cat: 'גימור' },
+          { name: 'שמן עץ חיצוני UV',                    qty: Math.ceil(area*0.15),unit: 'ליטר',price: 38 },
         ]
       };
     }
@@ -575,23 +530,18 @@ const PROJECTS = {
   pergola_iron: {
     label: 'פרגולה ברזל',
     calc() {
-      const w    = v('pergola_iron', 0);
-      const l    = v('pergola_iron', 1);
-      const area = w * l;
-      const ironKg       = Math.ceil(area * 25);
-      const weldingKg    = Math.ceil(ironKg * 0.05);
-      const anchors      = 12;
-      const boltsM12     = 24;
+      const w = v('pergola_iron',0), l = v('pergola_iron',1), area = w*l;
+      const ironKg = Math.ceil(area*25);
       return {
-        base: `${area.toFixed(1)} מ"ר`,
+        base: `${w}×${l} מ' (${area.toFixed(1)} מ"ר)`,
         rows: [
           { cat: 'ברזל ועיבוד' },
-          { name: 'פרופיל RHS 80×40 מגולוון',         qty: ironKg,    unit: 'ק"ג', price: 9 },
-          { name: 'אלקטרודות E6013 לריתוך',            qty: weldingKg, unit: 'ק"ג', price: 12 },
-          { name: 'צבע אנטי-קורוזיה אפוקסי',           qty: Math.ceil(area * 0.1), unit: 'ליטר', price: 42 },
+          { name: 'פרופיל RHS 80×40 מגולוון',             qty: ironKg,              unit: 'ק"ג', price: 9 },
+          { name: 'אלקטרודות E6013 לריתוך',               qty: Math.ceil(ironKg*0.05),unit:'ק"ג', price: 12 },
+          { name: 'צבע אנטי-קורוזיה אפוקסי',              qty: Math.ceil(area*0.1), unit: 'ליטר',price: 42 },
           { cat: 'קיבוע לבטון' },
-          { name: '🔩 עוגן כימי קרטריג HIT-HY M16',   qty: anchors,   unit: 'יח\'', price: 22, screw: true },
-          { name: '🔩 בורג מוט שקוע M12×120',          qty: boltsM12,  unit: 'יח\'', price: 8,  screw: true },
+          { name: '🔩 עוגן כימי קרטריג HIT-HY M16',      qty: 12,                  unit: "יח'", price: 22, screw: true },
+          { name: '🔩 בורג מוט שקוע M12×120',             qty: 24,                  unit: "יח'", price: 8,  screw: true },
         ]
       };
     }
@@ -600,22 +550,19 @@ const PROJECTS = {
   construction: {
     label: 'בנייה קשה',
     calc() {
-      const area    = v('construction', 0);
-      const thickCm = v('construction', 1);
-      const vol     = Math.ceil(area * thickCm / 100 * 1.05 * 10) / 10;
-      const meshPcs = Math.ceil(area / 12);
-      const woodM   = Math.ceil(area * 0.4);
-      const screws  = Math.ceil(woodM * 4);
+      const area = v('construction',0), thickCm = v('construction',1);
+      const vol = Math.ceil(area*thickCm/100*1.05*10)/10;
+      const meshPcs = Math.ceil(area/12), woodM = Math.ceil(area*0.4);
       return {
         base: `${vol} מ"ק בטון`,
         rows: [
           { cat: 'בטון וזיון' },
-          { name: 'בטון מובא B30 (כולל שאיבה)',        qty: vol,     unit: 'מ"ק', price: 390 },
-          { name: 'רשת ברזל זיון Q335 (Ø8 20/20)',    qty: meshPcs, unit: 'יח\'', price: 240 },
-          { name: 'פלסטיק ריצוף (מפריד)',              qty: Math.ceil(area / 50), unit: 'גלילים', price: 85 },
+          { name: 'בטון מובא B30 (כולל שאיבה)',           qty: vol,                 unit: 'מ"ק', price: 390 },
+          { name: 'רשת ברזל זיון Q335 (Ø8 20/20)',       qty: meshPcs,             unit: "יח'", price: 240 },
+          { name: 'פלסטיק ריצוף מפריד',                   qty: Math.ceil(area/50),  unit: 'גלילים',price:85},
           { cat: 'טפסנות וקיבוע' },
-          { name: 'לוחות עץ 50×100 לטפסנות',           qty: woodM,   unit: 'מ\'',  price: 35 },
-          { name: '🔩 בורג ספירלה + ממסר לטפסנות',    qty: screws,  unit: 'יח\'', price: 0.25, screw: true },
+          { name: 'לוחות עץ 50×100 לטפסנות',              qty: woodM,               unit: "מ'",  price: 35 },
+          { name: '🔩 בורג ספירלה + ממסר לטפסנות',       qty: Math.ceil(woodM*4),  unit: "יח'", price: 0.25,screw:true},
         ]
       };
     }
@@ -624,23 +571,20 @@ const PROJECTS = {
   plumbing: {
     label: 'אינסטלציה',
     calc() {
-      const pts   = v('plumbing', 0);
-      const drain = v('plumbing', 1);
-      const pexM        = pts * 15;
-      const manifolds   = Math.ceil(pts / 5);
-      const clampScrews = Math.ceil(pexM * 2);
+      const pts = v('plumbing',0), drain = v('plumbing',1);
+      const pexM = pts*15;
       return {
         base: `${pts} נקודות מים`,
         rows: [
           { cat: 'צנרת אספקה' },
-          { name: 'צינור פקסגול SP 20 מ"מ',            qty: pexM,        unit: 'מ\'',  price: 6 },
-          { name: 'מוקד חלוקה עם ברזים',                qty: manifolds,   unit: 'יח\'', price: 220 },
-          { name: 'אביזרי חיבור + זווית קיר',           qty: pts,         unit: 'סט',   price: 85 },
+          { name: 'צינור פקסגול SP 20 מ"מ',               qty: pexM,                unit: "מ'",  price: 6 },
+          { name: 'מוקד חלוקה עם ברזים',                   qty: Math.ceil(pts/5),    unit: "יח'", price: 220},
+          { name: 'אביזרי חיבור + זווית קיר',              qty: pts,                 unit: 'סט',  price: 85 },
           { cat: 'ניקוז' },
-          { name: 'צינור ניקוז PVC 110 מ"מ',            qty: drain,       unit: 'מ\'',  price: 18 },
-          { name: 'מפצל / אחיזה PVC',                   qty: Math.ceil(drain / 2), unit: 'יח\'', price: 14 },
+          { name: 'צינור ניקוז PVC 110 מ"מ',               qty: drain,               unit: "מ'",  price: 18 },
+          { name: 'מפצל / אחיזה PVC',                      qty: Math.ceil(drain/2),  unit: "יח'", price: 14 },
           { cat: 'קיבוע' },
-          { name: '🔩 בורג נירוסטה לתפס צנרת M5',      qty: clampScrews, unit: 'יח\'', price: 0.4, screw: true },
+          { name: '🔩 בורג נירוסטה לתפס צנרת M5',         qty: Math.ceil(pexM*2),   unit: "יח'", price: 0.4, screw:true},
         ]
       };
     }
@@ -649,19 +593,16 @@ const PROJECTS = {
   flooring: {
     label: 'ריצוף וחיפוי',
     calc() {
-      const area     = v('flooring', 0);
-      const tileSize = parseFloat(sel('flooring', 0)) || 0.36;
-      const tiles    = Math.ceil(area / tileSize * 1.1);
-      const glue     = Math.ceil(area / 4);
-      const grout    = Math.ceil(area * 0.4);
+      const area = v('flooring',0), tileSize = parseFloat(sel('flooring',0))||0.36;
+      const tiles = Math.ceil(area/tileSize*1.1);
       return {
         base: `${area} מ"ר`,
         rows: [
           { cat: 'חומרי ריצוף' },
-          { name: 'אריחי גרניט פורצלן',                qty: tiles, unit: 'יח\'',  price: 75 },
-          { name: 'דבק קרמיקה שק 25 ק"ג',              qty: glue,  unit: 'שקים',  price: 45 },
-          { name: 'רובה אקרילית לריווח',                qty: grout, unit: 'ק"ג',   price: 14 },
-          { name: 'רצועות פינה PVC',                    qty: Math.ceil(Math.sqrt(area) * 4), unit: 'מ\'', price: 8 },
+          { name: 'אריחי גרניט פורצלן',                   qty: tiles,               unit: "יח'", price: 75 },
+          { name: 'דבק קרמיקה שק 25 ק"ג',                 qty: Math.ceil(area/4),   unit: 'שקים',price: 45 },
+          { name: 'רובה אקרילית לריווח',                   qty: Math.ceil(area*0.4), unit: 'ק"ג', price: 14 },
+          { name: 'רצועות פינה PVC',                       qty: Math.ceil(Math.sqrt(area)*4), unit:"מ'",price:8},
         ]
       };
     }
@@ -670,22 +611,18 @@ const PROJECTS = {
   electricity: {
     label: 'חשמל',
     calc() {
-      const pts      = v('electricity', 0);
-      const cableLen = v('electricity', 1);
-      const conduits = cableLen;
-      const wires    = Math.ceil(conduits * 3);
-      const boxScrews= pts * 2;
+      const pts = v('electricity',0), cableLen = v('electricity',1);
       return {
         base: `${pts} נקודות`,
         rows: [
           { cat: 'צנרת וכבלים' },
-          { name: 'צינור PVC גמיש 3/4 (לקיר)',         qty: conduits,   unit: 'מ\'',  price: 3 },
-          { name: 'כבל נחושת NYY 3×2.5 מ"מ',           qty: wires,      unit: 'מ\'',  price: 14 },
+          { name: 'צינור PVC גמיש 3/4 (לקיר)',            qty: cableLen,            unit: "מ'",  price: 3 },
+          { name: 'כבל נחושת NYY 3×2.5 מ"מ',              qty: Math.ceil(cableLen*3),unit:"מ'", price: 14 },
           { cat: 'ציוד' },
-          { name: 'קופסאות חיבור + נגד לחות',          qty: pts,        unit: 'יח\'', price: 25 },
-          { name: 'שקע שטוח / מפסק מדורגים',           qty: pts,        unit: 'יח\'', price: 35 },
+          { name: 'קופסאות חיבור + נגד לחות',             qty: pts,                 unit: "יח'", price: 25 },
+          { name: 'שקע שטוח / מפסק',                      qty: pts,                 unit: "יח'", price: 35 },
           { cat: 'קיבוע' },
-          { name: '🔩 בורג מכונה קופסה M3.5×25',       qty: boxScrews,  unit: 'יח\'', price: 0.2, screw: true },
+          { name: '🔩 בורג מכונה קופסה M3.5×25',          qty: pts*2,               unit: "יח'", price: 0.2, screw:true},
         ]
       };
     }
@@ -694,21 +631,18 @@ const PROJECTS = {
   insulation: {
     label: 'בידוד',
     calc() {
-      const area  = v('insulation', 0);
-      const type  = sel('insulation', 0);
-      const rolls = Math.ceil(area / 10);
-      const primerKg = Math.ceil(area * 0.3);
+      const area = v('insulation',0), type = sel('insulation',0);
+      const rolls = Math.ceil(area/10);
       const pricePerRoll = type.includes('ביטומן') ? 210 : type.includes('פוליסטירן') ? 90 : 150;
+      const label = type.includes('ביטומן') ? 'יריעה ביטומנית 5 מ"מ SBS' :
+                    type.includes('פוליסטירן') ? 'לוחות פוליסטירן EPS 5 ס"מ' : 'רדיד אלומיניום דו-שכבתי';
       return {
         base: `${area} מ"ר`,
         rows: [
           { cat: 'חומרי בידוד' },
-          { name: type.includes('ביטומן')      ? 'יריעה ביטומנית 5 מ"מ SBS'   :
-                  type.includes('פוליסטירן')   ? 'לוחות פוליסטירן EPS 5 ס"מ'  :
-                                                 'רדיד אלומיניום דו-שכבתי',
-            qty: rolls, unit: 'גלילים', price: pricePerRoll },
-          { name: 'פריימר ביטומני בסיסי',       qty: primerKg, unit: 'ק"ג',   price: 18 },
-          { name: 'חומר אטם נוזלי (פינות)',      qty: Math.ceil(area * 0.05), unit: 'ק"ג', price: 35 },
+          { name: label,                                   qty: rolls,               unit: 'גלילים',price:pricePerRoll},
+          { name: 'פריימר ביטומני',                        qty: Math.ceil(area*0.3), unit: 'ק"ג', price: 18 },
+          { name: 'חומר אטם נוזלי (פינות)',                qty: Math.ceil(area*0.05),unit: 'ק"ג', price: 35 },
         ]
       };
     }
@@ -717,124 +651,194 @@ const PROJECTS = {
   paint: {
     label: 'צבע וגימור',
     calc() {
-      const area   = v('paint', 0);
-      const coats  = parseInt(sel('paint', 0)) || 2;
-      const paintL = Math.ceil(area * 0.12 * coats);
-      const primer = Math.ceil(area * 0.1);
-      const tapeM  = Math.ceil(area * 0.1);
+      const area = v('paint',0), coats = parseInt(sel('paint',0))||2;
       return {
         base: `${area} מ"ר (${coats} שכבות)`,
         rows: [
           { cat: 'צבעים' },
-          { name: 'בסיס (פריימר) אקרילי',              qty: primer,  unit: 'ליטר', price: 22 },
-          { name: 'צבע סופרקריל מט פנים',               qty: paintL,  unit: 'ליטר', price: 16 },
+          { name: 'בסיס (פריימר) אקרילי',                 qty: Math.ceil(area*0.1), unit: 'ליטר',price: 22 },
+          { name: 'צבע סופרקריל מט פנים',                  qty: Math.ceil(area*0.12*coats), unit:'ליטר',price:16},
           { cat: 'חומרי עזר' },
-          { name: 'רשת ומסטיק לסדקים',                  qty: Math.ceil(area * 0.03), unit: 'מ"ר', price: 12 },
-          { name: 'סרט הדבקה פרוגייד 48 מ"מ',           qty: tapeM,   unit: 'מ\'',  price: 8 },
-          { name: 'גלילים + מברשות',                    qty: Math.ceil(area / 40), unit: 'סט', price: 55 },
+          { name: 'רשת ומסטיק לסדקים',                     qty: Math.ceil(area*0.03),unit: 'מ"ר', price: 12 },
+          { name: 'סרט הדבקה פרוגייד 48 מ"מ',              qty: Math.ceil(area*0.1), unit: "מ'",  price: 8 },
+          { name: 'גלילים + מברשות',                       qty: Math.ceil(area/40),  unit: 'סט',  price: 55 },
         ]
       };
     }
   },
 };
 
-/* ═══════════════════════════════════════════════════════════
-   CALCULATE
-════════════════════════════════════════════════════════════ */
+/* ══════════════════════════════════════════════
+   CALCULATE & RENDER TABLE
+══════════════════════════════════════════════ */
 function calculate() {
   const proj = PROJECTS[currentProject];
   if (!proj) return;
   const { base, rows } = proj.calc();
+  tableData = rows;
+  renderTable(base);
+}
 
+function renderTable(base) {
   const tbody = document.getElementById('tableBody');
   tbody.innerHTML = '';
-  let totalPrice = 0;
-  let itemCount  = 0;
+  let total = 0, itemCount = 0;
 
-  rows.forEach(item => {
+  tableData.forEach((item, i) => {
     const tr = tbody.insertRow();
     if (item.cat) {
       tr.className = 'cat-row';
       tr.innerHTML = `<td colspan="4">${item.cat}</td>`;
     } else {
       const lineTotal = Math.round(item.qty * item.price);
-      totalPrice += lineTotal;
+      total += lineTotal;
       itemCount++;
+      const qtyDisplay = typeof item.qty === 'number'
+        ? (item.qty % 1 ? item.qty.toFixed(1) : item.qty)
+        : item.qty;
       tr.innerHTML = `
         <td class="${item.screw ? 'screw-mark' : ''}">${item.name}</td>
-        <td>${typeof item.qty === 'number' ? item.qty.toFixed(item.qty % 1 ? 1 : 0) : item.qty}</td>
+        <td><input class="qty-edit" type="number" value="${qtyDisplay}"
+             data-i="${i}" data-price="${item.price}"
+             oninput="onQtyEdit(this)"></td>
         <td>${item.unit}</td>
-        <td>₪${lineTotal.toLocaleString('he-IL')}</td>`;
+        <td id="lt-${i}">₪${lineTotal.toLocaleString('he-IL')}</td>`;
     }
   });
 
   const tfoot = tbody.insertRow();
   tfoot.className = 'total-row';
-  tfoot.innerHTML = `<td>סה"כ</td><td colspan="2">${itemCount} פריטים</td><td>₪${totalPrice.toLocaleString('he-IL')}</td>`;
+  tfoot.innerHTML = `<td>סה"כ</td><td colspan="2">${itemCount} פריטים</td><td id="grand-total">₪${total.toLocaleString('he-IL')}</td>`;
 
   document.getElementById('sumItems').textContent = itemCount;
-  document.getElementById('sumBase').textContent  = base;
-  document.getElementById('sumTotal').textContent = '₪' + totalPrice.toLocaleString('he-IL');
+  document.getElementById('sumBase').textContent  = base || '—';
+  document.getElementById('sumTotal').textContent = '₪' + total.toLocaleString('he-IL');
 }
 
-/* ═══════════════════════════════════════════════════════════
+/* ══════════════════════════════════════════════
+   EDITABLE QTY
+══════════════════════════════════════════════ */
+function onQtyEdit(input) {
+  const i     = parseInt(input.dataset.i);
+  const price = parseFloat(input.dataset.price);
+  const qty   = parseFloat(input.value) || 0;
+  tableData[i].qty = qty;
+
+  const lineTotal = Math.round(qty * price);
+  const ltCell = document.getElementById(`lt-${i}`);
+  if (ltCell) ltCell.textContent = '₪' + lineTotal.toLocaleString('he-IL');
+
+  let grand = 0;
+  tableData.forEach(r => { if (!r.cat) grand += Math.round(r.qty * r.price); });
+  const gtEl = document.getElementById('grand-total');
+  if (gtEl) gtEl.textContent = '₪' + grand.toLocaleString('he-IL');
+  document.getElementById('sumTotal').textContent = '₪' + grand.toLocaleString('he-IL');
+}
+
+/* ══════════════════════════════════════════════
    SWITCH PROJECT
-════════════════════════════════════════════════════════════ */
+══════════════════════════════════════════════ */
 function switchProject(btn) {
-  const projId = btn.dataset.proj;
-  currentProject = projId;
+  currentProject = btn.dataset.proj;
   document.querySelectorAll('.proj-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   document.querySelectorAll('.input-block').forEach(b => b.classList.remove('active'));
-  document.getElementById(`inputs-${projId}`).classList.add('active');
+  document.getElementById(`inputs-${currentProject}`).classList.add('active');
   calculate();
 }
 
-/* ═══════════════════════════════════════════════════════════
+/* ══════════════════════════════════════════════
+   EXPORT
+══════════════════════════════════════════════ */
+function exportWhatsApp() {
+  const proj = PROJECTS[currentProject];
+  let text = `📋 *BuildAI — ${proj.label}*\n`;
+  text += '─────────────────────\n';
+  tableData.forEach(item => {
+    if (item.cat) {
+      text += `\n*${item.cat}*\n`;
+    } else {
+      const qty = typeof item.qty === 'number' ? (item.qty % 1 ? item.qty.toFixed(1) : item.qty) : item.qty;
+      const tot = Math.round(item.qty * item.price);
+      text += `• ${item.name.replace(/🔩\s*/g,'')} — ${qty} ${item.unit} — ₪${tot.toLocaleString('he-IL')}\n`;
+    }
+  });
+  const grand = tableData.filter(r=>!r.cat).reduce((s,r)=>s+Math.round(r.qty*r.price),0);
+  text += `\n─────────────────────\n💰 *סה"כ: ₪${grand.toLocaleString('he-IL')}*\n\nנוצר ע"י BuildAI`;
+  window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank');
+}
+
+function exportCSV() {
+  const proj = PROJECTS[currentProject];
+  let csv = '﻿'; // BOM for Hebrew in Excel
+  csv += `"פרויקט: ${proj.label}"\n`;
+  csv += '"חומר","כמות","יחידה","מחיר יחידה","סה"כ"\n';
+  tableData.forEach(item => {
+    if (!item.cat) {
+      const qty = typeof item.qty === 'number' ? (item.qty % 1 ? item.qty.toFixed(1) : item.qty) : item.qty;
+      const name = item.name.replace(/🔩\s*/g, '');
+      csv += `"${name}","${qty}","${item.unit}","${item.price}","${Math.round(item.qty*item.price)}"\n`;
+    }
+  });
+  const grand = tableData.filter(r=>!r.cat).reduce((s,r)=>s+Math.round(r.qty*r.price),0);
+  csv += `"סה"כ","","","","${grand}"\n`;
+
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = `buildai-${currentProject}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+/* ══════════════════════════════════════════════
    FILE UPLOAD
-════════════════════════════════════════════════════════════ */
+══════════════════════════════════════════════ */
 const dropzone  = document.getElementById('dropzone');
 const fileInput = document.getElementById('fileInput');
 
-dropzone.addEventListener('click', () => fileInput.click());
-
-dropzone.addEventListener('dragover', e => {
-  e.preventDefault();
-  dropzone.classList.add('dragging');
+dropzone.addEventListener('click', () => {
+  if (!dropzone.classList.contains('has-file')) fileInput.click();
 });
+dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.classList.add('dragging'); });
 dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragging'));
 dropzone.addEventListener('drop', e => {
   e.preventDefault();
   dropzone.classList.remove('dragging');
   if (e.dataTransfer.files[0]) processFile(e.dataTransfer.files[0]);
 });
-fileInput.addEventListener('change', e => {
-  if (e.target.files[0]) processFile(e.target.files[0]);
-});
+fileInput.addEventListener('change', e => { if (e.target.files[0]) processFile(e.target.files[0]); });
 
-/* ── File type helpers ──────────────────────────────────── */
 function fileExt(name) { return name.split('.').pop().toLowerCase(); }
 function fileIcon(ext) {
-  return { pdf: '📕', doc: '📘', docx: '📘', txt: '📄', csv: '📊',
-           jpg: '🖼️', jpeg: '🖼️', png: '🖼️', webp: '🖼️', bmp: '🖼️' }[ext] || '📎';
+  return { pdf:'📕', doc:'📘', docx:'📘', txt:'📄', csv:'📊',
+           jpg:'🖼️', jpeg:'🖼️', png:'🖼️', webp:'🖼️', bmp:'🖼️' }[ext] || '📎';
 }
 
-/* ── Progress helpers ───────────────────────────────────── */
-function showProgress() {
-  document.getElementById('progressWrap').classList.add('active');
-  setProgress(0, 'מכין...');
+/* ── Reset / remove file ─────────────────────── */
+function resetFile() {
+  fileInput.value = '';
+  document.getElementById('fileBadge').classList.remove('show');
+  document.getElementById('extractedDetails').hidden = true;
+  document.getElementById('extractedPanel').textContent = '';
+  document.getElementById('dzPreview').style.display = 'none';
+  document.getElementById('dzContent').style.display = '';
+  dropzone.classList.remove('has-file');
+  hideProgress();
 }
+
+/* ── Progress ────────────────────────────────── */
+function showProgress() { document.getElementById('progressWrap').classList.add('active'); setProgress(0,'מכין...'); }
 function setProgress(pct, label) {
   document.getElementById('pFill').style.width = pct + '%';
-  document.getElementById('pText').textContent = label || `${pct}%`;
+  document.getElementById('pText').textContent = label || pct + '%';
 }
-function hideProgress() {
-  document.getElementById('progressWrap').classList.remove('active');
-}
+function hideProgress() { document.getElementById('progressWrap').classList.remove('active'); }
 
-/* ── Alert helper ───────────────────────────────────────── */
+/* ── Alert ───────────────────────────────────── */
 function showAlert(msg, type) {
-  const ids = { success: 'aSuccess', error: 'aError', info: 'aInfo' };
+  const ids = { success:'aSuccess', error:'aError', info:'aInfo' };
   const el  = document.getElementById(ids[type]);
   if (!el) return;
   el.textContent = msg;
@@ -842,30 +846,30 @@ function showAlert(msg, type) {
   setTimeout(() => el.classList.remove('show'), 5000);
 }
 
-/* ── Set file badge ─────────────────────────────────────── */
+/* ── Badge ───────────────────────────────────── */
 function setBadge(name, status) {
-  const ext = fileExt(name);
-  document.getElementById('badgeIcon').textContent   = fileIcon(ext);
+  document.getElementById('badgeIcon').textContent   = fileIcon(fileExt(name));
   document.getElementById('badgeName').textContent   = name;
   document.getElementById('badgeStatus').textContent = status;
   document.getElementById('fileBadge').classList.add('show');
 }
 
-/* ── Show image preview inside dropzone ─────────────────── */
+/* ── Image preview ───────────────────────────── */
 function showImagePreview(file) {
   const img = document.getElementById('dzPreview');
   img.src = URL.createObjectURL(file);
   img.style.display = 'block';
   document.getElementById('dzContent').style.display = 'none';
+  dropzone.classList.add('has-file');
 }
 
-/* ── PDF extraction via PDF.js ──────────────────────────── */
+/* ── PDF extraction ──────────────────────────── */
 async function extractPDF(arrayBuffer) {
   if (typeof pdfjsLib === 'undefined') throw new Error('PDF.js לא נטען');
-  const pdf   = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-  let text    = '';
+  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+  let text  = '';
   for (let i = 1; i <= pdf.numPages; i++) {
-    setProgress(10 + Math.round((i / pdf.numPages) * 75), `קורא עמוד ${i} מתוך ${pdf.numPages}...`);
+    setProgress(10 + Math.round((i / pdf.numPages) * 75), `עמוד ${i} מתוך ${pdf.numPages}...`);
     const page    = await pdf.getPage(i);
     const content = await page.getTextContent();
     text += content.items.map(it => it.str).join(' ') + '\n';
@@ -873,61 +877,66 @@ async function extractPDF(arrayBuffer) {
   return text;
 }
 
-/* ── DOCX extraction via mammoth ────────────────────────── */
+/* ── DOCX extraction ─────────────────────────── */
 async function extractDOCX(arrayBuffer) {
   if (typeof mammoth === 'undefined') throw new Error('mammoth.js לא נטען');
   const result = await mammoth.extractRawText({ arrayBuffer });
   return result.value;
 }
 
-/* ── Hebrew dimension parser ────────────────────────────── */
+/* ── Hebrew dimension parser ─────────────────── */
 function parseDimensions(text) {
-  const nums = [];
+  const nums = new Set();
 
-  // Pattern: "4×5 מטר" / "4x5" / "4 x 5"
-  const multiDim = text.match(/(\d+(?:[.,]\d+)?)\s*[×xX]\s*(\d+(?:[.,]\d+)?)/g) || [];
-  multiDim.forEach(m => {
-    const parts = m.split(/[×xX]/);
-    parts.forEach(p => {
-      const n = parseFloat(p.replace(',', '.'));
-      if (n > 0 && n < 200) nums.push(n);
-    });
-  });
-
-  // Pattern: numbers followed by מ / מטר / מ"ר / ס"מ
-  const unitPat = /(\d+(?:[.,]\d+)?)\s*(?:מ(?:טר|"ר)?|ס"מ|meter|m\b)/gi;
+  // "4×6" / "4 x 6" / "4X6"
+  const crossPat = /(\d+(?:[.,]\d+)?)\s*[×xX]\s*(\d+(?:[.,]\d+)?)/g;
   let m;
-  while ((m = unitPat.exec(text)) !== null) {
-    const n = parseFloat(m[1].replace(',', '.'));
-    if (n > 0 && n < 500) nums.push(n);
+  while ((m = crossPat.exec(text)) !== null) {
+    [m[1], m[2]].forEach(p => {
+      const n = parseFloat(p.replace(',','.'));
+      if (n > 0 && n < 200) nums.add(n);
+    });
   }
 
-  // Deduplicate and sort
-  return [...new Set(nums)].sort((a, b) => a - b).slice(0, 6);
+  // number followed by unit
+  const unitPat = /(\d+(?:[.,]\d+)?)\s*(?:מ(?:טר|"ר)?|ס"מ|m(?:eter)?)\b/gi;
+  while ((m = unitPat.exec(text)) !== null) {
+    const n = parseFloat(m[1].replace(',','.'));
+    if (n > 0 && n < 500) nums.add(n);
+  }
+
+  // "אורך X רוחב Y" / "X מ' על Y מ'"
+  const alPat = /(\d+(?:[.,]\d+)?)\s*(?:מ'|מטר|m)\s*(?:על|×|x|by)\s*(\d+(?:[.,]\d+)?)/gi;
+  while ((m = alPat.exec(text)) !== null) {
+    [m[1], m[2]].forEach(p => {
+      const n = parseFloat(p.replace(',','.'));
+      if (n > 0 && n < 200) nums.add(n);
+    });
+  }
+
+  return [...nums].sort((a,b) => a-b).slice(0, 6);
 }
 
-/* ── Auto-fill first two inputs with found dimensions ────── */
+/* ── Auto-fill inputs ────────────────────────── */
 function autoFill(dims) {
   const block  = document.querySelector(`#inputs-${currentProject}`);
-  const inputs = block?.querySelectorAll('input[type="number"]') || [];
-  let filled   = 0;
+  const inputs = [...(block?.querySelectorAll('input[type="number"]') || [])];
+  let filled = 0;
   dims.forEach(d => {
     if (inputs[filled]) {
       inputs[filled].value = d;
       inputs[filled].style.background = '#fff9c4';
-      setTimeout(() => { inputs[filled].style.background = ''; }, 2000);
+      setTimeout(() => { inputs[filled] && (inputs[filled].style.background = ''); }, 2000);
       filled++;
     }
   });
   return filled;
 }
 
-/* ── Main processFile ────────────────────────────────────── */
+/* ── Main processFile ────────────────────────── */
 async function processFile(file) {
-  const MAX = 20 * 1024 * 1024; // 20 MB
-  if (file.size > MAX) {
-    showAlert('הקובץ גדול מ-20 MB — אנא צמצם את גודל הקובץ', 'error');
-    return;
+  if (file.size > 20 * 1024 * 1024) {
+    showAlert('הקובץ גדול מ-20 MB — אנא הקטן אותו', 'error'); return;
   }
 
   showProgress();
@@ -938,61 +947,66 @@ async function processFile(file) {
 
     if (ext === 'pdf') {
       setProgress(5, 'קורא PDF...');
-      const buf = await file.arrayBuffer();
-      text = await extractPDF(buf);
+      text = await extractPDF(await file.arrayBuffer());
+
+      // scanned PDF detection
+      if (text.trim().length < 80) {
+        hideProgress();
+        setBadge(file.name, '⚠️ PDF סרוק — אין טקסט');
+        showAlert('⚠️ זוהה PDF סרוק — לא ניתן לחלץ מידות אוטומטית. עדכן את השדות ידנית.', 'info');
+        return;
+      }
 
     } else if (ext === 'docx' || ext === 'doc') {
       setProgress(20, 'קורא Word...');
-      const buf = await file.arrayBuffer();
-      text = await extractDOCX(buf);
-      setProgress(90, 'מנתח...');
+      text = await extractDOCX(await file.arrayBuffer());
+      setProgress(85, 'מנתח...');
 
     } else if (['jpg','jpeg','png','webp','bmp'].includes(ext)) {
-      setProgress(80, 'טוען תמונה...');
       showImagePreview(file);
       setProgress(100, 'מוכן');
       setTimeout(() => {
         hideProgress();
         setBadge(file.name, 'תמונה הועלתה');
-        showAlert('תמונה הועלתה ✓ — לחישוב מדויק עדכן את המידות ידנית', 'info');
-      }, 600);
+        dropzone.classList.add('has-file');
+        showAlert('תמונה הועלתה ✓  — עדכן מידות ידנית בשדות משמאל', 'info');
+      }, 500);
       return;
 
     } else {
-      // TXT / CSV / etc.
-      setProgress(40, 'קורא טקסט...');
+      setProgress(30, 'קורא טקסט...');
       text = await new Promise((res, rej) => {
         const r = new FileReader();
-        r.onload  = e => res(e.target.result);
+        r.onload = e => res(e.target.result);
         r.onerror = rej;
         r.readAsText(file, 'UTF-8');
       });
-      setProgress(90, 'מנתח...');
+      setProgress(85, 'מנתח...');
     }
 
-    setProgress(95, 'מוצא מידות...');
+    setProgress(92, 'מוצא מידות...');
 
     // Show extracted text
-    const panel   = document.getElementById('extractedPanel');
-    const details = document.getElementById('extractedDetails');
+    const panel = document.getElementById('extractedPanel');
     panel.textContent = text.slice(0, 2000) + (text.length > 2000 ? '\n...' : '');
-    details.hidden = false;
+    document.getElementById('extractedDetails').hidden = false;
 
-    // Parse & auto-fill
-    const dims  = parseDimensions(text);
+    // Auto-fill
+    const dims   = parseDimensions(text);
     const filled = dims.length ? autoFill(dims) : 0;
     if (filled > 0) calculate();
 
     setProgress(100, 'הושלם');
     setTimeout(() => {
       hideProgress();
+      dropzone.classList.add('has-file');
       setBadge(file.name, '✓ נסרק בהצלחה');
       if (filled > 0) {
         showAlert(`✓ נמצאו ${dims.length} מידות — ${filled} שדות מולאו אוטומטית`, 'success');
       } else {
-        showAlert('הקובץ נקרא אך לא נמצאו מידות — עדכן את הערכים ידנית', 'info');
+        showAlert('הקובץ נקרא אך לא נמצאו מידות — עדכן ידנית', 'info');
       }
-    }, 500);
+    }, 400);
 
   } catch (err) {
     hideProgress();
@@ -1002,7 +1016,7 @@ async function processFile(file) {
   }
 }
 
-/* ── Init ────────────────────────────────────────────────── */
+/* ── Init ────────────────────────────────────── */
 calculate();
 </script>
 </body>
