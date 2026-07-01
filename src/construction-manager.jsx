@@ -136,8 +136,19 @@ export default function App() {
   const [paidMonths, setPaidMonths] = useState({}); // key: workerId_month
   const [partialInput, setPartialInput] = useState({}); // key: workerId_month -> amount string
   const [showPartial, setShowPartial] = useState({}); // key: workerId_month -> bool
-  const [payrollView, setPayrollView] = useState("pending"); // "pending" | "history"
-  const [editPaymentKey, setEditPaymentKey] = useState(null); // key being edited
+  const [payrollView, setPayrollView] = useState("pending");
+  const [calMonth, setCalMonth] = useState(() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+  });
+  const [calEvents, setCalEvents] = useState({}); // key: YYYY-MM-DD -> {workers:[], tasks:[]}
+  const [calEditDay, setCalEditDay] = useState(null);
+  const [calEditData, setCalEditData] = useState({workers:[], tasks:""});
+  const [equipList, setEquipList] = useState([]); // [{id, name, qty, done}]
+  const [equipNew, setEquipNew] = useState({name:"", qty:""}); // "pending" | "history"
+  const [editPaymentKey, setEditPaymentKey] = useState(null);
+  const [invoiceAnalyzing, setInvoiceAnalyzing] = useState(false); // per project
+  const [invoiceResults, setInvoiceResults] = useState({}); // projectId -> [{desc,qty,price}] // key being edited
   const [editPaymentAmt, setEditPaymentAmt] = useState("");
 
   const emptyProj = { name:"", status:"ממתין", progress:0, startDate:"", endDate:"", plannedDays:"", materialCost:"", totalCost:"", projectManager:"", plannedWorkers:"", highlights:"", phases:[], workers:[], expenses:[] };
@@ -166,7 +177,13 @@ export default function App() {
   const loadAll = useCallback(async () => {
     setLoading(true);
     try {
-      const [p, w, r] = await Promise.all([dbGet("projects"), dbGet("workers"), dbGet("reports")]);
+      const [p, w, r, cal, eq] = await Promise.all([dbGet("projects"), dbGet("workers"), dbGet("reports"), dbGet("calendar"), dbGet("equipment")]);
+      // load calendar
+      const calMap = {};
+      cal.forEach(c => { calMap[c.date] = { ...c, _dbid: c._dbid }; });
+      setCalEvents(calMap);
+      // load equipment
+      setEquipList(eq.map(e => ({...e})));
       setProjects(p);
       const realWorkers = w.filter(x => !x._isConfig);
       // load payment records - keep only latest per key
@@ -287,7 +304,7 @@ export default function App() {
   const markPaid = async (workerId, month, amount, partial=false, partialAmt=0) => {
     const key = `${workerId}_${month}`;
     const paidAt = new Date().toLocaleDateString("he-IL");
-    // Add to existing paid amount (don't replace)
+    // Add to existing paid amount - accumulate, do not replace
     const existing = paidMonths[key];
     const prevPaid = existing ? Number(existing.paidAmt||0) : 0;
     const addAmt = partial ? Number(partialAmt) : (amount - prevPaid);
@@ -321,6 +338,85 @@ export default function App() {
     if (!window.confirm(`לדחות את הדיווח של ${rep.workerName} מתאריך ${rep.date}?`)) return;
     await dbDelete("reports", rep._dbid);
     setPendingReports(prev => prev.filter(r => r._dbid !== rep._dbid));
+  };
+
+  const saveCalDay = async (date, data) => {
+    const existing = calEvents[date];
+    const entry = { date, workers: data.workers, tasks: data.tasks };
+    if (existing && existing._dbid) {
+      await dbUpdate("calendar", existing._dbid, entry);
+      setCalEvents(prev => ({...prev, [date]: {...entry, _dbid: existing._dbid}}));
+    } else {
+      const saved = await dbInsert("calendar", {...entry, id: Date.now()});
+      setCalEvents(prev => ({...prev, [date]: saved}));
+    }
+    setCalEditDay(null);
+  };
+
+  const addEquipItem = async () => {
+    if (!equipNew.name.trim()) return;
+    const item = { name: equipNew.name.trim(), qty: equipNew.qty || "1", done: false, id: Date.now() };
+    const saved = await dbInsert("equipment", item);
+    setEquipList(prev => [...prev, saved]);
+    setEquipNew({name:"", qty:""});
+  };
+
+  const toggleEquipDone = async (item) => {
+    const updated = {...item, done: !item.done};
+    await dbUpdate("equipment", item._dbid, updated);
+    setEquipList(prev => prev.map(e => e._dbid===item._dbid ? updated : e));
+  };
+
+  const delEquipItem = async (item) => {
+    await dbDelete("equipment", item._dbid);
+    setEquipList(prev => prev.filter(e => e._dbid!==item._dbid));
+  };
+
+  const analyzeInvoice = async (projectId, imageBase64, mimeType) => {
+    setInvoiceAnalyzing(true);
+    try {
+      const response = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-6",
+          max_tokens: 1000,
+          messages: [{
+            role: "user",
+            content: [
+              { type: "image", source: { type: "base64", media_type: mimeType, data: imageBase64 } },
+              { type: "text", text: "אתה מנתח חשבוניות. חלץ מהחשבונית הזו את כל הפריטים. החזר JSON בלבד (ללא טקסט נוסף) בפורמט: {\"items\":[{\"desc\":\"שם מוצר\",\"qty\":\"כמות\",\"price\":מחיר_מספרי}],\"total\":סה_כ_מספרי}. אם אין מחיר לפריט תן 0. סה\"כ הוא סכום כל הפריטים." }
+            ]
+          }]
+        })
+      });
+      const data = await response.json();
+      const text = data.content?.find(b => b.type==="text")?.text || "{}";
+      const clean = text.replace(/```json|```/g,"").trim();
+      const parsed = JSON.parse(clean);
+
+      // Save to project expenses
+      const proj = projects.find(p => String(p.id)===String(projectId));
+      if (proj && parsed.items) {
+        const newExpenses = [
+          ...(proj.expenses||[]),
+          ...parsed.items.map(item => ({
+            id: Date.now() + Math.random(),
+            desc: `${item.desc}${item.qty ? " × "+item.qty : ""}`,
+            amount: item.price||0,
+            date: todayStr(),
+            fromInvoice: true,
+            qty: item.qty||""
+          }))
+        ];
+        await updateProjField(proj, { expenses: newExpenses });
+      }
+
+      setInvoiceResults(prev => ({...prev, [projectId]: parsed.items||[]}));
+    } catch(e) {
+      alert("שגיאה בניתוח: " + e.message);
+    }
+    setInvoiceAnalyzing(false);
   };
 
   const saveAdminCode = async () => {
@@ -494,6 +590,8 @@ export default function App() {
     { key:"projects", label:"פרויקטים", emoji:"🏗️" },
     { key:"workers",  label:"עובדים",   emoji:"👷" },
     { key:"payroll",  label:"שכר",      emoji:"💰" },
+    { key:"calendar", label:"יומן",     emoji:"📅" },
+    { key:"equipment",label:"ציוד",     emoji:"🛒" },
     { key:"settings", label:"הגדרות",   emoji:"⚙️" },
   ];
 
@@ -840,6 +938,96 @@ export default function App() {
                 )}
               </div>
 
+              {/* INVOICES */}
+              <div style={{ background:"#fff", borderRadius:14, padding:"16px 20px", marginBottom:14, boxShadow:"0 2px 8px rgba(0,0,0,0.07)" }}>
+                <h3 style={{ margin:"0 0 13px", fontSize:15, fontWeight:700 }}>📸 חשבוניות</h3>
+                <p style={{ margin:"0 0 12px", fontSize:13, color:"#777" }}>העלה תמונת חשבונית — המערכת תחלץ פריטים ומחירים אוטומטית</p>
+
+                <label style={{ display:"block", cursor:"pointer" }}>
+                  <div style={{ background:"#F0F4FF", border:"2px dashed #90CAF9", borderRadius:12, padding:"18px", textAlign:"center" }}>
+                    {invoiceAnalyzing
+                      ? <p style={{ margin:0, color:"#1565C0", fontWeight:700 }}>🔍 מנתח חשבונית...</p>
+                      : <p style={{ margin:0, color:"#1565C0", fontSize:14 }}>📷 לחץ להעלאת חשבונית</p>
+                    }
+                  </div>
+                  <input type="file" accept="image/*" style={{ display:"none" }} onChange={async e => {
+                    const file = e.target.files[0];
+                    if (!file) return;
+                    const reader = new FileReader();
+                    reader.onload = async ev => {
+                      const dataUrl = ev.target.result;
+                      const base64 = dataUrl.split(",")[1];
+                      const mime = file.type || "image/jpeg";
+                      await analyzeInvoice(detailProject.id, base64, mime);
+                    };
+                    reader.readAsDataURL(file);
+                    e.target.value = "";
+                  }}/>
+                </label>
+
+                {/* Invoice results table */}
+                {invoiceResults[detailProject.id]?.length>0 && (
+                  <div style={{ marginTop:14 }}>
+                    <p style={{ margin:"0 0 8px", fontSize:13, fontWeight:700, color:"#2E7D32" }}>✅ פריטים שזוהו:</p>
+                    <div style={{ borderRadius:10, overflow:"hidden", border:"1px solid #EEE" }}>
+                      <div style={{ display:"grid", gridTemplateColumns:"1fr auto auto", background:"#F5F5F0", padding:"7px 12px", fontSize:12, fontWeight:700, color:"#555" }}>
+                        <span>פריט</span><span style={{ textAlign:"center", paddingLeft:16 }}>כמות</span><span style={{ textAlign:"left", paddingLeft:16 }}>מחיר</span>
+                      </div>
+                      {invoiceResults[detailProject.id].map((item,i) => (
+                        <div key={i} style={{ display:"grid", gridTemplateColumns:"1fr auto auto", padding:"7px 12px", borderTop:"1px solid #F0F0EC", fontSize:13 }}>
+                          <span>{item.desc}</span>
+                          <span style={{ textAlign:"center", paddingLeft:16, color:"#888" }}>{item.qty}</span>
+                          <span style={{ textAlign:"left", paddingLeft:16, fontWeight:700 }}>₪{fmtNum(item.price)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* ARCHITECTURAL PLANS */}
+              <div style={{ background:"#fff", borderRadius:14, padding:"16px 20px", marginBottom:14, boxShadow:"0 2px 8px rgba(0,0,0,0.07)" }}>
+                <h3 style={{ margin:"0 0 13px", fontSize:15, fontWeight:700 }}>📐 תוכניות אדריכליות</h3>
+                <label style={{ display:"block", cursor:"pointer" }}>
+                  <div style={{ background:"#F5F5F0", border:"2px dashed #DDD", borderRadius:12, padding:"18px", textAlign:"center" }}>
+                    <p style={{ margin:0, color:"#888", fontSize:14 }}>📎 העלה תוכנית (תמונה או PDF)</p>
+                  </div>
+                  <input type="file" accept="image/*,application/pdf" multiple style={{ display:"none" }} onChange={async e => {
+                    const files = Array.from(e.target.files);
+                    const plans = [...(editProj.architecturalPlans||[])];
+                    for (const file of files) {
+                      const reader = new FileReader();
+                      await new Promise(resolve => {
+                        reader.onload = ev => {
+                          plans.push({ name: file.name, dataUrl: ev.target.result, date: todayStr() });
+                          resolve();
+                        };
+                        reader.readAsDataURL(file);
+                      });
+                    }
+                    setEditProj(p=>({...p, architecturalPlans: plans}));
+                    updateProjField(detailProject, { architecturalPlans: plans });
+                    e.target.value = "";
+                  }}/>
+                </label>
+                {(editProj.architecturalPlans||[]).length>0 && (
+                  <div style={{ marginTop:12, display:"flex", flexWrap:"wrap", gap:10 }}>
+                    {(editProj.architecturalPlans||[]).map((plan,i) => (
+                      <div key={i} style={{ position:"relative", background:"#F5F5F0", borderRadius:10, padding:"8px 12px", display:"flex", alignItems:"center", gap:8 }}>
+                        <a href={plan.dataUrl} target="_blank" rel="noreferrer" style={{ fontSize:13, color:"#1565C0", textDecoration:"none", fontWeight:600 }}>
+                          📄 {plan.name}
+                        </a>
+                        <button onClick={()=>{
+                          const plans=(editProj.architecturalPlans||[]).filter((_,j)=>j!==i);
+                          setEditProj(p=>({...p,architecturalPlans:plans}));
+                          updateProjField(detailProject,{architecturalPlans:plans});
+                        }} style={{ background:"none", border:"none", cursor:"pointer", color:"#CCC", fontSize:13 }}>✕</button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
               <div style={{ background:"#fff", borderRadius:14, padding:"16px 20px", marginBottom:14, boxShadow:"0 2px 8px rgba(0,0,0,0.07)" }}>
                 <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:13 }}>
                   <h3 style={{ margin:0, fontSize:15, fontWeight:700 }}>🪜 שלבי ביצוע</h3>
@@ -899,6 +1087,32 @@ export default function App() {
                   </div>
                 )}
               </div>
+
+              {/* REMAINING MATERIALS - shown when project is completed */}
+              {detailProject.status==="הושלם" && (editProj.expenses||[]).filter(e=>e.fromInvoice).length>0 && (
+                <div style={{ background:"#fff", borderRadius:14, padding:"16px 20px", marginBottom:14, boxShadow:"0 2px 8px rgba(0,0,0,0.07)", border:"2px solid #E8C547" }}>
+                  <h3 style={{ margin:"0 0 4px", fontSize:15, fontWeight:700 }}>📦 מלאי שנשאר</h3>
+                  <p style={{ margin:"0 0 12px", fontSize:12, color:"#777" }}>מלא כמה נשאר מכל חומר</p>
+                  <div style={{ borderRadius:10, overflow:"hidden", border:"1px solid #EEE" }}>
+                    <div style={{ display:"grid", gridTemplateColumns:"1fr auto", background:"#F5F5F0", padding:"7px 12px", fontSize:12, fontWeight:700, color:"#555" }}>
+                      <span>חומר</span><span>נשאר</span>
+                    </div>
+                    {(editProj.expenses||[]).filter(e=>e.fromInvoice).map((ex,i) => (
+                      <div key={i} style={{ display:"grid", gridTemplateColumns:"1fr auto", padding:"8px 12px", borderTop:"1px solid #F0F0EC", alignItems:"center" }}>
+                        <span style={{ fontSize:13 }}>{ex.desc}</span>
+                        <input type="text" placeholder="כמה נשאר?"
+                          value={ex.remaining||""}
+                          onChange={e=>{
+                            const expenses=(editProj.expenses||[]).map((ex2,j)=>j===i?{...ex2,remaining:e.target.value}:ex2);
+                            setEditProj(p=>({...p,expenses}));
+                            updateProjFieldDebounced(detailProject,{expenses});
+                          }}
+                          style={{ width:90, border:"1.5px solid #DDD", borderRadius:8, padding:"5px 8px", fontSize:13, fontFamily:"Heebo,sans-serif", outline:"none", textAlign:"center" }}/>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               <div style={{ background:"#fff", borderRadius:14, padding:"13px 18px", marginBottom:14, boxShadow:"0 2px 8px rgba(0,0,0,0.07)", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
                 <div>
@@ -1178,6 +1392,181 @@ export default function App() {
           </>
           );
         })()}
+
+        {/* CALENDAR TAB */}
+        {mgTab==="calendar" && (() => {
+          const [year, month] = calMonth.split("-").map(Number);
+          const firstDay = new Date(year, month-1, 1);
+          const lastDay = new Date(year, month, 0);
+          const daysInMonth = lastDay.getDate();
+          // day of week of first day (0=sun)
+          const startDow = firstDay.getDay();
+          const dayNames = ["א","ב","ג","ד","ה","ו","ש"];
+          const prevMonth = () => {
+            const d = new Date(year, month-2, 1);
+            setCalMonth(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`);
+          };
+          const nextMonth = () => {
+            const d = new Date(year, month, 1);
+            setCalMonth(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`);
+          };
+          const monthLabel = new Date(year, month-1, 1).toLocaleDateString("he-IL",{year:"numeric",month:"long"});
+
+          return (
+          <>
+            <div style={{ marginBottom:14 }}>
+              <h1 style={{ margin:0, fontSize:20, fontWeight:800 }}>📅 יומן עסקי</h1>
+              <p style={{ margin:"3px 0 0", color:"#777", fontSize:13 }}>לוח חודשי — תכנון עובדים ומשימות</p>
+            </div>
+
+            {/* Month navigation */}
+            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", background:"#1A1A2E", borderRadius:14, padding:"12px 18px", marginBottom:14 }}>
+              <button onClick={prevMonth} style={{ background:"rgba(255,255,255,0.1)", color:"#fff", border:"none", borderRadius:8, padding:"6px 14px", fontSize:16, cursor:"pointer" }}>◀</button>
+              <span style={{ color:"#E8C547", fontWeight:800, fontSize:16 }}>{monthLabel}</span>
+              <button onClick={nextMonth} style={{ background:"rgba(255,255,255,0.1)", color:"#fff", border:"none", borderRadius:8, padding:"6px 14px", fontSize:16, cursor:"pointer" }}>▶</button>
+            </div>
+
+            {/* Day names header */}
+            <div style={{ display:"grid", gridTemplateColumns:"repeat(7,1fr)", gap:3, marginBottom:3 }}>
+              {dayNames.map(d => (
+                <div key={d} style={{ textAlign:"center", fontSize:12, fontWeight:700, color:"#888", padding:"4px 0" }}>{d}</div>
+              ))}
+            </div>
+
+            {/* Calendar grid */}
+            <div style={{ display:"grid", gridTemplateColumns:"repeat(7,1fr)", gap:3, marginBottom:16 }}>
+              {Array.from({length: startDow}).map((_,i) => <div key={`e${i}`}/>)}
+              {Array.from({length: daysInMonth}).map((_,i) => {
+                const day = i+1;
+                const dateStr = `${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+                const ev = calEvents[dateStr];
+                const hasData = ev && (ev.workers?.length>0 || ev.tasks);
+                const isToday = dateStr === todayStr();
+                return (
+                  <div key={day} onClick={()=>{ setCalEditDay(dateStr); setCalEditData({workers: ev?.workers||[], tasks: ev?.tasks||""}); }}
+                    style={{ background: isToday?"#E8C547": hasData?"#E8F5E9":"#fff", borderRadius:10, padding:"6px 4px", minHeight:52, cursor:"pointer", border: isToday?"2px solid #B26A00":"1.5px solid #EEE", position:"relative" }}>
+                    <div style={{ fontSize:13, fontWeight:isToday?800:600, color:isToday?"#1A1A2E":hasData?"#2E7D32":"#333", textAlign:"center" }}>{day}</div>
+                    {hasData && (
+                      <div style={{ marginTop:2 }}>
+                        {ev.workers?.slice(0,2).map(wid => {
+                          const wk = workers.find(w=>String(w.id)===String(wid));
+                          return wk ? <div key={wid} style={{ background:"#1A1A2E", color:"#E8C547", borderRadius:4, fontSize:9, padding:"1px 4px", marginBottom:2, textAlign:"center", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{wk.name.split(" ")[0]}</div> : null;
+                        })}
+                        {ev.tasks && <div style={{ fontSize:9, color:"#555", textAlign:"center", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>📝</div>}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Edit day modal */}
+            {calEditDay && (
+              <div onClick={()=>setCalEditDay(null)} style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.5)", display:"flex", alignItems:"flex-end", justifyContent:"center", zIndex:999 }}>
+                <div onClick={e=>e.stopPropagation()} style={{ background:"#fff", borderRadius:"18px 18px 0 0", padding:24, width:"100%", maxWidth:520, maxHeight:"80vh", overflowY:"auto", direction:"rtl" }}>
+                  <h3 style={{ margin:"0 0 14px", fontWeight:800, fontSize:16 }}>
+                    📅 {new Date(calEditDay+"T12:00:00").toLocaleDateString("he-IL",{weekday:"long",day:"numeric",month:"long"})}
+                  </h3>
+
+                  <p style={{ margin:"0 0 8px", fontSize:13, fontWeight:700 }}>👷 עובדים משובצים</p>
+                  <div style={{ display:"flex", flexWrap:"wrap", gap:7, marginBottom:14 }}>
+                    {workers.map(w => {
+                      const isSelected = calEditData.workers.includes(String(w.id));
+                      return (
+                        <button key={w.id} onClick={()=>{
+                          setCalEditData(prev => ({
+                            ...prev,
+                            workers: isSelected
+                              ? prev.workers.filter(id=>id!==String(w.id))
+                              : [...prev.workers, String(w.id)]
+                          }));
+                        }} style={{ background:isSelected?"#1A1A2E":"#F0F0EC", color:isSelected?"#E8C547":"#555", border:"none", borderRadius:8, padding:"6px 12px", fontSize:13, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:isSelected?700:400 }}>
+                          {w.name}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <p style={{ margin:"0 0 8px", fontSize:13, fontWeight:700 }}>📝 משימות ולו״ז</p>
+                  <textarea value={calEditData.tasks} onChange={e=>setCalEditData(prev=>({...prev,tasks:e.target.value}))}
+                    placeholder="לדוגמה: בוקר — יציקת בטון בלול גבעות, צהריים — פגישה עם ספק..." rows={4}
+                    style={{ width:"100%", border:"1.5px solid #DDD", borderRadius:10, padding:"10px 12px", fontSize:14, fontFamily:"Heebo,sans-serif", outline:"none", resize:"vertical", boxSizing:"border-box" }}/>
+
+                  <div style={{ display:"flex", gap:10, marginTop:14 }}>
+                    <button onClick={()=>saveCalDay(calEditDay, calEditData)} style={{ flex:1, background:"#1A1A2E", color:"#E8C547", border:"none", borderRadius:10, padding:"11px 0", fontWeight:700, fontSize:15, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>שמור</button>
+                    <button onClick={()=>setCalEditDay(null)} style={{ flex:1, background:"#F0F0EC", color:"#555", border:"none", borderRadius:10, padding:"11px 0", fontWeight:600, fontSize:15, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>ביטול</button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </>
+          );
+        })()}
+
+        {/* EQUIPMENT TAB */}
+        {mgTab==="equipment" && (
+          <>
+            <div style={{ marginBottom:14 }}>
+              <h1 style={{ margin:0, fontSize:20, fontWeight:800 }}>🛒 ציוד לקנייה</h1>
+              <p style={{ margin:"3px 0 0", color:"#777", fontSize:13 }}>רשימת קנייה לעסק</p>
+            </div>
+
+            {/* Add item */}
+            <div style={{ background:"#fff", borderRadius:14, padding:"14px 16px", marginBottom:14, boxShadow:"0 2px 8px rgba(0,0,0,0.07)" }}>
+              <div style={{ display:"flex", gap:8, alignItems:"center" }}>
+                <input value={equipNew.name} onChange={e=>setEquipNew(p=>({...p,name:e.target.value}))}
+                  onKeyDown={e=>e.key==="Enter"&&addEquipItem()}
+                  placeholder="שם פריט..." style={{ flex:2, border:"1.5px solid #DDD", borderRadius:10, padding:"9px 12px", fontSize:14, fontFamily:"Heebo,sans-serif", outline:"none" }}/>
+                <input type="number" value={equipNew.qty} onChange={e=>setEquipNew(p=>({...p,qty:e.target.value}))}
+                  placeholder="כמות" style={{ flex:1, border:"1.5px solid #DDD", borderRadius:10, padding:"9px 12px", fontSize:14, fontFamily:"Heebo,sans-serif", outline:"none" }}/>
+                <button onClick={addEquipItem} style={{ background:"#1A1A2E", color:"#E8C547", border:"none", borderRadius:10, padding:"9px 16px", fontSize:15, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700 }}>+</button>
+              </div>
+            </div>
+
+            {/* Summary */}
+            {equipList.length>0 && (
+              <div style={{ display:"flex", justifyContent:"space-between", background:"#F0F0EC", borderRadius:10, padding:"8px 14px", marginBottom:12, fontSize:13, color:"#555" }}>
+                <span>סה"כ: {equipList.length} פריטים</span>
+                <span>✅ {equipList.filter(e=>e.done).length} נקנו · ⏳ {equipList.filter(e=>!e.done).length} נשארו</span>
+              </div>
+            )}
+
+            {/* List */}
+            {equipList.length===0 && (
+              <div style={{ background:"#fff", borderRadius:14, padding:44, textAlign:"center", border:"1.5px dashed #DDD", color:"#AAA" }}>
+                <div style={{ fontSize:34, marginBottom:8 }}>🛒</div>
+                <p style={{ margin:0 }}>הרשימה ריקה — הוסף פריטים</p>
+              </div>
+            )}
+            {equipList.filter(e=>!e.done).map(item => (
+              <div key={item._dbid} style={{ background:"#fff", borderRadius:12, padding:"12px 16px", marginBottom:8, display:"flex", alignItems:"center", gap:12, boxShadow:"0 1px 5px rgba(0,0,0,0.06)" }}>
+                <button onClick={()=>toggleEquipDone(item)} style={{ width:24, height:24, borderRadius:"50%", border:"2px solid #DDD", background:"#fff", cursor:"pointer", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}/>
+                <div style={{ flex:1 }}>
+                  <p style={{ margin:0, fontWeight:700, fontSize:14 }}>{item.name}</p>
+                  <p style={{ margin:0, fontSize:12, color:"#888" }}>כמות: {item.qty}</p>
+                </div>
+                <button onClick={()=>delEquipItem(item)} style={{ background:"none", border:"none", cursor:"pointer", color:"#CCC", fontSize:16 }}>✕</button>
+              </div>
+            ))}
+
+            {/* Bought items */}
+            {equipList.filter(e=>e.done).length>0 && (
+              <>
+                <p style={{ margin:"14px 0 8px", fontSize:13, fontWeight:700, color:"#888" }}>✅ נקנו</p>
+                {equipList.filter(e=>e.done).map(item => (
+                  <div key={item._dbid} style={{ background:"#F9F9F9", borderRadius:12, padding:"10px 16px", marginBottom:7, display:"flex", alignItems:"center", gap:12, opacity:0.7 }}>
+                    <button onClick={()=>toggleEquipDone(item)} style={{ width:24, height:24, borderRadius:"50%", border:"2px solid #22C55E", background:"#22C55E", cursor:"pointer", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center", color:"#fff", fontSize:14 }}>✓</button>
+                    <div style={{ flex:1 }}>
+                      <p style={{ margin:0, fontWeight:600, fontSize:14, textDecoration:"line-through", color:"#AAA" }}>{item.name}</p>
+                      <p style={{ margin:0, fontSize:12, color:"#BBB" }}>כמות: {item.qty}</p>
+                    </div>
+                    <button onClick={()=>delEquipItem(item)} style={{ background:"none", border:"none", cursor:"pointer", color:"#DDD", fontSize:16 }}>✕</button>
+                  </div>
+                ))}
+              </>
+            )}
+          </>
+        )}
 
         {/* SETTINGS */}
         {mgTab==="settings" && (
