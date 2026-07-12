@@ -4,6 +4,9 @@ const SUPABASE_URL = "https://rkjcrhywhoixdkqlfnko.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJramNyaHl3aG9peGRrcWxmbmtvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwMzA2NzQsImV4cCI6MjA5NDYwNjY3NH0.yKZzdMCNOyWJClmip03QY617HX2IB-xKPKGUZtKT_Z0";
 const hdrs = { "Content-Type": "application/json", "apikey": SUPABASE_KEY, "Authorization": "Bearer " + SUPABASE_KEY };
 
+// 🔑 הדבק כאן את מפתח ה-API של Anthropic (מ-console.anthropic.com)
+const ANTHROPIC_API_KEY = "PASTE_YOUR_KEY_HERE";
+
 async function dbGet(table) {
   const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}?select=*&order=id.asc`, { headers: hdrs });
   const rows = await r.json();
@@ -16,6 +19,10 @@ async function dbInsert(table, data) {
     body: JSON.stringify({ data })
   });
   const rows = await r.json();
+  if (!Array.isArray(rows) || rows.length === 0) {
+    console.error("dbInsert error:", table, rows);
+    throw new Error(`Insert to ${table} failed: ${JSON.stringify(rows)}`);
+  }
   return { ...rows[0].data, _dbid: rows[0].id };
 }
 async function dbUpdate(table, dbid, data) {
@@ -218,6 +225,13 @@ export default function App() {
 
   useEffect(() => { loadAll(); }, [loadAll]);
 
+  // Auto-refresh data every 60 seconds while on manager screen
+  useEffect(() => {
+    if (screen !== "mgr") return;
+    const interval = setInterval(() => { loadAll(); }, 60000);
+    return () => clearInterval(interval);
+  }, [screen, loadAll]);
+
   const projReports = id => reports.filter(r => String(r.projectId) === String(id));
   const getWkrNames = (ids=[]) => ids.map(id => workers.find(w => String(w.id)===String(id))?.name).filter(Boolean).join(", ");
 
@@ -233,24 +247,29 @@ export default function App() {
 
   const submitReport = async () => {
     if (!repProject) return;
-    const proj = projects.find(p => String(p.id) === String(repProject));
-    const today = todayStr();
-    const isPast = repDate < today; // only strictly BEFORE today
-    const newRep = { workerId: loggedWorker.id, workerName: loggedWorker.name, projectId: repProject, projectName: proj?.name || "", date: repDate, note: repNote, days: dayType==="half" ? 0.5 : 1, dayType, fuel: repFuel, id: Date.now(), pendingApproval: isPast };
-    const saved = await dbInsert("reports", newRep);
-    if (isPast) {
-      setPendingReports(prev => [...prev, saved]);
-    } else {
-      setReports(prev => [...prev, saved]);
+    try {
+      const proj = projects.find(p => String(p.id) === String(repProject));
+      const today = todayStr();
+      const isPast = repDate < today; // only strictly BEFORE today
+      const newRep = { workerId: loggedWorker.id, workerName: loggedWorker.name, projectId: repProject, projectName: proj?.name || "", date: repDate, note: repNote, days: dayType==="half" ? 0.5 : 1, dayType, fuel: repFuel, id: Date.now(), pendingApproval: isPast };
+      const saved = await dbInsert("reports", newRep);
+      if (isPast) {
+        setPendingReports(prev => [...prev, saved]);
+      } else {
+        setReports(prev => [...prev, saved]);
+      }
+      const uniqueDays = uniqueWorkDaysForProject([...reports, saved], repProject);
+      const proj2 = projects.find(p => String(p.id) === String(repProject));
+      if (proj2) {
+        const updated = { ...proj2, actualDays: uniqueDays };
+        await dbUpdate("projects", proj2._dbid, updated);
+        setProjects(prev => prev.map(p => String(p.id)===String(repProject) ? updated : p));
+      }
+      setRepSent(true);
+    } catch(e) {
+      alert("שגיאה בשליחת הדיווח: " + e.message + "\nנסה שוב.");
+      return;
     }
-    const uniqueDays = uniqueWorkDaysForProject([...reports, saved], repProject);
-    const proj2 = projects.find(p => String(p.id) === String(repProject));
-    if (proj2) {
-      const updated = { ...proj2, actualDays: uniqueDays };
-      await dbUpdate("projects", proj2._dbid, updated);
-      setProjects(prev => prev.map(p => String(p.id)===String(repProject) ? updated : p));
-    }
-    setRepSent(true);
   };
 
   const addProject = async () => {
@@ -347,24 +366,32 @@ export default function App() {
   };
 
   const saveCalDay = async (date, data) => {
-    const existing = calEvents[date];
-    const entry = { date, workers: data.workers, tasks: data.tasks };
-    if (existing && existing._dbid) {
-      await dbUpdate("calendar", existing._dbid, entry);
-      setCalEvents(prev => ({...prev, [date]: {...entry, _dbid: existing._dbid}}));
-    } else {
-      const saved = await dbInsert("calendar", {...entry, id: Date.now()});
-      setCalEvents(prev => ({...prev, [date]: saved}));
+    try {
+      const existing = calEvents[date];
+      const entry = { date, workers: data.workers, tasks: data.tasks };
+      if (existing && existing._dbid) {
+        await dbUpdate("calendar", existing._dbid, entry);
+        setCalEvents(prev => ({...prev, [date]: {...entry, _dbid: existing._dbid}}));
+      } else {
+        const saved = await dbInsert("calendar", {...entry, id: Date.now()});
+        setCalEvents(prev => ({...prev, [date]: saved}));
+      }
+      setCalEditDay(null);
+    } catch(e) {
+      alert("שגיאה בשמירת יומן: " + e.message);
     }
-    setCalEditDay(null);
   };
 
   const addEquipItem = async () => {
     if (!equipNew.name.trim()) return;
-    const item = { name: equipNew.name.trim(), qty: equipNew.qty || "1", done: false, id: Date.now() };
-    const saved = await dbInsert("equipment", item);
-    setEquipList(prev => [...prev, saved]);
-    setEquipNew({name:"", qty:""});
+    try {
+      const item = { name: equipNew.name.trim(), qty: equipNew.qty || "1", done: false, id: Date.now() };
+      const saved = await dbInsert("equipment", item);
+      setEquipList(prev => [...prev, saved]);
+      setEquipNew({name:"", qty:""});
+    } catch(e) {
+      alert("שגיאה בשמירת פריט: " + e.message);
+    }
   };
 
   const toggleEquipDone = async (item) => {
@@ -381,9 +408,19 @@ export default function App() {
   const analyzeInvoice = async (projectId, imageBase64, mimeType) => {
     setInvoiceAnalyzing(true);
     try {
+      if (!ANTHROPIC_API_KEY || ANTHROPIC_API_KEY === "PASTE_YOUR_KEY_HERE") {
+        alert("צריך להגדיר מפתח API של Anthropic בקוד. פנה למפתח.");
+        setInvoiceAnalyzing(false);
+        return;
+      }
       const response = await fetch("https://api.anthropic.com/v1/messages", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": ANTHROPIC_API_KEY,
+          "anthropic-version": "2023-06-01",
+          "anthropic-dangerous-direct-browser-access": "true"
+        },
         body: JSON.stringify({
           model: "claude-sonnet-4-6",
           max_tokens: 1000,
@@ -391,7 +428,7 @@ export default function App() {
             role: "user",
             content: [
               { type: "image", source: { type: "base64", media_type: mimeType, data: imageBase64 } },
-              { type: "text", text: "אתה מנתח חשבוניות. חלץ מהחשבונית הזו את כל הפריטים. החזר JSON בלבד (ללא טקסט נוסף) בפורמט: {\"items\":[{\"desc\":\"שם מוצר\",\"qty\":\"כמות\",\"price\":מחיר_מספרי}],\"total\":סה_כ_מספרי}. אם אין מחיר לפריט תן 0. סה\"כ הוא סכום כל הפריטים." }
+              { type: "text", text: 'אתה מנתח חשבוניות והצעות מחיר בעברית. חלץ מהמסמך את כל שורות המוצרים. לכל שורה: תאור מוצר (desc), כמות (qty - רק המספר), וסהכ מחיר של השורה אחרי הנחה (price - מספר בלבד ללא סימן שקל). החזר JSON בלבד ללא שום טקסט נוסף, ללא markdown, בפורמט המדויק: {"items":[{"desc":"שם","qty":"כמות","price":מספר}],"total":מספר}. total = המחיר הסופי של המסמך.' }
             ]
           }]
         })
