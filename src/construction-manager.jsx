@@ -248,6 +248,16 @@ export default function App() {
   const submitReport = async () => {
     if (!repProject) return;
     try {
+      // Block duplicate report: same worker, same date
+      const existingReport = [...reports, ...pendingReports].find(r =>
+        !r._paymentRecord &&
+        r.date === repDate &&
+        (String(r.workerId) === String(loggedWorker.id) || r.workerName === loggedWorker.name)
+      );
+      if (existingReport) {
+        alert("כבר דיווחת על תאריך זה! לא ניתן לדווח פעמיים על אותו יום.");
+        return;
+      }
       const proj = projects.find(p => String(p.id) === String(repProject));
       const today = todayStr();
       const isPast = repDate < today; // only strictly BEFORE today
@@ -590,9 +600,9 @@ export default function App() {
               <LBL t="🏗️ באיזה אתר עבדת?"/>
               <select value={repProject} onChange={e=>setRepProject(e.target.value)} style={{ ...inp, fontSize:15 }}>
                 <option value="">— בחר פרויקט —</option>
-                {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                {projects.filter(p => p.status !== "הושלם").map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
               </select>
-              {projects.length===0 && <p style={{ margin:"5px 0 0", fontSize:12, color:"#E53935" }}>המנהל עדיין לא הוסיף פרויקטים</p>}
+              {projects.filter(p => p.status !== "הושלם").length===0 && <p style={{ margin:"5px 0 0", fontSize:12, color:"#E53935" }}>אין פרויקטים פעילים כרגע</p>}
             </label>
             <label style={{ display:"block", marginBottom:18 }}>
               <LBL t="📝 הערה (אופציונלי)"/>
