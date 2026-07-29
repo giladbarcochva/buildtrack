@@ -87,11 +87,27 @@ function calcWorkerPayroll(worker, reports) {
   myReports.forEach(r => {
     if (!r.date) return;
     const month = r.date.slice(0, 7);
-    if (!byMonth[month]) byMonth[month] = { days: 0, fuel: 0, projects: new Set() };
+    if (!byMonth[month]) byMonth[month] = { days: 0, fuel: 0, projects: new Set(), byProject: {} };
     byMonth[month].days += Number(r.days||1);
     if (r.fuel) byMonth[month].fuel += 50;
-    byMonth[month].projects.add(r.projectName || r.projectId);
+    const pName = r.projectName || String(r.projectId || "ללא פרויקט");
+    byMonth[month].projects.add(pName);
+    if (!byMonth[month].byProject[pName]) byMonth[month].byProject[pName] = { days: 0, fuel: 0 };
+    byMonth[month].byProject[pName].days += Number(r.days||1);
+    if (r.fuel) byMonth[month].byProject[pName].fuel += 50;
   });
+
+  // סה"כ ימים לפי פרויקט (כל הזמנים)
+  const totalByProject = {};
+  myReports.forEach(r => {
+    const pName = r.projectName || String(r.projectId || "ללא פרויקט");
+    if (!totalByProject[pName]) totalByProject[pName] = { days: 0, fuel: 0 };
+    totalByProject[pName].days += Number(r.days||1);
+    if (r.fuel) totalByProject[pName].fuel += 50;
+  });
+  const projectBreakdown = Object.entries(totalByProject)
+    .sort((a,b) => b[1].days - a[1].days)
+    .map(([name, v]) => ({ name, days: v.days, fuel: v.fuel, pay: v.days * rate + v.fuel }));
 
   const months = Object.entries(byMonth)
     .sort((a, b) => b[0].localeCompare(a[0]))
@@ -102,9 +118,12 @@ function calcWorkerPayroll(worker, reports) {
       fuel: v.fuel||0,
       pay: v.days * rate + (v.fuel||0),
       projects: [...v.projects].join(", "),
+      projectRows: Object.entries(v.byProject)
+        .sort((a,b) => b[1].days - a[1].days)
+        .map(([name, pv]) => ({ name, days: pv.days, fuel: pv.fuel, pay: pv.days * rate + pv.fuel })),
     }));
 
-  return { totalDays, totalPay, months };
+  return { totalDays, totalPay, months, projectBreakdown };
 }
 
 export default function App() {
@@ -151,7 +170,7 @@ export default function App() {
   });
   const [calEvents, setCalEvents] = useState({}); // key: YYYY-MM-DD -> {workers:[], tasks:[]}
   const [calEditDay, setCalEditDay] = useState(null);
-  const [calEditData, setCalEditData] = useState({workers:[], tasks:""});
+  const [calEditData, setCalEditData] = useState({assignments:[], tasks:""});
   const [equipList, setEquipList] = useState([]); // [{id, name, qty, done}]
   const [equipNew, setEquipNew] = useState({name:"", qty:""}); // "pending" | "history"
   const [editPaymentKey, setEditPaymentKey] = useState(null);
@@ -378,7 +397,8 @@ export default function App() {
   const saveCalDay = async (date, data) => {
     try {
       const existing = calEvents[date];
-      const entry = { date, workers: data.workers, tasks: data.tasks };
+      const entry = { date, assignments: data.assignments || [], tasks: data.tasks,
+                      workers: (data.assignments||[]).flatMap(a => a.workers||[]) };
       if (existing && existing._dbid) {
         await dbUpdate("calendar", existing._dbid, entry);
         setCalEvents(prev => ({...prev, [date]: {...entry, _dbid: existing._dbid}}));
@@ -1236,7 +1256,7 @@ export default function App() {
         {mgTab==="payroll" && (() => {
           // calc pending/paid per worker
           const allWorkerData = workers.map(w => {
-            const { totalDays, totalPay, months } = calcWorkerPayroll(w, reports);
+            const { totalDays, totalPay, months, projectBreakdown } = calcWorkerPayroll(w, reports);
             const hasRate = Number(w.dailyRate||0) > 0;
             // For each month, calculate remaining balance (total earned - already paid)
             const pendingMonths = months.filter(m => {
@@ -1262,7 +1282,7 @@ export default function App() {
               const info = paidMonths[`${w.id}_${m.month}`];
               return s + Number(info?.paidAmt||0);
             }, 0);
-            return { w, totalDays, totalPay, months, hasRate, pendingMonths, historyMonths, pendingPay, paidTotal };
+            return { w, totalDays, totalPay, months, hasRate, pendingMonths, historyMonths, pendingPay, paidTotal, projectBreakdown };
           });
 
           const grandPending = allWorkerData.reduce((s, d) => s + (d.hasRate ? d.pendingPay : 0), 0);
@@ -1292,7 +1312,7 @@ export default function App() {
 
             {workers.length===0 && <div style={{ background:"#fff", borderRadius:14, padding:44, textAlign:"center", border:"1.5px dashed #DDD", color:"#AAA" }}><p style={{ margin:0 }}>אין עובדים עדיין</p></div>}
 
-            {allWorkerData.map(({ w, months, hasRate, pendingMonths, historyMonths, pendingPay, paidTotal }) => {
+            {allWorkerData.map(({ w, months, hasRate, pendingMonths, historyMonths, pendingPay, paidTotal, projectBreakdown, totalDays }) => {
               const isOpen = payrollWorker === w._dbid;
               const shownMonths = payrollView==="pending" ? pendingMonths : historyMonths;
               if (shownMonths.length===0) return null;
@@ -1322,6 +1342,20 @@ export default function App() {
 
                   {isOpen && (
                     <div style={{ borderTop:"1px solid #EEE", padding:"12px 18px" }}>
+                      {/* סיכום כללי לפי פרויקט */}
+                      {projectBreakdown?.length>0 && (
+                        <div style={{ background:"#F0F4FF", borderRadius:10, padding:"10px 12px", marginBottom:12 }}>
+                          <p style={{ margin:"0 0 6px", fontSize:12, fontWeight:700, color:"#3B5BDB" }}>📊 סה"כ ימים לפי פרויקט ({totalDays} ימים)</p>
+                          {projectBreakdown.map((pr,pi) => (
+                            <div key={pi} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"3px 0", fontSize:12 }}>
+                              <span style={{ color:"#555" }}>🏗️ {pr.name}</span>
+                              <span style={{ color:"#3B5BDB", fontWeight:700, whiteSpace:"nowrap" }}>
+                                {pr.days} ימים{hasRate ? ` · ₪${fmtNum(pr.pay)}` : ""}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                       {shownMonths.length===0 && <p style={{ margin:0, fontSize:13, color:"#AAA", textAlign:"center", padding:"10px 0" }}>אין נתונים</p>}
                       {shownMonths.map(m => {
                         const pKey = `${w.id}_${m.month}`;
@@ -1334,7 +1368,7 @@ export default function App() {
                             <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:6 }}>
                               <div>
                                 <p style={{ margin:0, fontWeight:700, fontSize:14 }}>{m.label}</p>
-                                <p style={{ margin:"2px 0 0", fontSize:12, color:"#888" }}>{m.days} ימים{m.fuel>0 ? ` · ⛽ ₪${m.fuel} דלק` : ""} · {m.projects}</p>
+                                <p style={{ margin:"2px 0 0", fontSize:12, color:"#888" }}>סה"כ {m.days} ימים{m.fuel>0 ? ` · ⛽ ₪${m.fuel} דלק` : ""}</p>
                                 {paidInfo?.partial && !paidInfo.fullyPaid && (
                                   <p style={{ margin:"3px 0 0", fontSize:12, color:"#F57F17" }}>שולם חלקית: ₪{fmtNum(alreadyPaid)} · נותר: ₪{fmtNum(remaining)}</p>
                                 )}
@@ -1344,6 +1378,20 @@ export default function App() {
                                 <p style={{ margin:"0 0 4px", fontWeight:700, fontSize:14, color: paidInfo?.fullyPaid?"#2E7D32": paidInfo?.partial?"#F57F17":"#1A1A2E", textDecoration: paidInfo?.fullyPaid?"line-through":"none" }}>₪{fmtNum(m.pay)}</p>
                               </div>
                             </div>
+
+                            {/* per-project breakdown */}
+                            {m.projectRows?.length>0 && (
+                              <div style={{ background:"#F9F9F9", borderRadius:8, padding:"7px 10px", marginBottom:8 }}>
+                                {m.projectRows.map((pr,pi) => (
+                                  <div key={pi} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"3px 0", fontSize:12 }}>
+                                    <span style={{ color:"#555" }}>🏗️ {pr.name}</span>
+                                    <span style={{ color:"#888", whiteSpace:"nowrap" }}>
+                                      {pr.days} ימים{pr.fuel>0 ? ` · ⛽₪${pr.fuel}` : ""}{hasRate ? ` · ₪${fmtNum(pr.pay)}` : ""}
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
 
                             {/* action buttons */}
                             {payrollView==="pending" && hasRate && (() => {
@@ -1493,19 +1541,29 @@ export default function App() {
                 const day = i+1;
                 const dateStr = `${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
                 const ev = calEvents[dateStr];
-                const hasData = ev && (ev.workers?.length>0 || ev.tasks);
+                // תאימות לאחור: נתונים ישנים עם workers בלבד
+                const assigns = ev?.assignments?.length
+                  ? ev.assignments
+                  : (ev?.workers?.length ? [{ projectId: "", workers: ev.workers }] : []);
+                const hasData = assigns.length>0 || ev?.tasks;
                 const isToday = dateStr === todayStr();
                 return (
-                  <div key={day} onClick={()=>{ setCalEditDay(dateStr); setCalEditData({workers: ev?.workers||[], tasks: ev?.tasks||""}); }}
-                    style={{ background: isToday?"#E8C547": hasData?"#E8F5E9":"#fff", borderRadius:10, padding:"6px 4px", minHeight:52, cursor:"pointer", border: isToday?"2px solid #B26A00":"1.5px solid #EEE", position:"relative" }}>
+                  <div key={day} onClick={()=>{ setCalEditDay(dateStr); setCalEditData({assignments: assigns.map(a=>({projectId:a.projectId||"", workers:[...(a.workers||[])]})), tasks: ev?.tasks||""}); }}
+                    style={{ background: isToday?"#E8C547": hasData?"#E8F5E9":"#fff", borderRadius:10, padding:"6px 3px", minHeight:56, cursor:"pointer", border: isToday?"2px solid #B26A00":"1.5px solid #EEE", position:"relative" }}>
                     <div style={{ fontSize:13, fontWeight:isToday?800:600, color:isToday?"#1A1A2E":hasData?"#2E7D32":"#333", textAlign:"center" }}>{day}</div>
                     {hasData && (
                       <div style={{ marginTop:2 }}>
-                        {ev.workers?.slice(0,2).map(wid => {
-                          const wk = workers.find(w=>String(w.id)===String(wid));
-                          return wk ? <div key={wid} style={{ background:"#1A1A2E", color:"#E8C547", borderRadius:4, fontSize:9, padding:"1px 4px", marginBottom:2, textAlign:"center", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{wk.name.split(" ")[0]}</div> : null;
+                        {assigns.slice(0,2).map((a,ai) => {
+                          const pr = projects.find(p=>String(p.id)===String(a.projectId));
+                          const label = pr ? pr.name : "ללא פרויקט";
+                          return (
+                            <div key={ai} style={{ background:"#1A1A2E", color:"#E8C547", borderRadius:4, fontSize:8, padding:"1px 3px", marginBottom:2, textAlign:"center", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
+                              {label}{a.workers?.length ? ` (${a.workers.length})` : ""}
+                            </div>
+                          );
                         })}
-                        {ev.tasks && <div style={{ fontSize:9, color:"#555", textAlign:"center", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>📝</div>}
+                        {assigns.length>2 && <div style={{ fontSize:8, color:"#2E7D32", textAlign:"center" }}>+{assigns.length-2}</div>}
+                        {ev?.tasks && <div style={{ fontSize:9, color:"#555", textAlign:"center" }}>📝</div>}
                       </div>
                     )}
                   </div>
@@ -1521,24 +1579,69 @@ export default function App() {
                     📅 {new Date(calEditDay+"T12:00:00").toLocaleDateString("he-IL",{weekday:"long",day:"numeric",month:"long"})}
                   </h3>
 
-                  <p style={{ margin:"0 0 8px", fontSize:13, fontWeight:700 }}>👷 עובדים משובצים</p>
-                  <div style={{ display:"flex", flexWrap:"wrap", gap:7, marginBottom:14 }}>
-                    {workers.map(w => {
-                      const isSelected = calEditData.workers.includes(String(w.id));
-                      return (
-                        <button key={w.id} onClick={()=>{
-                          setCalEditData(prev => ({
-                            ...prev,
-                            workers: isSelected
-                              ? prev.workers.filter(id=>id!==String(w.id))
-                              : [...prev.workers, String(w.id)]
-                          }));
-                        }} style={{ background:isSelected?"#1A1A2E":"#F0F0EC", color:isSelected?"#E8C547":"#555", border:"none", borderRadius:8, padding:"6px 12px", fontSize:13, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:isSelected?700:400 }}>
-                          {w.name}
-                        </button>
-                      );
-                    })}
+                  <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:8 }}>
+                    <p style={{ margin:0, fontSize:13, fontWeight:700 }}>🏗️ פרויקטים ליום זה</p>
+                    <button onClick={()=>setCalEditData(prev=>({...prev, assignments:[...(prev.assignments||[]), {projectId:"", workers:[]}]}))}
+                      style={{ background:"#1A1A2E", color:"#E8C547", border:"none", borderRadius:7, padding:"4px 12px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700 }}>
+                      + הוסף פרויקט
+                    </button>
                   </div>
+
+                  {(calEditData.assignments||[]).length===0 && (
+                    <p style={{ margin:"0 0 12px", fontSize:13, color:"#AAA" }}>לא שובצו פרויקטים — לחץ "הוסף פרויקט"</p>
+                  )}
+
+                  {(calEditData.assignments||[]).map((a, ai) => {
+                    const updAssign = (changes) => {
+                      setCalEditData(prev => ({
+                        ...prev,
+                        assignments: (prev.assignments||[]).map((x,i)=> i===ai ? {...x, ...changes} : x)
+                      }));
+                    };
+                    // עובדים שכבר משובצים לפרויקט אחר באותו יום
+                    const takenElsewhere = (calEditData.assignments||[])
+                      .filter((_,i)=>i!==ai)
+                      .flatMap(x=>x.workers||[]);
+                    return (
+                      <div key={ai} style={{ background:"#F9F9F9", borderRadius:12, padding:"12px 14px", marginBottom:10, borderRight:"4px solid #E8C547" }}>
+                        <div style={{ display:"flex", gap:8, alignItems:"center", marginBottom:10 }}>
+                          <select value={a.projectId} onChange={e=>updAssign({projectId:e.target.value})}
+                            style={{ flex:1, border:"1.5px solid #DDD", borderRadius:8, padding:"7px 10px", fontSize:14, fontFamily:"Heebo,sans-serif", outline:"none", background:"#fff" }}>
+                            <option value="">— בחר פרויקט —</option>
+                            {projects.filter(p=>p.status!=="הושלם").map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                          </select>
+                          <button onClick={()=>setCalEditData(prev=>({...prev, assignments:(prev.assignments||[]).filter((_,i)=>i!==ai)}))}
+                            style={{ background:"none", border:"none", cursor:"pointer", color:"#CCC", fontSize:16, padding:0, flexShrink:0 }}>✕</button>
+                        </div>
+                        <p style={{ margin:"0 0 6px", fontSize:12, fontWeight:600, color:"#666" }}>👷 עובדים ({(a.workers||[]).length})</p>
+                        <div style={{ display:"flex", flexWrap:"wrap", gap:6 }}>
+                          {workers.map(w => {
+                            const wid = String(w.id);
+                            const isSelected = (a.workers||[]).includes(wid);
+                            const isTaken = takenElsewhere.includes(wid);
+                            return (
+                              <button key={w.id} disabled={isTaken && !isSelected}
+                                onClick={()=>updAssign({
+                                  workers: isSelected
+                                    ? (a.workers||[]).filter(id=>id!==wid)
+                                    : [...(a.workers||[]), wid]
+                                })}
+                                style={{
+                                  background: isSelected?"#1A1A2E": isTaken?"#EEE":"#F0F0EC",
+                                  color: isSelected?"#E8C547": isTaken?"#BBB":"#555",
+                                  border:"none", borderRadius:8, padding:"6px 11px", fontSize:12,
+                                  cursor: (isTaken && !isSelected)?"not-allowed":"pointer",
+                                  fontFamily:"Heebo,sans-serif", fontWeight:isSelected?700:400,
+                                  opacity: (isTaken && !isSelected)?0.5:1
+                                }}>
+                                {w.name}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })}
 
                   <p style={{ margin:"0 0 8px", fontSize:13, fontWeight:700 }}>📝 משימות ולו״ז</p>
                   <textarea value={calEditData.tasks} onChange={e=>setCalEditData(prev=>({...prev,tasks:e.target.value}))}
