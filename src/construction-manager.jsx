@@ -1342,8 +1342,8 @@ export default function App() {
 
                   {isOpen && (
                     <div style={{ borderTop:"1px solid #EEE", padding:"12px 18px" }}>
-                      {/* סיכום כללי לפי פרויקט */}
-                      {projectBreakdown?.length>0 && (
+                      {/* סיכום כללי לפי פרויקט — רק בטאב היסטוריה */}
+                      {payrollView==="history" && projectBreakdown?.length>0 && (
                         <div style={{ background:"#F0F4FF", borderRadius:10, padding:"10px 12px", marginBottom:12 }}>
                           <p style={{ margin:"0 0 6px", fontSize:12, fontWeight:700, color:"#3B5BDB" }}>📊 סה"כ ימים לפי פרויקט ({totalDays} ימים)</p>
                           {projectBreakdown.map((pr,pi) => (
