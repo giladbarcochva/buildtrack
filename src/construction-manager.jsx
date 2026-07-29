@@ -138,6 +138,7 @@ export default function App() {
   const [codeInput,    setCodeInput]    = useState("");
   const [codeError,    setCodeError]    = useState(false);
   const [loggedWorker, setLoggedWorker] = useState(null);
+  const [loggedForeman, setLoggedForeman] = useState(null);
 
   const [repDate,    setRepDate]    = useState(todayStr());
   const [repProject, setRepProject] = useState("");
@@ -159,6 +160,9 @@ export default function App() {
   const [assignM,    setAssignM]    = useState(false);
   const [assignPid,  setAssignPid]  = useState(null);
   const [newAdminCode, setNAC]      = useState("");
+  const [newForemanM, setNewForemanM] = useState(false);
+  const [newForeman, setNewForeman] = useState({ name:"", role:"", dailyRate:"", code:"", foremanCode:"" });
+  const [promoteId, setPromoteId]   = useState("");
   const [payrollWorker, setPayrollWorker] = useState(null);
   const [paidMonths, setPaidMonths] = useState({}); // key: workerId_month
   const [partialInput, setPartialInput] = useState({}); // key: workerId_month -> amount string
@@ -246,13 +250,28 @@ export default function App() {
 
   // Auto-refresh data every 60 seconds while on manager screen
   useEffect(() => {
-    if (screen !== "mgr") return;
+    if (screen !== "mgr" && screen !== "foreman") return;
     const interval = setInterval(() => { loadAll(); }, 60000);
     return () => clearInterval(interval);
   }, [screen, loadAll]);
 
   const projReports = id => reports.filter(r => String(r.projectId) === String(id));
   const getWkrNames = (ids=[]) => ids.map(id => workers.find(w => String(w.id)===String(id))?.name).filter(Boolean).join(", ");
+
+  // ====== הרשאות מנהל עבודה ======
+  const isForeman = screen === "foreman";
+  const foremanProjectIds = (loggedForeman?.foremanProjects || []).map(String);
+  const canSeeProject = (pid) => !isForeman || foremanProjectIds.includes(String(pid));
+  const visibleProjects = isForeman ? projects.filter(p => canSeeProject(p.id)) : projects;
+  const visibleReports  = isForeman ? reports.filter(r => canSeeProject(r.projectId)) : reports;
+  const visiblePending  = isForeman ? pendingReports.filter(r => canSeeProject(r.projectId)) : pendingReports;
+
+  const foremanLogin = () => {
+    const code = codeInput.trim();
+    const f = workers.find(w => w.isForeman && w.foremanCode && w.foremanCode === code);
+    if (f) { setLoggedForeman(f); setCodeInput(""); setCodeError(false); setMgTab("reports"); setDetailId(null); setScreen("foreman"); }
+    else setCodeError(true);
+  };
 
   const workerLogin = () => {
     const w = workers.find(w => w.code === codeInput.trim());
@@ -397,8 +416,14 @@ export default function App() {
   const saveCalDay = async (date, data) => {
     try {
       const existing = calEvents[date];
-      const entry = { date, assignments: data.assignments || [], tasks: data.tasks,
-                      workers: (data.assignments||[]).flatMap(a => a.workers||[]) };
+      // מנהל עבודה עורך רק את השיבוצים של הפרויקטים שלו — השאר נשמרים
+      const prevAssigns = existing?.assignments?.length
+        ? existing.assignments
+        : (existing?.workers?.length ? [{ projectId:"", workers: existing.workers }] : []);
+      const keepOthers = isForeman ? prevAssigns.filter(a => !canSeeProject(a.projectId)) : [];
+      const merged = [...keepOthers, ...(data.assignments || [])];
+      const entry = { date, assignments: merged, tasks: data.tasks,
+                      workers: merged.flatMap(a => a.workers||[]) };
       if (existing && existing._dbid) {
         await dbUpdate("calendar", existing._dbid, entry);
         setCalEvents(prev => ({...prev, [date]: {...entry, _dbid: existing._dbid}}));
@@ -492,6 +517,56 @@ export default function App() {
     setInvoiceAnalyzing(false);
   };
 
+  // ====== ניהול מנהלי עבודה ======
+  const updateWorkerFields = async (w, changes) => {
+    const updated = { ...w, ...changes };
+    await dbUpdate("workers", w._dbid, updated);
+    setWorkers(prev => prev.map(x => x._dbid===w._dbid ? updated : x));
+    if (loggedForeman && loggedForeman._dbid === w._dbid) setLoggedForeman(updated);
+  };
+
+  const toggleForemanProject = async (w, pid) => {
+    const cur = (w.foremanProjects||[]).map(String);
+    const next = cur.includes(String(pid)) ? cur.filter(x=>x!==String(pid)) : [...cur, String(pid)];
+    await updateWorkerFields(w, { foremanProjects: next });
+  };
+
+  const promoteToForeman = async () => {
+    if (!promoteId) return;
+    const w = workers.find(x => String(x.id)===String(promoteId));
+    if (!w) return;
+    await updateWorkerFields(w, { isForeman: true, foremanCode: w.foremanCode||"", foremanProjects: w.foremanProjects||[] });
+    setPromoteId("");
+  };
+
+  const demoteForeman = async (w) => {
+    if (!window.confirm(`לבטל את ההרשאה של ${w.name} כמנהל עבודה?`)) return;
+    await updateWorkerFields(w, { isForeman: false, foremanCode: "", foremanProjects: [] });
+  };
+
+  const addNewForeman = async () => {
+    if (!newForeman.name.trim() || !newForeman.foremanCode.trim()) {
+      alert("יש למלא שם וקוד מנהל עבודה");
+      return;
+    }
+    try {
+      const w = {
+        name: newForeman.name.trim(),
+        role: newForeman.role.trim() || "מנהל עבודה",
+        dailyRate: newForeman.dailyRate || "",
+        code: newForeman.code.trim(),
+        isForeman: true,
+        foremanCode: newForeman.foremanCode.trim(),
+        foremanProjects: [],
+        id: Date.now()
+      };
+      const saved = await dbInsert("workers", w);
+      setWorkers(prev => [...prev, saved]);
+      setNewForeman({ name:"", role:"", dailyRate:"", code:"", foremanCode:"" });
+      setNewForemanM(false);
+    } catch(e) { alert("שגיאה: " + e.message); }
+  };
+
   const saveAdminCode = async () => {
     if (!newAdminCode.trim()) return;
     const newCode = newAdminCode.trim();
@@ -538,6 +613,7 @@ export default function App() {
       </div>
       <div style={{ display:"flex", flexDirection:"column", gap:12, width:"100%", maxWidth:300 }}>
         <button onClick={()=>{ setScreen("wLogin"); setCodeInput(""); setCodeError(false); }} style={{ ...btnY, fontSize:16, padding:15, borderRadius:14 }}>👷 כניסת עובד</button>
+        <button onClick={()=>{ setScreen("fLogin"); setCodeInput(""); setCodeError(false); }} style={{ fontSize:16, padding:15, borderRadius:14, background:"rgba(232,197,71,0.15)", color:"#E8C547", border:"1px solid rgba(232,197,71,0.35)", cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700 }}>🦺 כניסת מנהל עבודה</button>
         <button onClick={()=>{ setScreen("mLogin"); setCodeInput(""); setCodeError(false); }} style={{ fontSize:16, padding:15, borderRadius:14, background:"rgba(255,255,255,0.08)", color:"#ccc", border:"1px solid rgba(255,255,255,0.15)", cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700 }}>🔐 כניסת מנהל</button>
       </div>
     </div>
@@ -554,6 +630,21 @@ export default function App() {
         <input value={codeInput} onChange={e=>{setCodeInput(e.target.value);setCodeError(false);}} onKeyDown={e=>e.key==="Enter"&&workerLogin()} placeholder="קוד אישי" type="password" style={{ ...inp, fontSize:22, letterSpacing:6, textAlign:"center", marginBottom:8 }}/>
         {codeError && <p style={{ color:"#E53935", fontSize:13, margin:"0 0 8px", textAlign:"center" }}>קוד שגוי, נסה שוב</p>}
         <button onClick={workerLogin} style={{ ...btnD, width:"100%", marginTop:4, fontSize:15 }}>כניסה</button>
+      </div>
+    </div>
+  );
+
+  if (screen === "fLogin") return (
+    <div style={{ ...base, background:"#1A1A2E", display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
+      <GFont/>
+      <div style={{ background:"#fff", borderRadius:20, padding:30, width:"100%", maxWidth:320, direction:"rtl" }}>
+        <button onClick={()=>setScreen("home")} style={{ background:"none", border:"none", cursor:"pointer", fontSize:13, color:"#888", fontFamily:"Heebo,sans-serif", padding:"0 0 14px" }}>← חזור</button>
+        <LogoBig/>
+        <h2 style={{ margin:"12px 0 4px", fontWeight:800, fontSize:20, textAlign:"center" }}>כניסת מנהל עבודה</h2>
+        <p style={{ margin:"0 0 18px", color:"#777", fontSize:14, textAlign:"center" }}>הכנס את קוד מנהל העבודה</p>
+        <input value={codeInput} onChange={e=>{setCodeInput(e.target.value);setCodeError(false);}} onKeyDown={e=>e.key==="Enter"&&foremanLogin()} placeholder="קוד מנהל עבודה" type="password" style={{ ...inp, fontSize:22, letterSpacing:6, textAlign:"center", marginBottom:8 }}/>
+        {codeError && <p style={{ color:"#E53935", fontSize:13, margin:"0 0 8px", textAlign:"center" }}>קוד שגוי, נסה שוב</p>}
+        <button onClick={foremanLogin} style={{ ...btnD, width:"100%", marginTop:4, fontSize:15 }}>כניסה</button>
       </div>
     </div>
   );
@@ -657,23 +748,29 @@ export default function App() {
     </div>
   );
 
-  // ====== MANAGER SCREEN ======
-  const tabs = [
+  // ====== MANAGER / FOREMAN SCREEN ======
+  const allTabs = [
     { key:"reports",  label:"דיווחים",  emoji:"📋" },
     { key:"projects", label:"פרויקטים", emoji:"🏗️" },
     { key:"workers",  label:"עובדים",   emoji:"👷" },
     { key:"payroll",  label:"שכר",      emoji:"💰" },
     { key:"calendar", label:"יומן",     emoji:"📅" },
     { key:"equipment",label:"ציוד",     emoji:"🛒" },
+    { key:"foremen",  label:"מנהלי עבודה", emoji:"🦺" },
     { key:"settings", label:"הגדרות",   emoji:"⚙️" },
   ];
+  const foremanTabs = ["reports","projects","workers","calendar"];
+  const tabs = isForeman ? allTabs.filter(t => foremanTabs.includes(t.key)) : allTabs;
 
   return (
     <div style={{ ...base, background:"#F5F5F0" }}>
       <GFont/>
       <header style={{ background:"#1A1A2E", padding:"0 18px", display:"flex", alignItems:"center", justifyContent:"space-between", height:60 }}>
         <LogoSmall/>
-        <button onClick={()=>setScreen("home")} style={{ background:"rgba(255,255,255,0.1)", color:"#ccc", border:"none", borderRadius:8, padding:"5px 12px", fontSize:13, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>יציאה</button>
+        <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+          {isForeman && <span style={{ color:"#E8C547", fontSize:13, fontWeight:700 }}>🦺 {loggedForeman?.name}</span>}
+          <button onClick={()=>{ setLoggedForeman(null); setMgTab("reports"); setDetailId(null); setScreen("home"); }} style={{ background:"rgba(255,255,255,0.1)", color:"#ccc", border:"none", borderRadius:8, padding:"5px 12px", fontSize:13, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>יציאה</button>
+        </div>
       </header>
 
       <div style={{ background:"#fff", borderBottom:"1.5px solid #EEE", display:"flex", justifyContent:"center", overflowX:"auto" }}>
@@ -692,10 +789,10 @@ export default function App() {
             <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:16 }}>
               <div>
                 <h1 style={{ margin:0, fontSize:20, fontWeight:800 }}>דיווחי עובדים</h1>
-                <p style={{ margin:"3px 0 0", color:"#777", fontSize:13 }}>{reports.length} דיווחים סה"כ</p>
+                <p style={{ margin:"3px 0 0", color:"#777", fontSize:13 }}>{visibleReports.length} דיווחים סה"כ</p>
               </div>
               <div style={{ display:"flex", gap:8 }}>
-                <button onClick={async ()=>{
+                {!isForeman && <button onClick={async ()=>{
                   try {
                     // Get ALL rows from reports table
                     const res = await fetch(`https://rkjcrhywhoixdkqlfnko.supabase.co/rest/v1/reports?select=*&order=id.asc`, { headers: hdrs });
@@ -717,18 +814,18 @@ export default function App() {
                   } catch(e) {
                     alert("שגיאה: " + e.message);
                   }
-                }} style={{ ...btnY, padding:"7px 14px", fontSize:13 }}>✓ אשר הכל</button>
+                }} style={{ ...btnY, padding:"7px 14px", fontSize:13 }}>✓ אשר הכל</button>}
                 <button onClick={loadAll} style={{ ...btnG, padding:"7px 14px", fontSize:13 }}>🔄 רענן</button>
               </div>
             </div>
             {/* Pending approval section */}
-            {pendingReports.length>0 && (
+            {visiblePending.length>0 && (
               <div style={{ background:"#FFF8E1", borderRadius:14, padding:"14px 18px", marginBottom:14, border:"1.5px solid #FFD54F" }}>
                 <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:10 }}>
-                  <h3 style={{ margin:0, fontSize:14, fontWeight:700, color:"#B26A00" }}>⏳ ממתינים לאישור ({pendingReports.length})</h3>
-                  <button onClick={async ()=>{ for(const rep of pendingReports){ await approveReport(rep); } }} style={{ background:"#1A1A2E", color:"#E8C547", border:"none", borderRadius:7, padding:"4px 12px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700 }}>✓ אשר הכל</button>
+                  <h3 style={{ margin:0, fontSize:14, fontWeight:700, color:"#B26A00" }}>⏳ ממתינים לאישור ({visiblePending.length})</h3>
+                  <button onClick={async ()=>{ for(const rep of visiblePending){ await approveReport(rep); } }} style={{ background:"#1A1A2E", color:"#E8C547", border:"none", borderRadius:7, padding:"4px 12px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700 }}>✓ אשר הכל</button>
                 </div>
-                {pendingReports.map(r => (
+                {visiblePending.map(r => (
                   <div key={r._dbid} style={{ background:"#fff", borderRadius:10, padding:"10px 14px", marginBottom:7, display:"flex", justifyContent:"space-between", alignItems:"flex-start", gap:8 }}>
                     <div style={{ flex:1 }}>
                       <div style={{ display:"flex", gap:8, flexWrap:"wrap", alignItems:"center", marginBottom:3 }}>
@@ -747,8 +844,8 @@ export default function App() {
               </div>
             )}
 
-            {reports.length===0 && pendingReports.length===0 && <div style={{ background:"#fff", borderRadius:14, padding:44, textAlign:"center", border:"1.5px dashed #DDD", color:"#AAA" }}><div style={{ fontSize:34, marginBottom:8 }}>📋</div><p style={{ margin:0 }}>אין דיווחים עדיין</p></div>}
-            {[...reports].reverse().map(r => (
+            {visibleReports.length===0 && visiblePending.length===0 && <div style={{ background:"#fff", borderRadius:14, padding:44, textAlign:"center", border:"1.5px dashed #DDD", color:"#AAA" }}><div style={{ fontSize:34, marginBottom:8 }}>📋</div><p style={{ margin:0 }}>אין דיווחים עדיין</p></div>}
+            {[...visibleReports].reverse().map(r => (
               <div key={r._dbid} style={{ background:"#fff", borderRadius:12, padding:"13px 18px", marginBottom:9, borderRight:"4px solid #E8C547", boxShadow:"0 1px 5px rgba(0,0,0,0.06)", display:"flex", justifyContent:"space-between", alignItems:"flex-start", gap:10 }}>
                 <div style={{ flex:1 }}>
                   <div style={{ display:"flex", gap:8, flexWrap:"wrap", alignItems:"center", marginBottom:3 }}>
@@ -772,9 +869,9 @@ export default function App() {
             <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12 }}>
               <div>
                 <h1 style={{ margin:0, fontSize:20, fontWeight:800 }}>פרויקטים</h1>
-                <p style={{ margin:"3px 0 0", color:"#777", fontSize:13 }}>{projects.length} פרויקטים</p>
+                <p style={{ margin:"3px 0 0", color:"#777", fontSize:13 }}>{visibleProjects.length} פרויקטים</p>
               </div>
-              <button onClick={()=>setNewPM(true)} style={btnY}>+ פרויקט חדש</button>
+              {!isForeman && <button onClick={()=>setNewPM(true)} style={btnY}>+ פרויקט חדש</button>}
             </div>
 
             {/* Active / Completed toggle */}
@@ -787,13 +884,13 @@ export default function App() {
               ))}
             </div>
 
-            {projects.filter(p => projTab==="completed" ? p.status==="הושלם" : p.status!=="הושלם").length===0 && (
+            {visibleProjects.filter(p => projTab==="completed" ? p.status==="הושלם" : p.status!=="הושלם").length===0 && (
               <div style={{ background:"#fff", borderRadius:14, padding:44, textAlign:"center", border:"1.5px dashed #DDD", color:"#AAA" }}>
                 <div style={{ fontSize:34, marginBottom:8 }}>{projTab==="completed"?"✅":"🏗️"}</div>
                 <p style={{ margin:0 }}>{projTab==="completed"?"אין פרויקטים שהושלמו עדיין":"אין פרויקטים פעילים"}</p>
               </div>
             )}
-            {projects.filter(p => projTab==="completed" ? p.status==="הושלם" : p.status!=="הושלם").map(p => {
+            {visibleProjects.filter(p => projTab==="completed" ? p.status==="הושלם" : p.status!=="הושלם").map(p => {
               const sc = STATUS_COLORS[p.status]||STATUS_COLORS["ממתין"];
               const pr = projReports(p.id);
               // ✅ ימים ייחודיים
@@ -809,7 +906,7 @@ export default function App() {
                       <span style={{ background:sc.bg, color:sc.text, borderRadius:20, padding:"3px 10px", fontSize:11, fontWeight:600, display:"flex", alignItems:"center", gap:4 }}>
                         <span style={{ width:5, height:5, borderRadius:"50%", background:sc.dot, display:"inline-block" }}/>{p.status}
                       </span>
-                      <button onClick={()=>delProject(p)} style={{ background:"none", border:"none", cursor:"pointer", color:"#CCC", fontSize:14 }}>✕</button>
+                      {!isForeman && <button onClick={()=>delProject(p)} style={{ background:"none", border:"none", cursor:"pointer", color:"#CCC", fontSize:14 }}>✕</button>}
                     </div>
                   </div>
                   <div style={{ marginBottom:9 }}>
@@ -1221,7 +1318,7 @@ export default function App() {
                 <h1 style={{ margin:0, fontSize:20, fontWeight:800 }}>עובדים</h1>
                 <p style={{ margin:"3px 0 0", color:"#777", fontSize:13 }}>{workers.length} עובדים</p>
               </div>
-              <button onClick={()=>setNewWM(true)} style={btnY}>+ עובד חדש</button>
+              {!isForeman && <button onClick={()=>setNewWM(true)} style={btnY}>+ עובד חדש</button>}
             </div>
             {workers.length===0 && <div style={{ background:"#fff", borderRadius:14, padding:44, textAlign:"center", border:"1.5px dashed #DDD", color:"#AAA" }}><div style={{ fontSize:34, marginBottom:8 }}>👷</div><p style={{ margin:0 }}>אין עובדים — הוסף את הצוות</p></div>}
             <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(220px,1fr))", gap:11 }}>
@@ -1233,15 +1330,15 @@ export default function App() {
                       <div style={{ display:"flex", alignItems:"center", gap:9 }}>
                         <div style={{ width:38, height:38, borderRadius:"50%", background:"#1A1A2E", color:"#E8C547", display:"flex", alignItems:"center", justifyContent:"center", fontWeight:800, fontSize:15, flexShrink:0 }}>{w.name[0]}</div>
                         <div>
-                          <p style={{ margin:0, fontWeight:700, fontSize:14 }}>{w.name}</p>
-                          <p style={{ margin:0, color:"#777", fontSize:12 }}>{w.role}</p>
+                          <p style={{ margin:0, fontWeight:700, fontSize:14 }}>{w.name} {w.isForeman && <span style={{ fontSize:11 }}>🦺</span>}</p>
+                          <p style={{ margin:0, color:"#777", fontSize:12 }}>{w.role}{w.isForeman ? " · מנהל עבודה" : ""}</p>
                         </div>
                       </div>
-                      <button onClick={()=>delWorker(w)} style={{ background:"none", border:"none", cursor:"pointer", color:"#CCC", fontSize:14 }}>✕</button>
+                      {!isForeman && <button onClick={()=>delWorker(w)} style={{ background:"none", border:"none", cursor:"pointer", color:"#CCC", fontSize:14 }}>✕</button>}
                     </div>
                     <div style={{ background:"#F5F5F0", borderRadius:8, padding:"6px 11px", fontSize:12, marginBottom:6, display:"flex", justifyContent:"space-between", alignItems:"center" }}>
                       <span><span style={{ color:"#888" }}>קוד: </span><span style={{ fontWeight:700, letterSpacing:2 }}>{w.code||"—"}</span></span>
-                      <button onClick={()=>{ setEditWorker({...w}); setEditWM(true); }} style={{ background:"#1A1A2E", color:"#E8C547", border:"none", borderRadius:6, padding:"2px 9px", fontSize:11, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700 }}>ערוך</button>
+                      {!isForeman && <button onClick={()=>{ setEditWorker({...w}); setEditWM(true); }} style={{ background:"#1A1A2E", color:"#E8C547", border:"none", borderRadius:6, padding:"2px 9px", fontSize:11, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700 }}>ערוך</button>}
                     </div>
                     {w.dailyRate && <p style={{ margin:"0 0 4px", fontSize:12, color:"#555" }}>💵 ₪{fmtNum(w.dailyRate)} ליום</p>}
                     <p style={{ margin:0, fontSize:12, color:"#999" }}>💬 {wr.length} דיווחים</p>
@@ -1253,7 +1350,7 @@ export default function App() {
         )}
 
         {/* PAYROLL TAB */}
-        {mgTab==="payroll" && (() => {
+        {mgTab==="payroll" && !isForeman && (() => {
           // calc pending/paid per worker
           const allWorkerData = workers.map(w => {
             const { totalDays, totalPay, months, projectBreakdown } = calcWorkerPayroll(w, reports);
@@ -1542,9 +1639,10 @@ export default function App() {
                 const dateStr = `${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
                 const ev = calEvents[dateStr];
                 // תאימות לאחור: נתונים ישנים עם workers בלבד
-                const assigns = ev?.assignments?.length
+                const allAssigns = ev?.assignments?.length
                   ? ev.assignments
                   : (ev?.workers?.length ? [{ projectId: "", workers: ev.workers }] : []);
+                const assigns = isForeman ? allAssigns.filter(a => canSeeProject(a.projectId)) : allAssigns;
                 const hasData = assigns.length>0 || ev?.tasks;
                 const isToday = dateStr === todayStr();
                 return (
@@ -1608,7 +1706,7 @@ export default function App() {
                           <select value={a.projectId} onChange={e=>updAssign({projectId:e.target.value})}
                             style={{ flex:1, border:"1.5px solid #DDD", borderRadius:8, padding:"7px 10px", fontSize:14, fontFamily:"Heebo,sans-serif", outline:"none", background:"#fff" }}>
                             <option value="">— בחר פרויקט —</option>
-                            {projects.filter(p=>p.status!=="הושלם").map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                            {visibleProjects.filter(p=>p.status!=="הושלם").map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                           </select>
                           <button onClick={()=>setCalEditData(prev=>({...prev, assignments:(prev.assignments||[]).filter((_,i)=>i!==ai)}))}
                             style={{ background:"none", border:"none", cursor:"pointer", color:"#CCC", fontSize:16, padding:0, flexShrink:0 }}>✕</button>
@@ -1660,7 +1758,7 @@ export default function App() {
         })()}
 
         {/* EQUIPMENT TAB */}
-        {mgTab==="equipment" && (
+        {mgTab==="equipment" && !isForeman && (
           <>
             <div style={{ marginBottom:14 }}>
               <h1 style={{ margin:0, fontSize:20, fontWeight:800 }}>🛒 ציוד לקנייה</h1>
@@ -1724,8 +1822,86 @@ export default function App() {
           </>
         )}
 
+        {/* FOREMEN TAB */}
+        {mgTab==="foremen" && !isForeman && (() => {
+          const foremen = workers.filter(w => w.isForeman);
+          const nonForemen = workers.filter(w => !w.isForeman);
+          return (
+          <>
+            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:14 }}>
+              <div>
+                <h1 style={{ margin:0, fontSize:20, fontWeight:800 }}>🦺 מנהלי עבודה</h1>
+                <p style={{ margin:"3px 0 0", color:"#777", fontSize:13 }}>{foremen.length} מנהלי עבודה</p>
+              </div>
+              <button onClick={()=>setNewForemanM(true)} style={btnY}>+ מנהל עבודה</button>
+            </div>
+
+            {/* הפיכת עובד קיים למנהל עבודה */}
+            {nonForemen.length>0 && (
+              <div style={{ background:"#fff", borderRadius:14, padding:"14px 16px", marginBottom:14, boxShadow:"0 2px 8px rgba(0,0,0,0.07)" }}>
+                <p style={{ margin:"0 0 8px", fontSize:13, fontWeight:700 }}>הפוך עובד קיים למנהל עבודה</p>
+                <div style={{ display:"flex", gap:8 }}>
+                  <select value={promoteId} onChange={e=>setPromoteId(e.target.value)} style={{ flex:1, ...inp, fontSize:14 }}>
+                    <option value="">— בחר עובד —</option>
+                    {nonForemen.map(w => <option key={w.id} value={w.id}>{w.name}</option>)}
+                  </select>
+                  <button onClick={promoteToForeman} disabled={!promoteId} style={{ ...btnD, fontSize:13, opacity:promoteId?1:0.4 }}>הפוך</button>
+                </div>
+              </div>
+            )}
+
+            {foremen.length===0 && (
+              <div style={{ background:"#fff", borderRadius:14, padding:44, textAlign:"center", border:"1.5px dashed #DDD", color:"#AAA" }}>
+                <div style={{ fontSize:34, marginBottom:8 }}>🦺</div>
+                <p style={{ margin:0 }}>אין מנהלי עבודה עדיין</p>
+              </div>
+            )}
+
+            {foremen.map(w => {
+              const assigned = (w.foremanProjects||[]).map(String);
+              return (
+                <div key={w._dbid} style={{ background:"#fff", borderRadius:14, padding:"16px 18px", marginBottom:11, boxShadow:"0 2px 8px rgba(0,0,0,0.07)" }}>
+                  <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:12 }}>
+                    <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+                      <div style={{ width:38, height:38, borderRadius:"50%", background:"#E8C547", color:"#1A1A2E", display:"flex", alignItems:"center", justifyContent:"center", fontWeight:800, fontSize:15, flexShrink:0 }}>{w.name[0]}</div>
+                      <div>
+                        <p style={{ margin:0, fontWeight:700, fontSize:15 }}>{w.name}</p>
+                        <p style={{ margin:0, fontSize:12, color:"#888" }}>{w.role||"מנהל עבודה"}</p>
+                      </div>
+                    </div>
+                    <button onClick={()=>demoteForeman(w)} style={{ background:"#FCE4EC", color:"#B71C1C", border:"none", borderRadius:8, padding:"4px 10px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>בטל הרשאה</button>
+                  </div>
+
+                  <label style={{ display:"block", marginBottom:12 }}>
+                    <span style={{ fontSize:12, fontWeight:600, display:"block", marginBottom:4, color:"#555" }}>🔑 קוד מנהל עבודה</span>
+                    <input value={w.foremanCode||""} placeholder="לדוגמה: 7788"
+                      onChange={e=>updateWorkerFields(w, { foremanCode: e.target.value })}
+                      style={{ ...inp, letterSpacing:3, fontSize:16 }}/>
+                    {!w.foremanCode && <p style={{ margin:"4px 0 0", fontSize:11, color:"#E53935" }}>ללא קוד לא ניתן להתחבר</p>}
+                  </label>
+
+                  <p style={{ margin:"0 0 7px", fontSize:12, fontWeight:700, color:"#555" }}>🏗️ פרויקטים מורשים ({assigned.length})</p>
+                  <div style={{ display:"flex", flexWrap:"wrap", gap:6 }}>
+                    {projects.length===0 && <p style={{ margin:0, fontSize:12, color:"#AAA" }}>אין פרויקטים</p>}
+                    {projects.map(p => {
+                      const on = assigned.includes(String(p.id));
+                      return (
+                        <button key={p.id} onClick={()=>toggleForemanProject(w, p.id)}
+                          style={{ background:on?"#1A1A2E":"#F0F0EC", color:on?"#E8C547":"#555", border:"none", borderRadius:8, padding:"6px 11px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:on?700:400 }}>
+                          {on?"✓ ":""}{p.name}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+          </>
+          );
+        })()}
+
         {/* SETTINGS */}
-        {mgTab==="settings" && (
+        {mgTab==="settings" && !isForeman && (
           <>
             <h1 style={{ margin:"0 0 20px", fontSize:20, fontWeight:800 }}>הגדרות</h1>
             <div style={{ background:"#fff", borderRadius:14, padding:22, boxShadow:"0 2px 8px rgba(0,0,0,0.07)", maxWidth:360 }}>
@@ -1765,6 +1941,33 @@ export default function App() {
         </div>
       )}
 
+      {/* MODAL: New Foreman */}
+      {newForemanM && (
+        <div onClick={()=>setNewForemanM(false)} style={OVL}>
+          <div onClick={e=>e.stopPropagation()} style={MOD}>
+            <h3 style={{ margin:"0 0 6px", fontWeight:800, fontSize:17 }}>מנהל עבודה חדש</h3>
+            <p style={{ margin:"0 0 14px", color:"#777", fontSize:13 }}>קוד מנהל עבודה משמש לכניסה למסך הניהול</p>
+            {[
+              { key:"name", label:"שם מלא", ph:"ישראל ישראלי", extra:{} },
+              { key:"foremanCode", label:"קוד מנהל עבודה", ph:"7788", extra:{ letterSpacing:3, fontSize:17 } },
+              { key:"role", label:"תפקיד (אופציונלי)", ph:"מנהל עבודה", extra:{} },
+              { key:"code", label:"קוד עובד (אופציונלי — לדיווח שעות)", ph:"1234", extra:{ letterSpacing:3, fontSize:17 } },
+              { key:"dailyRate", label:"שכר יומי ₪ (אופציונלי)", ph:"600", extra:{ type:"number" } },
+            ].map(f=>(
+              <label key={f.key} style={{ display:"block", marginBottom:11 }}>
+                <LBL t={f.label}/>
+                <input type={f.extra.type||"text"} value={newForeman[f.key]||""} placeholder={f.ph}
+                  onChange={e=>setNewForeman({...newForeman,[f.key]:e.target.value})} style={{ ...inp, ...f.extra }}/>
+              </label>
+            ))}
+            <div style={{ display:"flex", gap:10, marginTop:6 }}>
+              <button onClick={addNewForeman} style={{ ...btnD, flex:1 }}>הוסף</button>
+              <button onClick={()=>setNewForemanM(false)} style={{ ...btnG, flex:1 }}>ביטול</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* MODAL: Edit Worker */}
       {editWM && editWorker && (
         <div onClick={()=>{ setEditWM(false); setEditWorker(null); }} style={OVL}>
@@ -1782,6 +1985,27 @@ export default function App() {
                   onChange={e=>setEditWorker({...editWorker,[f.key]:e.target.value})} style={{ ...inp, ...f.extra }}/>
               </label>
             ))}
+            {/* הרשאת מנהל עבודה */}
+            <div style={{ background:"#FFFBF0", border:"1.5px solid #FFE082", borderRadius:12, padding:"12px 14px", marginBottom:12 }}>
+              <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+                <span style={{ fontSize:13, fontWeight:700 }}>🦺 מנהל עבודה</span>
+                <button onClick={()=>setEditWorker({...editWorker, isForeman: !editWorker.isForeman, foremanProjects: editWorker.foremanProjects||[]})}
+                  style={{ background: editWorker.isForeman?"#1A1A2E":"#F0F0EC", color: editWorker.isForeman?"#E8C547":"#888", border:"none", borderRadius:8, padding:"5px 14px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700 }}>
+                  {editWorker.isForeman ? "✓ כן" : "לא"}
+                </button>
+              </div>
+              {editWorker.isForeman && (
+                <>
+                  <label style={{ display:"block", marginTop:10 }}>
+                    <span style={{ fontSize:12, fontWeight:600, display:"block", marginBottom:4, color:"#555" }}>קוד מנהל עבודה</span>
+                    <input value={editWorker.foremanCode||""} placeholder="7788"
+                      onChange={e=>setEditWorker({...editWorker, foremanCode: e.target.value})}
+                      style={{ ...inp, letterSpacing:3, fontSize:16 }}/>
+                  </label>
+                  <p style={{ margin:"8px 0 0", fontSize:11, color:"#B26A00" }}>שיוך פרויקטים מתבצע בטאב "מנהלי עבודה"</p>
+                </>
+              )}
+            </div>
             <div style={{ display:"flex", gap:10, marginTop:6 }}>
               <button onClick={saveEditWorker} style={{ ...btnD, flex:1 }}>שמור</button>
               <button onClick={()=>{ setEditWM(false); setEditWorker(null); }} style={{ ...btnG, flex:1 }}>ביטול</button>
