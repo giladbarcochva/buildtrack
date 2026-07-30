@@ -1149,46 +1149,53 @@ export default function App() {
               {/* INVOICES */}
               <div style={{ background:"#fff", borderRadius:14, padding:"16px 20px", marginBottom:14, boxShadow:"0 2px 8px rgba(0,0,0,0.07)" }}>
                 <h3 style={{ margin:"0 0 13px", fontSize:15, fontWeight:700 }}>📸 חשבוניות</h3>
-                <p style={{ margin:"0 0 12px", fontSize:13, color:"#777" }}>העלה תמונת חשבונית — המערכת תחלץ פריטים ומחירים אוטומטית</p>
+                <p style={{ margin:"0 0 12px", fontSize:13, color:"#777" }}>העלה תמונות חשבוניות של הפרויקט — נשמרות לצפייה בכל עת</p>
 
                 <label style={{ display:"block", cursor:"pointer" }}>
                   <div style={{ background:"#F0F4FF", border:"2px dashed #90CAF9", borderRadius:12, padding:"18px", textAlign:"center" }}>
                     {invoiceAnalyzing
-                      ? <p style={{ margin:0, color:"#1565C0", fontWeight:700 }}>🔍 מנתח חשבונית...</p>
+                      ? <p style={{ margin:0, color:"#1565C0", fontWeight:700 }}>⏳ מעלה חשבונית...</p>
                       : <p style={{ margin:0, color:"#1565C0", fontSize:14 }}>📷 לחץ להעלאת חשבונית</p>
                     }
                   </div>
-                  <input type="file" accept="image/*" style={{ display:"none" }} onChange={async e => {
-                    const file = e.target.files[0];
-                    if (!file) return;
-                    const reader = new FileReader();
-                    reader.onload = async ev => {
-                      const dataUrl = ev.target.result;
-                      const base64 = dataUrl.split(",")[1];
-                      const mime = file.type || "image/jpeg";
-                      await analyzeInvoice(detailProject.id, base64, mime);
-                    };
-                    reader.readAsDataURL(file);
+                  <input type="file" accept="image/*,application/pdf" multiple style={{ display:"none" }} onChange={async e => {
+                    const files = Array.from(e.target.files);
                     e.target.value = "";
+                    if (!files.length) return;
+                    setInvoiceAnalyzing(true);
+                    try {
+                      const invs = [...(editProj.invoices||[])];
+                      for (const file of files) {
+                        const path = `${detailProject.id}/invoices/${Date.now()}_${file.name}`;
+                        const url = await storageUpload(file, path);
+                        invs.push({ name: file.name, url, path, date: todayStr() });
+                      }
+                      setEditProj(p=>({...p, invoices: invs}));
+                      updateProjField(detailProject, { invoices: invs });
+                    } catch(err) {
+                      alert("שגיאה בהעלאת חשבונית: " + err.message);
+                    }
+                    setInvoiceAnalyzing(false);
                   }}/>
                 </label>
 
-                {/* Invoice results table */}
-                {invoiceResults[detailProject.id]?.length>0 && (
-                  <div style={{ marginTop:14 }}>
-                    <p style={{ margin:"0 0 8px", fontSize:13, fontWeight:700, color:"#2E7D32" }}>✅ פריטים שזוהו:</p>
-                    <div style={{ borderRadius:10, overflow:"hidden", border:"1px solid #EEE" }}>
-                      <div style={{ display:"grid", gridTemplateColumns:"1fr auto auto", background:"#F5F5F0", padding:"7px 12px", fontSize:12, fontWeight:700, color:"#555" }}>
-                        <span>פריט</span><span style={{ textAlign:"center", paddingLeft:16 }}>כמות</span><span style={{ textAlign:"left", paddingLeft:16 }}>מחיר</span>
+                {(editProj.invoices||[]).length>0 && (
+                  <div style={{ marginTop:12, display:"flex", flexWrap:"wrap", gap:10 }}>
+                    {(editProj.invoices||[]).map((inv,i) => (
+                      <div key={i} style={{ background:"#F5F5F0", borderRadius:10, padding:"8px 12px", display:"flex", alignItems:"center", gap:8 }}>
+                        <button onClick={()=>window.open(inv.url, "_blank")} style={{ background:"none", border:"none", cursor:"pointer", fontSize:13, color:"#1565C0", fontWeight:600, fontFamily:"Heebo,sans-serif", padding:0 }}>
+                          🧾 {inv.name}
+                        </button>
+                        <span style={{ fontSize:11, color:"#AAA" }}>{inv.date}</span>
+                        <button onClick={async ()=>{
+                          if (!window.confirm(`למחוק את "${inv.name}"?`)) return;
+                          if (inv.path) { try { await storageDelete(inv.path); } catch(e) {} }
+                          const invs=(editProj.invoices||[]).filter((_,j)=>j!==i);
+                          setEditProj(p=>({...p,invoices:invs}));
+                          updateProjField(detailProject,{invoices:invs});
+                        }} style={{ background:"none", border:"none", cursor:"pointer", color:"#CCC", fontSize:13 }}>✕</button>
                       </div>
-                      {invoiceResults[detailProject.id].map((item,i) => (
-                        <div key={i} style={{ display:"grid", gridTemplateColumns:"1fr auto auto", padding:"7px 12px", borderTop:"1px solid #F0F0EC", fontSize:13 }}>
-                          <span>{item.desc}</span>
-                          <span style={{ textAlign:"center", paddingLeft:16, color:"#888" }}>{item.qty}</span>
-                          <span style={{ textAlign:"left", paddingLeft:16, fontWeight:700 }}>₪{fmtNum(item.price)}</span>
-                        </div>
-                      ))}
-                    </div>
+                    ))}
                   </div>
                 )}
               </div>
