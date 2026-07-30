@@ -436,13 +436,34 @@ export default function App() {
 
   const saveCalDay = async (date, data) => {
     try {
-      const existing = calEvents[date];
+      // טעינה טרייה מהשרת — מניעת התנגשות בין שני מכשירים
+      let existing = calEvents[date];
+      try {
+        const freshCal = await dbGet("calendar");
+        const freshDay = freshCal.find(x => x.date === date);
+        if (freshDay) existing = freshDay;
+      } catch(e) {}
       // מנהל עבודה עורך רק את השיבוצים של הפרויקטים שלו — השאר נשמרים
       const prevAssigns = existing?.assignments?.length
         ? existing.assignments
         : (existing?.workers?.length ? [{ projectId:"", workers: existing.workers }] : []);
       const keepOthers = isForeman ? prevAssigns.filter(a => !canSeeProject(a.projectId)) : [];
       const merged = [...keepOthers, ...(data.assignments || [])];
+      // בדיקת כפילות מול הנתונים העדכניים (למנהל עבודה — חסימה; למנהל — כבר אישר בלחיצה)
+      if (isForeman) {
+        const seen = {};
+        for (const a of merged) {
+          for (const wid of (a.workers||[])) {
+            if (seen[wid]) {
+              const wk = workers.find(w=>String(w.id)===String(wid));
+              const pr = projects.find(p=>String(p.id)===String(seen[wid].projectId));
+              alert(`${wk?.name||"עובד"} כבר משובץ ליום זה לפרויקט "${pr?.name||"אחר"}" (שובץ ע"י: ${seen[wid].assignedBy||"לא ידוע"}). השיבוץ לא נשמר.`);
+              return;
+            }
+            seen[wid] = a;
+          }
+        }
+      }
       const entry = { date, assignments: merged, tasks: data.tasks,
                       workers: merged.flatMap(a => a.workers||[]) };
       if (existing && existing._dbid) {
@@ -745,14 +766,29 @@ export default function App() {
               </div>
             </label>
 
-            <label style={{ display:"block", marginBottom:14 }}>
-              <LBL t="🏗️ באיזה אתר עבדת?"/>
-              <select value={repProject} onChange={e=>setRepProject(e.target.value)} style={{ ...inp, fontSize:15 }}>
-                <option value="">— בחר פרויקט —</option>
-                {projects.filter(p => p.status !== "הושלם").map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-              </select>
-              {projects.filter(p => p.status !== "הושלם").length===0 && <p style={{ margin:"5px 0 0", fontSize:12, color:"#E53935" }}>אין פרויקטים פעילים כרגע</p>}
-            </label>
+            {(() => {
+              // רק פרויקטים פעילים שהעובד משויך אליהם (שיוך קבוע בפרויקט)
+              const myProjects = projects.filter(p =>
+                p.status !== "הושלם" &&
+                (p.workers||[]).map(String).includes(String(loggedWorker?.id))
+              );
+              return (
+                <label style={{ display:"block", marginBottom:14 }}>
+                  <LBL t="🏗️ באיזה אתר עבדת?"/>
+                  {myProjects.length > 0 ? (
+                    <select value={repProject} onChange={e=>setRepProject(e.target.value)} style={{ ...inp, fontSize:15 }}>
+                      <option value="">— בחר פרויקט —</option>
+                      {myProjects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                    </select>
+                  ) : (
+                    <div style={{ background:"#FFF8E1", border:"1.5px solid #FFD54F", borderRadius:10, padding:"12px 14px" }}>
+                      <p style={{ margin:0, fontSize:13, color:"#B26A00", fontWeight:600 }}>⚠️ אינך משויך לאף פרויקט פעיל</p>
+                      <p style={{ margin:"4px 0 0", fontSize:12, color:"#B26A00" }}>פנה למנהל כדי שישייך אותך לפרויקט</p>
+                    </div>
+                  )}
+                </label>
+              );
+            })()}
             <label style={{ display:"block", marginBottom:18 }}>
               <LBL t="📝 הערה (אופציונלי)"/>
               <textarea value={repNote} onChange={e=>setRepNote(e.target.value)} placeholder="מה בוצע היום?" rows={3} style={{ ...inp, resize:"vertical" }}/>
@@ -1730,7 +1766,7 @@ export default function App() {
 
                   <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:8 }}>
                     <p style={{ margin:0, fontSize:13, fontWeight:700 }}>🏗️ פרויקטים ליום זה</p>
-                    <button onClick={()=>setCalEditData(prev=>({...prev, assignments:[...(prev.assignments||[]), {projectId:"", workers:[]}]}))}
+                    <button onClick={()=>setCalEditData(prev=>({...prev, assignments:[...(prev.assignments||[]), {projectId:"", workers:[], assignedBy: isForeman ? (loggedForeman?.name||"מנהל עבודה") : "מנהל ראשי"}]}))}
                       style={{ background:"#1A1A2E", color:"#E8C547", border:"none", borderRadius:7, padding:"4px 12px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700 }}>
                       + הוסף פרויקט
                     </button>
@@ -1747,10 +1783,16 @@ export default function App() {
                         assignments: (prev.assignments||[]).map((x,i)=> i===ai ? {...x, ...changes} : x)
                       }));
                     };
-                    // עובדים שכבר משובצים לפרויקט אחר באותו יום
-                    const takenElsewhere = (calEditData.assignments||[])
-                      .filter((_,i)=>i!==ai)
-                      .flatMap(x=>x.workers||[]);
+                    // עובדים שכבר משובצים לפרויקט אחר באותו יום — כולל היכן ומי שיבץ
+                    const takenMap = {};
+                    (calEditData.assignments||[]).forEach((x,i)=>{
+                      if (i===ai) return;
+                      (x.workers||[]).forEach(wid=>{
+                        const pr = projects.find(p=>String(p.id)===String(x.projectId));
+                        takenMap[wid] = { projectName: pr?.name || "פרויקט אחר", assignedBy: x.assignedBy || "לא ידוע", idx: i };
+                      });
+                    });
+                    const takenElsewhere = Object.keys(takenMap);
                     return (
                       <div key={ai} style={{ background:"#F9F9F9", borderRadius:12, padding:"12px 14px", marginBottom:10, borderRight:"4px solid #E8C547" }}>
                         <div style={{ display:"flex", gap:8, alignItems:"center", marginBottom:10 }}>
@@ -1769,17 +1811,25 @@ export default function App() {
                             const isSelected = (a.workers||[]).includes(wid);
                             const isTaken = takenElsewhere.includes(wid);
                             return (
-                              <button key={w.id} disabled={isTaken && !isSelected}
-                                onClick={()=>updAssign({
-                                  workers: isSelected
-                                    ? (a.workers||[]).filter(id=>id!==wid)
-                                    : [...(a.workers||[]), wid]
-                                })}
+                              <button key={w.id}
+                                onClick={()=>{
+                                  if (isTaken && !isSelected) {
+                                    const info = takenMap[wid];
+                                    const msg = `${w.name} כבר משובץ ליום זה לפרויקט "${info.projectName}" (שובץ ע"י: ${info.assignedBy}).`;
+                                    if (isForeman) { alert(msg); return; }
+                                    if (!window.confirm(msg + "\n\nלשבץ בכל זאת גם לפרויקט זה?")) return;
+                                  }
+                                  updAssign({
+                                    workers: isSelected
+                                      ? (a.workers||[]).filter(id=>id!==wid)
+                                      : [...(a.workers||[]), wid]
+                                  });
+                                }}
                                 style={{
                                   background: isSelected?"#1A1A2E": isTaken?"#EEE":"#F0F0EC",
                                   color: isSelected?"#E8C547": isTaken?"#BBB":"#555",
                                   border:"none", borderRadius:8, padding:"6px 11px", fontSize:12,
-                                  cursor: (isTaken && !isSelected)?"not-allowed":"pointer",
+                                  cursor: "pointer",
                                   fontFamily:"Heebo,sans-serif", fontWeight:isSelected?700:400,
                                   opacity: (isTaken && !isSelected)?0.5:1
                                 }}>
@@ -1933,8 +1983,8 @@ export default function App() {
 
                   <p style={{ margin:"0 0 7px", fontSize:12, fontWeight:700, color:"#555" }}>🏗️ פרויקטים מורשים ({assigned.length})</p>
                   <div style={{ display:"flex", flexWrap:"wrap", gap:6 }}>
-                    {projects.length===0 && <p style={{ margin:0, fontSize:12, color:"#AAA" }}>אין פרויקטים</p>}
-                    {projects.map(p => {
+                    {projects.filter(p=>p.status!=="הושלם").length===0 && <p style={{ margin:0, fontSize:12, color:"#AAA" }}>אין פרויקטים פעילים</p>}
+                    {projects.filter(p=>p.status!=="הושלם").map(p => {
                       const on = assigned.includes(String(p.id));
                       return (
                         <button key={p.id} onClick={()=>toggleForemanProject(w, p.id)}
