@@ -1275,6 +1275,116 @@ export default function App() {
                 )}
               </div>
 
+              {/* SUBCONTRACTORS */}
+              <div style={{ background:"#fff", borderRadius:14, padding:"16px 20px", marginBottom:14, boxShadow:"0 2px 8px rgba(0,0,0,0.07)" }}>
+                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:13 }}>
+                  <h3 style={{ margin:0, fontSize:15, fontWeight:700 }}>🔨 קבלני משנה</h3>
+                  <button onClick={()=>{ const subs=[...(editProj.subcontractors||[]),{id:Date.now(),name:"",work:"",price:"",withMaterial:true,plannedDays:"",payments:[]}]; setEditProj(p=>({...p,subcontractors:subs})); updateProjField(detailProject,{subcontractors:subs}); }}
+                    style={{ background:"#1A1A2E", color:"#E8C547", border:"none", borderRadius:7, padding:"4px 12px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700 }}>+ הוסף קבלן</button>
+                </div>
+                {(!editProj.subcontractors||editProj.subcontractors.length===0) && <p style={{ margin:0, fontSize:13, color:"#AAA" }}>אין קבלני משנה</p>}
+                {(editProj.subcontractors||[]).map((sc,si) => {
+                  const updSub = (changes, isText=false) => {
+                    const subs=(editProj.subcontractors||[]).map((x,i)=>i===si?{...x,...changes}:x);
+                    setEditProj(p=>({...p,subcontractors:subs}));
+                    if (isText) updateProjFieldDebounced(detailProject,{subcontractors:subs});
+                    else updateProjField(detailProject,{subcontractors:subs});
+                  };
+                  const scPaid = (sc.payments||[]).filter(p=>p.paid).reduce((s,p)=>s+Number(p.amount||0),0);
+                  const scTotal = Number(sc.price||0);
+                  const scRemaining = scTotal - scPaid;
+                  return (
+                    <div key={sc.id} style={{ background:"#F9F9F9", borderRadius:12, padding:"13px 14px", marginBottom:10, borderRight:"4px solid #8B5CF6" }}>
+                      <div style={{ display:"flex", gap:8, alignItems:"center", marginBottom:8 }}>
+                        <input value={sc.name} placeholder="שם הקבלן" onChange={e=>updSub({name:e.target.value}, true)}
+                          style={{ flex:1, border:"1.5px solid #EEE", borderRadius:8, padding:"7px 10px", fontSize:13, fontFamily:"Heebo,sans-serif", outline:"none", background:"#fff", fontWeight:700 }}/>
+                        <button onClick={()=>{ if(!window.confirm(`למחוק את הקבלן "${sc.name||""}"?`)) return; const subs=(editProj.subcontractors||[]).filter((_,i)=>i!==si); setEditProj(p=>({...p,subcontractors:subs})); updateProjField(detailProject,{subcontractors:subs}); }}
+                          style={{ background:"none", border:"none", cursor:"pointer", color:"#CCC", fontSize:14, padding:0, flexShrink:0 }}>✕</button>
+                      </div>
+                      <input value={sc.work} placeholder="תיאור העבודה (למשל: אינסטלציה קומה א)" onChange={e=>updSub({work:e.target.value}, true)}
+                        style={{ width:"100%", border:"1.5px solid #EEE", borderRadius:8, padding:"7px 10px", fontSize:13, fontFamily:"Heebo,sans-serif", outline:"none", background:"#fff", boxSizing:"border-box", marginBottom:8 }}/>
+                      <div style={{ display:"flex", gap:8, marginBottom:8 }}>
+                        <input type="number" value={sc.price} placeholder="מחיר ₪" onChange={e=>updSub({price:e.target.value}, true)}
+                          style={{ flex:1, border:"1.5px solid #EEE", borderRadius:8, padding:"7px 10px", fontSize:13, fontFamily:"Heebo,sans-serif", outline:"none", background:"#fff" }}/>
+                        <input type="number" value={sc.plannedDays} placeholder="ימים מתוכננים" onChange={e=>updSub({plannedDays:e.target.value}, true)}
+                          style={{ flex:1, border:"1.5px solid #EEE", borderRadius:8, padding:"7px 10px", fontSize:13, fontFamily:"Heebo,sans-serif", outline:"none", background:"#fff" }}/>
+                      </div>
+                      <div style={{ display:"flex", gap:6, marginBottom:10 }}>
+                        {[{v:true,l:"🧱 כולל חומר"},{v:false,l:"🚫 בלי חומר (אני מביא)"}].map(opt=>(
+                          <button key={String(opt.v)} onClick={()=>updSub({withMaterial:opt.v})}
+                            style={{ flex:1, background:sc.withMaterial===opt.v?"#1A1A2E":"#F0F0EC", color:sc.withMaterial===opt.v?"#E8C547":"#888", border:"none", borderRadius:8, padding:"6px 0", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:sc.withMaterial===opt.v?700:400 }}>
+                            {opt.l}
+                          </button>
+                        ))}
+                      </div>
+
+                      {/* payment stages */}
+                      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:6 }}>
+                        <span style={{ fontSize:12, fontWeight:700, color:"#555" }}>💳 שלבי תשלום</span>
+                        <button onClick={()=>{ const payments=[...(sc.payments||[]),{id:Date.now(),desc:"",amount:"",paid:false}]; updSub({payments}); }}
+                          style={{ background:"#EDE9FE", color:"#6D28D9", border:"none", borderRadius:6, padding:"3px 10px", fontSize:11, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700 }}>+ שלב</button>
+                      </div>
+                      {(sc.payments||[]).map((pm,pi) => {
+                        const updPm = (changes, isText=false) => {
+                          const payments=(sc.payments||[]).map((x,i)=>i===pi?{...x,...changes}:x);
+                          updSub({payments}, isText);
+                        };
+                        return (
+                          <div key={pm.id} style={{ display:"flex", gap:6, alignItems:"center", marginBottom:6 }}>
+                            <button onClick={()=>{
+                              if (!pm.paid && !window.confirm(`לסמן תשלום של ₪${Number(pm.amount||0).toLocaleString("he-IL")} כשולם?`)) return;
+                              updPm({paid:!pm.paid, paidAt: !pm.paid ? new Date().toLocaleDateString("he-IL") : ""});
+                            }}
+                              style={{ width:22, height:22, borderRadius:"50%", border:`2px solid ${pm.paid?"#22C55E":"#CCC"}`, background:pm.paid?"#22C55E":"#fff", cursor:"pointer", flexShrink:0, color:"#fff", fontSize:12, display:"flex", alignItems:"center", justifyContent:"center" }}>{pm.paid?"✓":""}</button>
+                            <input value={pm.desc} placeholder="מתי (למשל: אחרי יציקה)" onChange={e=>updPm({desc:e.target.value}, true)}
+                              style={{ flex:2, border:"1.5px solid #EEE", borderRadius:7, padding:"5px 9px", fontSize:12, fontFamily:"Heebo,sans-serif", outline:"none", background:"#fff", textDecoration:pm.paid?"line-through":"none", color:pm.paid?"#AAA":"#333" }}/>
+                            <input type="number" value={pm.amount} placeholder="₪" onChange={e=>updPm({amount:e.target.value}, true)}
+                              style={{ flex:1, border:"1.5px solid #EEE", borderRadius:7, padding:"5px 9px", fontSize:12, fontFamily:"Heebo,sans-serif", outline:"none", background:"#fff", textDecoration:pm.paid?"line-through":"none", color:pm.paid?"#AAA":"#333" }}/>
+                            <button onClick={()=>{ const payments=(sc.payments||[]).filter((_,i)=>i!==pi); updSub({payments}); }}
+                              style={{ background:"none", border:"none", cursor:"pointer", color:"#CCC", fontSize:13, padding:0, flexShrink:0 }}>✕</button>
+                          </div>
+                        );
+                      })}
+
+                      {/* summary line */}
+                      {scTotal>0 && (
+                        <div style={{ display:"flex", justifyContent:"space-between", flexWrap:"wrap", gap:4, paddingTop:8, borderTop:"1px solid #EEE", marginTop:4, fontSize:12 }}>
+                          <span style={{ color:"#555" }}>סוכם: <b>₪{fmtNum(scTotal)}</b></span>
+                          <span style={{ color:"#2E7D32" }}>שולם: <b>₪{fmtNum(scPaid)}</b></span>
+                          <span style={{ color:scRemaining>0?"#B71C1C":"#2E7D32" }}>נשאר: <b>₪{fmtNum(scRemaining)}</b></span>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* TOTAL PROJECT COSTS */}
+              {(() => {
+                const expTotal = (editProj.expenses||[]).reduce((s,e)=>s+Number(e.amount||0),0);
+                const subTotal = (editProj.subcontractors||[]).reduce((s,sc)=>s+Number(sc.price||0),0);
+                const subPaid = (editProj.subcontractors||[]).reduce((s,sc)=>s+(sc.payments||[]).filter(p=>p.paid).reduce((s2,p)=>s2+Number(p.amount||0),0),0);
+                if (expTotal===0 && subTotal===0) return null;
+                return (
+                  <div style={{ background:"#1A1A2E", borderRadius:14, padding:"14px 20px", marginBottom:14 }}>
+                    <p style={{ margin:"0 0 8px", fontSize:13, fontWeight:700, color:"#E8C547" }}>💰 סה"כ הוצאות פרויקט</p>
+                    <div style={{ display:"flex", justifyContent:"space-between", fontSize:12, color:"#AAA", marginBottom:3 }}>
+                      <span>הוצאות וחומרים</span><span>₪{fmtNum(expTotal)}</span>
+                    </div>
+                    <div style={{ display:"flex", justifyContent:"space-between", fontSize:12, color:"#AAA", marginBottom:3 }}>
+                      <span>קבלני משנה (סוכם)</span><span>₪{fmtNum(subTotal)}</span>
+                    </div>
+                    <div style={{ display:"flex", justifyContent:"space-between", fontSize:12, color:"#AAA", marginBottom:8 }}>
+                      <span>מתוכם שולם לקבלנים</span><span>₪{fmtNum(subPaid)}</span>
+                    </div>
+                    <div style={{ display:"flex", justifyContent:"space-between", paddingTop:8, borderTop:"1px solid rgba(255,255,255,0.15)" }}>
+                      <span style={{ color:"#fff", fontWeight:700, fontSize:14 }}>סה"כ</span>
+                      <span style={{ color:"#E8C547", fontWeight:800, fontSize:18 }}>₪{fmtNum(expTotal + subTotal)}</span>
+                    </div>
+                  </div>
+                );
+              })()}
+
               {/* INVOICES */}
               <div style={{ background:"#fff", borderRadius:14, padding:"16px 20px", marginBottom:14, boxShadow:"0 2px 8px rgba(0,0,0,0.07)" }}>
                 <h3 style={{ margin:"0 0 13px", fontSize:15, fontWeight:700 }}>📸 חשבוניות</h3>
@@ -1573,7 +1683,7 @@ export default function App() {
 
             {/* toggle pending / history */}
             <div style={{ display:"flex", background:"#F0F0EC", borderRadius:12, padding:3, marginBottom:14, gap:3 }}>
-              {[{k:"pending",l:"לתשלום"},{k:"history",l:"היסטוריה"}].map(t=>(
+              {[{k:"pending",l:"לתשלום"},{k:"history",l:"היסטוריה"},{k:"subs",l:"🔨 קבלנים"}].map(t=>(
                 <button key={t.k} onClick={()=>setPayrollView(t.k)}
                   style={{ flex:1, background:payrollView===t.k?"#1A1A2E":"transparent", color:payrollView===t.k?"#E8C547":"#888", border:"none", borderRadius:10, padding:"8px 0", fontWeight:700, fontSize:13, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>
                   {t.l}
@@ -1582,14 +1692,74 @@ export default function App() {
             </div>
 
             {/* summary bar */}
+            {payrollView!=="subs" && (
             <div style={{ background:"#1A1A2E", borderRadius:14, padding:"12px 18px", marginBottom:14, display:"flex", justifyContent:"space-between", alignItems:"center" }}>
               <span style={{ color:"#AAA", fontSize:12 }}>{payrollView==="pending" ? 'סה"כ נשאר לתשלום' : 'סה"כ שולם עד כה'}</span>
               <span style={{ color:"#E8C547", fontSize:20, fontWeight:800 }}>₪{fmtNum(payrollView==="pending" ? grandPending : grandPaid)}</span>
             </div>
+            )}
 
-            {workers.length===0 && <div style={{ background:"#fff", borderRadius:14, padding:44, textAlign:"center", border:"1.5px dashed #DDD", color:"#AAA" }}><p style={{ margin:0 }}>אין עובדים עדיין</p></div>}
+            {/* SUBCONTRACTORS VIEW */}
+            {payrollView==="subs" && (() => {
+              // אוסף כל הקבלנים מכל הפרויקטים
+              const allSubs = [];
+              projects.forEach(pr => {
+                (pr.subcontractors||[]).forEach(sc => {
+                  const paid = (sc.payments||[]).filter(p=>p.paid).reduce((s,p)=>s+Number(p.amount||0),0);
+                  const total = Number(sc.price||0);
+                  allSubs.push({ sc, project: pr, paid, total, remaining: total - paid });
+                });
+              });
+              const grandSubRemaining = allSubs.reduce((s,x)=>s+Math.max(x.remaining,0),0);
+              const grandSubPaid = allSubs.reduce((s,x)=>s+x.paid,0);
+              return (
+                <>
+                  <div style={{ background:"#1A1A2E", borderRadius:14, padding:"12px 18px", marginBottom:14, display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+                    <span style={{ color:"#AAA", fontSize:12 }}>נשאר לשלם לקבלני משנה</span>
+                    <span style={{ color:"#E8C547", fontSize:20, fontWeight:800 }}>₪{fmtNum(grandSubRemaining)}</span>
+                  </div>
+                  {allSubs.length===0 && (
+                    <div style={{ background:"#fff", borderRadius:14, padding:44, textAlign:"center", border:"1.5px dashed #DDD", color:"#AAA" }}>
+                      <div style={{ fontSize:34, marginBottom:8 }}>🔨</div>
+                      <p style={{ margin:0 }}>אין קבלני משנה — מוסיפים בתוך דף פרויקט</p>
+                    </div>
+                  )}
+                  {allSubs.map(({sc, project, paid, total, remaining}, i) => (
+                    <div key={i} style={{ background:"#fff", borderRadius:14, padding:"14px 18px", marginBottom:11, boxShadow:"0 2px 8px rgba(0,0,0,0.07)", borderRight:"4px solid #8B5CF6" }}>
+                      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:8 }}>
+                        <div>
+                          <p style={{ margin:0, fontWeight:700, fontSize:15 }}>{sc.name||"ללא שם"}</p>
+                          <p style={{ margin:"2px 0 0", fontSize:12, color:"#888" }}>🏗️ {project.name}{sc.work ? ` · ${sc.work}` : ""}</p>
+                          <p style={{ margin:"2px 0 0", fontSize:11, color:"#AAA" }}>{sc.withMaterial ? "🧱 כולל חומר" : "🚫 בלי חומר"}{sc.plannedDays ? ` · ${sc.plannedDays} ימים מתוכננים` : ""}</p>
+                        </div>
+                        <div style={{ textAlign:"left" }}>
+                          <p style={{ margin:0, fontSize:16, fontWeight:800, color: remaining>0?"#B71C1C":"#2E7D32" }}>₪{fmtNum(Math.max(remaining,0))}</p>
+                          <p style={{ margin:0, fontSize:11, color:"#AAA" }}>נשאר מתוך ₪{fmtNum(total)}</p>
+                        </div>
+                      </div>
+                      {(sc.payments||[]).length>0 && (
+                        <div style={{ background:"#F9F9F9", borderRadius:9, padding:"8px 11px" }}>
+                          {(sc.payments||[]).map((pm,pi)=>(
+                            <div key={pi} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"3px 0", fontSize:12 }}>
+                              <span style={{ color:pm.paid?"#2E7D32":"#555" }}>{pm.paid?"✅":"⏳"} {pm.desc||"שלב"}{pm.paid && pm.paidAt ? ` (${pm.paidAt})` : ""}</span>
+                              <span style={{ fontWeight:700, color:pm.paid?"#2E7D32":"#333", textDecoration:pm.paid?"line-through":"none" }}>₪{fmtNum(pm.amount||0)}</span>
+                            </div>
+                          ))}
+                          <div style={{ display:"flex", justifyContent:"space-between", paddingTop:6, borderTop:"1px solid #EEE", marginTop:4, fontSize:12 }}>
+                            <span style={{ color:"#2E7D32" }}>שולם: ₪{fmtNum(paid)}</span>
+                            <span style={{ color:"#888" }}>סימון תשלום — בדף הפרויקט</span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </>
+              );
+            })()}
 
-            {allWorkerData.map(({ w, months, hasRate, pendingMonths, historyMonths, pendingPay, paidTotal, projectBreakdown, totalDays }) => {
+            {payrollView!=="subs" && workers.length===0 && <div style={{ background:"#fff", borderRadius:14, padding:44, textAlign:"center", border:"1.5px dashed #DDD", color:"#AAA" }}><p style={{ margin:0 }}>אין עובדים עדיין</p></div>}
+
+            {payrollView!=="subs" && allWorkerData.map(({ w, months, hasRate, pendingMonths, historyMonths, pendingPay, paidTotal, projectBreakdown, totalDays }) => {
               const isOpen = payrollWorker === w._dbid;
               const shownMonths = payrollView==="pending" ? pendingMonths : historyMonths;
               if (shownMonths.length===0) return null;
