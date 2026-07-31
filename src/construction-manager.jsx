@@ -166,6 +166,11 @@ export default function App() {
   const [dayType,    setDayType]    = useState("full"); // "full" | "half"
   const [repFuel,    setRepFuel]    = useState(false); // true = 50 ₪ fuel
   const [repSent,    setRepSent]    = useState(false);
+  const [workerView, setWorkerView] = useState("report"); // "report" | "calendar"
+  const [wCalMonth, setWCalMonth] = useState(() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+  });
   const [pendingDate, setPendingDate] = useState("");
   const [showDateApproval, setShowDateApproval] = useState(false);
   const [pendingReports, setPendingReports] = useState([]); // reports waiting manager approval
@@ -296,7 +301,7 @@ export default function App() {
 
   const workerLogin = () => {
     const w = workers.find(w => w.code === codeInput.trim());
-    if (w) { setLoggedWorker(w); setCodeInput(""); setCodeError(false); setScreen("worker"); setRepSent(false); setRepDate(todayStr()); setRepProject(""); setRepNote(""); setDayType("full"); setRepFuel(false); }
+    if (w) { setLoggedWorker(w); setCodeInput(""); setCodeError(false); setScreen("worker"); setRepSent(false); setRepDate(todayStr()); setRepProject(""); setRepNote(""); setDayType("full"); setRepFuel(false); setWorkerView("report"); }
     else setCodeError(true);
   };
   const managerLogin = () => {
@@ -728,12 +733,94 @@ export default function App() {
       <GFont/>
       <header style={{ background:"#1A1A2E", padding:"0 18px", display:"flex", alignItems:"center", justifyContent:"space-between", height:60 }}>
         <LogoSmall/>
-        <button onClick={()=>{ setLoggedWorker(null); setScreen("home"); }} style={{ background:"rgba(255,255,255,0.1)", color:"#ccc", border:"none", borderRadius:8, padding:"5px 12px", fontSize:13, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>יציאה</button>
+        <button onClick={()=>{ setLoggedWorker(null); if (loggedForeman) { setScreen("foreman"); } else { setScreen("home"); } }} style={{ background:"rgba(255,255,255,0.1)", color:"#ccc", border:"none", borderRadius:8, padding:"5px 12px", fontSize:13, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>{loggedForeman ? "← חזרה לניהול" : "יציאה"}</button>
       </header>
       <div style={{ maxWidth:440, margin:"0 auto", padding:"26px 16px" }}>
         <h2 style={{ margin:"0 0 4px", fontWeight:800, fontSize:21 }}>שלום, {loggedWorker?.name} 👋</h2>
-        <p style={{ margin:"0 0 22px", color:"#777", fontSize:14 }}>דווח על יום העבודה שלך</p>
-        {repSent ? (
+        <p style={{ margin:"0 0 16px", color:"#777", fontSize:14 }}>{workerView==="report" ? "דווח על יום העבודה שלך" : "הימים שאתה משובץ בהם"}</p>
+
+        {/* toggle דיווח / יומן */}
+        <div style={{ display:"flex", background:"#EAEAE5", borderRadius:12, padding:3, marginBottom:16, gap:3 }}>
+          {[{k:"report",l:"📝 דיווח"},{k:"calendar",l:"📅 היומן שלי"}].map(t=>(
+            <button key={t.k} onClick={()=>setWorkerView(t.k)}
+              style={{ flex:1, background:workerView===t.k?"#1A1A2E":"transparent", color:workerView===t.k?"#E8C547":"#888", border:"none", borderRadius:10, padding:"9px 0", fontWeight:700, fontSize:14, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>
+              {t.l}
+            </button>
+          ))}
+        </div>
+
+        {/* יומן אישי לעובד */}
+        {workerView==="calendar" && (() => {
+          const [wy, wm] = wCalMonth.split("-").map(Number);
+          const firstDay = new Date(wy, wm-1, 1);
+          const daysInMonth = new Date(wy, wm, 0).getDate();
+          const startDow = firstDay.getDay();
+          const dayNames = ["א","ב","ג","ד","ה","ו","ש"];
+          const monthLabel = firstDay.toLocaleDateString("he-IL",{year:"numeric",month:"long"});
+          const myId = String(loggedWorker?.id);
+          const prevM = () => { const d=new Date(wy, wm-2, 1); setWCalMonth(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`); };
+          const nextM = () => { const d=new Date(wy, wm, 1); setWCalMonth(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`); };
+
+          // רשימת הימים שהעובד משובץ בהם החודש
+          const myDays = [];
+          for (let day=1; day<=daysInMonth; day++) {
+            const ds = `${wy}-${String(wm).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+            const ev = calEvents[ds];
+            if (!ev) continue;
+            const assigns = ev.assignments?.length ? ev.assignments : (ev.workers?.length ? [{projectId:"", workers:ev.workers}] : []);
+            const mine = assigns.filter(a => (a.workers||[]).map(String).includes(myId));
+            if (mine.length) myDays.push({ ds, day, mine });
+          }
+
+          return (
+            <>
+              <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", background:"#1A1A2E", borderRadius:14, padding:"10px 16px", marginBottom:12 }}>
+                <button onClick={prevM} style={{ background:"rgba(255,255,255,0.1)", color:"#fff", border:"none", borderRadius:8, padding:"5px 12px", fontSize:15, cursor:"pointer" }}>◀</button>
+                <span style={{ color:"#E8C547", fontWeight:800, fontSize:15 }}>{monthLabel}</span>
+                <button onClick={nextM} style={{ background:"rgba(255,255,255,0.1)", color:"#fff", border:"none", borderRadius:8, padding:"5px 12px", fontSize:15, cursor:"pointer" }}>▶</button>
+              </div>
+
+              <div style={{ display:"grid", gridTemplateColumns:"repeat(7,1fr)", gap:3, marginBottom:3 }}>
+                {dayNames.map(d => <div key={d} style={{ textAlign:"center", fontSize:11, fontWeight:700, color:"#888", padding:"3px 0" }}>{d}</div>)}
+              </div>
+              <div style={{ display:"grid", gridTemplateColumns:"repeat(7,1fr)", gap:3, marginBottom:16 }}>
+                {Array.from({length: startDow}).map((_,i) => <div key={`e${i}`}/>)}
+                {Array.from({length: daysInMonth}).map((_,i) => {
+                  const day = i+1;
+                  const ds = `${wy}-${String(wm).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+                  const isMine = myDays.some(d => d.ds === ds);
+                  const isToday = ds === todayStr();
+                  return (
+                    <div key={day} style={{ background: isMine?"#E8C547": isToday?"#FFF8E1":"#fff", borderRadius:9, padding:"7px 2px", minHeight:38, textAlign:"center", border: isToday?"2px solid #B26A00":"1.5px solid #EEE" }}>
+                      <span style={{ fontSize:13, fontWeight: isMine||isToday?800:500, color: isMine?"#1A1A2E":"#555" }}>{day}</span>
+                      {isMine && <div style={{ fontSize:9 }}>👷</div>}
+                    </div>
+                  );
+                })}
+              </div>
+
+              <h3 style={{ margin:"0 0 10px", fontSize:15, fontWeight:700 }}>הימים שלי החודש ({myDays.length})</h3>
+              {myDays.length===0 && (
+                <div style={{ background:"#fff", borderRadius:14, padding:30, textAlign:"center", border:"1.5px dashed #DDD", color:"#AAA" }}>
+                  <p style={{ margin:0, fontSize:13 }}>אינך משובץ החודש</p>
+                </div>
+              )}
+              {myDays.map(({ds, day, mine}) => (
+                <div key={ds} style={{ background:"#fff", borderRadius:12, padding:"11px 15px", marginBottom:8, boxShadow:"0 1px 5px rgba(0,0,0,0.06)", borderRight:"4px solid #E8C547" }}>
+                  <p style={{ margin:"0 0 3px", fontWeight:700, fontSize:14 }}>
+                    {new Date(ds+"T12:00:00").toLocaleDateString("he-IL",{weekday:"long", day:"numeric", month:"long"})}
+                  </p>
+                  {mine.map((a,ai) => {
+                    const pr = projects.find(p=>String(p.id)===String(a.projectId));
+                    return <p key={ai} style={{ margin:0, fontSize:13, color:"#555" }}>🏗️ {pr?.name || "ללא פרויקט"}</p>;
+                  })}
+                </div>
+              ))}
+            </>
+          );
+        })()}
+
+        {workerView==="report" && (repSent ? (
           <div style={{ background:"#fff", borderRadius:16, padding:36, textAlign:"center" }}>
             <div style={{ fontSize:46, marginBottom:10 }}>✅</div>
             <h3 style={{ margin:"0 0 6px", fontWeight:800, fontSize:19 }}>הדיווח נשלח!</h3>
@@ -802,7 +889,7 @@ export default function App() {
             </div>
             <button onClick={submitReport} disabled={!repProject} style={{ ...btnD, width:"100%", fontSize:15, opacity:repProject?1:0.4 }}>שלח דיווח יומי ✓</button>
           </div>
-        )}
+        ))}
       </div>
 
       {/* Modal: approve past date */}
@@ -842,7 +929,13 @@ export default function App() {
       <header style={{ background:"#1A1A2E", padding:"0 18px", display:"flex", alignItems:"center", justifyContent:"space-between", height:60 }}>
         <LogoSmall/>
         <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-          {isForeman && <span style={{ color:"#E8C547", fontSize:13, fontWeight:700 }}>🦺 {loggedForeman?.name}</span>}
+          {isForeman && <>
+            <span style={{ color:"#E8C547", fontSize:13, fontWeight:700 }}>🦺 {loggedForeman?.name}</span>
+            <button onClick={()=>{ setLoggedWorker(loggedForeman); setRepSent(false); setRepDate(todayStr()); setRepProject(""); setRepNote(""); setDayType("full"); setRepFuel(false); setWorkerView("report"); setScreen("worker"); }}
+              style={{ background:"#E8C547", color:"#1A1A2E", border:"none", borderRadius:8, padding:"5px 12px", fontSize:13, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700 }}>
+              📝 דיווח יום
+            </button>
+          </>}
           <button onClick={()=>{ setLoggedForeman(null); setMgTab("reports"); setDetailId(null); setScreen("home"); }} style={{ background:"rgba(255,255,255,0.1)", color:"#ccc", border:"none", borderRadius:8, padding:"5px 12px", fontSize:13, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>יציאה</button>
         </div>
       </header>
