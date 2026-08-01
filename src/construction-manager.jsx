@@ -231,8 +231,8 @@ export default function App() {
     }, 800);
   }, []);
 
-  const loadAll = useCallback(async () => {
-    setLoading(true);
+  const loadAll = useCallback(async (silent = false) => {
+    if (!silent) setLoading(true);
     try {
       const [p, w, r] = await Promise.all([dbGet("projects"), dbGet("workers"), dbGet("reports")]);
       // load calendar and equipment safely (tables may not exist yet)
@@ -277,7 +277,7 @@ export default function App() {
   // Auto-refresh data every 60 seconds while on manager screen
   useEffect(() => {
     if (screen !== "mgr" && screen !== "foreman") return;
-    const interval = setInterval(() => { loadAll(); }, 60000);
+    const interval = setInterval(() => { loadAll(true); }, 60000);
     return () => clearInterval(interval);
   }, [screen, loadAll]);
 
