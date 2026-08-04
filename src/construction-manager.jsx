@@ -65,6 +65,15 @@ const STATUS_COLORS = {
   "מושהה":  { bg:"#FCE4EC", text:"#B71C1C", dot:"#E53935" },
 };
 
+// חישוב שכר שעתי לפי חוק: 9 שעות 100%, שעתיים הבאות 125%, מעבר לכך 150%
+function calcHourlyPay(hours, rate) {
+  const h = Number(hours)||0, r = Number(rate)||0;
+  const reg = Math.min(h, 9);
+  const ot125 = Math.min(Math.max(h-9,0), 2);
+  const ot150 = Math.max(h-11, 0);
+  return { reg, ot125, ot150, pay: reg*r + ot125*r*1.25 + ot150*r*1.5 };
+}
+
 const todayStr = () => {
   const d = new Date();
   const y = d.getFullYear();
@@ -95,55 +104,88 @@ function workerDaysForProject(reports, projectId) {
 // ✅ חישוב שכר לעובד: ימים כולל + לפי חודש
 function calcWorkerPayroll(worker, reports) {
   const myReports = reports.filter(r => !r._paymentRecord && !r.pendingApproval && (String(r.workerId) === String(worker.id) || r.workerName === worker.name));
+  const payType = worker.payType || "daily";
   const rate = Number(worker.dailyRate || 0);
+  const hRate = Number(worker.hourlyRate || 0);
+  const monthly = Number(worker.monthlySalary || 0);
 
-  // כל הימים (כולל חצאי ימים)
-  const totalDays = myReports.reduce((s, r) => s + Number(r.days||1), 0);
+  // עלות שורה בודדת לפי סוג העסקה
+  const rowValue = (r) => {
+    if (payType === "hourly") {
+      if (r._shift && r.hours != null) return calcHourlyPay(r.hours, hRate).pay;
+      // דיווח יומי ישן של עובד שהפך לשעתי — 9 שעות ליום
+      return calcHourlyPay(Number(r.days||1) * 9, hRate).pay;
+    }
+    if (payType === "global") return 0; // גלובלי — שכר חודשי קבוע, לא לפי ימים
+    return Number(r.days||1) * rate;
+  };
+
+  const totalDays = myReports.reduce((s, r) => s + (r._shift ? ((r.hours||0) > 0 ? 1 : 0) : Number(r.days||1)), 0);
   const totalFuel = myReports.filter(r => r.fuel).length * 50;
-  const totalPay  = totalDays * rate + totalFuel;
 
   // לפי חודש
   const byMonth = {};
   myReports.forEach(r => {
     if (!r.date) return;
     const month = r.date.slice(0, 7);
-    if (!byMonth[month]) byMonth[month] = { days: 0, fuel: 0, projects: new Set(), byProject: {} };
-    byMonth[month].days += Number(r.days||1);
-    if (r.fuel) byMonth[month].fuel += 50;
+    if (!byMonth[month]) byMonth[month] = { days: 0, hours: 0, reg: 0, ot125: 0, ot150: 0, fuel: 0, pay: 0, projects: new Set(), byProject: {} };
+    const m = byMonth[month];
+    const dv = r._shift ? ((r.hours||0) > 0 ? 1 : 0) : Number(r.days||1);
+    m.days += dv;
+    if (payType === "hourly") {
+      const hrs = r._shift && r.hours != null ? Number(r.hours) : Number(r.days||1) * 9;
+      const hp = calcHourlyPay(hrs, hRate);
+      m.hours += hrs; m.reg += hp.reg; m.ot125 += hp.ot125; m.ot150 += hp.ot150;
+    }
+    m.pay += rowValue(r);
+    if (r.fuel) m.fuel += 50;
     const pName = r.projectName || String(r.projectId || "ללא פרויקט");
-    byMonth[month].projects.add(pName);
-    if (!byMonth[month].byProject[pName]) byMonth[month].byProject[pName] = { days: 0, fuel: 0 };
-    byMonth[month].byProject[pName].days += Number(r.days||1);
-    if (r.fuel) byMonth[month].byProject[pName].fuel += 50;
+    m.projects.add(pName);
+    if (!m.byProject[pName]) m.byProject[pName] = { days: 0, fuel: 0, pay: 0 };
+    m.byProject[pName].days += dv;
+    m.byProject[pName].pay += rowValue(r);
+    if (r.fuel) m.byProject[pName].fuel += 50;
   });
 
-  // סה"כ ימים לפי פרויקט (כל הזמנים)
+  // גלובלי: כל חודש עם פעילות = המשכורת הקבועה
+  if (payType === "global") {
+    Object.values(byMonth).forEach(m => { m.pay = monthly; });
+  }
+
+  // סה"כ לפי פרויקט (כל הזמנים)
   const totalByProject = {};
   myReports.forEach(r => {
     const pName = r.projectName || String(r.projectId || "ללא פרויקט");
-    if (!totalByProject[pName]) totalByProject[pName] = { days: 0, fuel: 0 };
-    totalByProject[pName].days += Number(r.days||1);
+    if (!totalByProject[pName]) totalByProject[pName] = { days: 0, fuel: 0, pay: 0 };
+    totalByProject[pName].days += r._shift ? ((r.hours||0) > 0 ? 1 : 0) : Number(r.days||1);
+    totalByProject[pName].pay += rowValue(r);
     if (r.fuel) totalByProject[pName].fuel += 50;
   });
   const projectBreakdown = Object.entries(totalByProject)
     .sort((a,b) => b[1].days - a[1].days)
-    .map(([name, v]) => ({ name, days: v.days, fuel: v.fuel, pay: v.days * rate + v.fuel }));
+    .map(([name, v]) => ({ name, days: Math.round(v.days*100)/100, fuel: v.fuel, pay: Math.round(v.pay + v.fuel) }));
 
   const months = Object.entries(byMonth)
     .sort((a, b) => b[0].localeCompare(a[0]))
     .map(([month, v]) => ({
       month,
       label: new Date(month + "-01").toLocaleDateString("he-IL", { year:"numeric", month:"long" }),
-      days: v.days,
+      days: Math.round(v.days*100)/100,
+      hours: Math.round(v.hours*100)/100,
+      reg: Math.round(v.reg*100)/100,
+      ot125: Math.round(v.ot125*100)/100,
+      ot150: Math.round(v.ot150*100)/100,
       fuel: v.fuel||0,
-      pay: v.days * rate + (v.fuel||0),
+      pay: Math.round(v.pay + (v.fuel||0)),
       projects: [...v.projects].join(", "),
       projectRows: Object.entries(v.byProject)
         .sort((a,b) => b[1].days - a[1].days)
-        .map(([name, pv]) => ({ name, days: pv.days, fuel: pv.fuel, pay: pv.days * rate + pv.fuel })),
+        .map(([name, pv]) => ({ name, days: Math.round(pv.days*100)/100, fuel: pv.fuel, pay: Math.round(pv.pay + pv.fuel) })),
     }));
 
-  return { totalDays, totalPay, months, projectBreakdown };
+  const totalPay = months.reduce((s,m)=>s+m.pay,0);
+
+  return { totalDays: Math.round(totalDays*100)/100, totalPay, months, projectBreakdown };
 }
 
 export default function App() {
@@ -211,7 +253,7 @@ export default function App() {
   const emptyProj = { name:"", status:"ממתין", progress:0, startDate:"", endDate:"", plannedDays:"", materialCost:"", totalCost:"", projectManager:"", plannedWorkers:"", highlights:"", phases:[], workers:[], expenses:[] };
   const [newProject, setNewProject] = useState(emptyProj);
   const [editProj,   setEditProj]   = useState(null);
-  const [newWorker,  setNewWorker]  = useState({ name:"", code:"", role:"", dailyRate:"" });
+  const [newWorker,  setNewWorker]  = useState({ name:"", code:"", role:"", dailyRate:"", payType:"daily", hourlyRate:"", monthlySalary:"", showFuel:true });
 
   const detailProject = projects.find(p => String(p.id) === String(detailId)) || null;
   const assignProject = projects.find(p => String(p.id) === String(assignPid)) || null;
@@ -309,6 +351,37 @@ export default function App() {
     else setCodeError(true);
   };
 
+  // ====== שעון נוכחות לעובד שעתי ======
+  const myOpenShift = loggedWorker ? reports.find(r =>
+    r._shift && !r.clockOut &&
+    (String(r.workerId)===String(loggedWorker.id) || r.workerName===loggedWorker.name)
+  ) : null;
+
+  const clockIn = async () => {
+    if (!repProject) { alert("בחר פרויקט לפני הפעלת השעון"); return; }
+    try {
+      const proj = projects.find(p => String(p.id) === String(repProject));
+      const rec = { _shift:true, workerId: loggedWorker.id, workerName: loggedWorker.name,
+        projectId: repProject, projectName: proj?.name||"", date: todayStr(),
+        clockIn: Date.now(), clockOut: null, fuel: repFuel, id: Date.now() };
+      const saved = await dbInsert("reports", rec);
+      setReports(prev => [...prev, saved]);
+    } catch(e) { alert("שגיאה: " + e.message); }
+  };
+
+  const clockOut = async () => {
+    if (!myOpenShift) return;
+    try {
+      const now = Date.now();
+      const hours = (now - myOpenShift.clockIn) / 3600000;
+      const updated = { ...myOpenShift, clockOut: now, hours: Math.round(hours*100)/100, fuel: repFuel || myOpenShift.fuel };
+      const { _dbid, ...data } = updated;
+      await dbUpdate("reports", myOpenShift._dbid, data);
+      setReports(prev => prev.map(r => r._dbid===myOpenShift._dbid ? updated : r));
+      setRepSent(true);
+    } catch(e) { alert("שגיאה: " + e.message); }
+  };
+
   const submitReport = async () => {
     if (!repProject) return;
     try {
@@ -359,7 +432,7 @@ export default function App() {
     const w = { ...newWorker, id: Date.now() };
     const saved = await dbInsert("workers", w);
     setWorkers(prev => [...prev, saved]);
-    setNewWorker({ name:"", code:"", role:"", dailyRate:"" }); setNewWM(false);
+    setNewWorker({ name:"", code:"", role:"", dailyRate:"", payType:"daily", hourlyRate:"", monthlySalary:"", showFuel:true }); setNewWM(false);
   };
 
   const saveEditWorker = async () => {
@@ -651,6 +724,48 @@ export default function App() {
   const btnY = { background:"#E8C547", color:"#1A1A2E", border:"none", borderRadius:10, padding:"10px 20px", fontWeight:700, fontSize:14, cursor:"pointer", fontFamily:"Heebo,sans-serif" };
   const btnD = { background:"#1A1A2E", color:"#E8C547", border:"none", borderRadius:10, padding:"10px 20px", fontWeight:700, fontSize:14, cursor:"pointer", fontFamily:"Heebo,sans-serif" };
   const btnG = { background:"#F0F0EC", color:"#555", border:"none", borderRadius:10, padding:"10px 20px", fontWeight:600, fontSize:14, cursor:"pointer", fontFamily:"Heebo,sans-serif" };
+  const PayTypeFields = ({ obj, setObj }) => (
+    <>
+      <div style={{ marginBottom:11 }}>
+        <LBL t="סוג העסקה"/>
+        <div style={{ display:"flex", gap:6 }}>
+          {[{v:"daily",l:"יומי"},{v:"hourly",l:"שעתי"},{v:"global",l:"גלובלי"}].map(o=>(
+            <button key={o.v} type="button" onClick={()=>setObj({...obj, payType:o.v})}
+              style={{ flex:1, background:(obj.payType||"daily")===o.v?"#1A1A2E":"#F0F0EC", color:(obj.payType||"daily")===o.v?"#E8C547":"#888", border:"none", borderRadius:9, padding:"9px 0", fontWeight:700, fontSize:13, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>
+              {o.l}
+            </button>
+          ))}
+        </div>
+      </div>
+      {(obj.payType||"daily")==="daily" && (
+        <label style={{ display:"block", marginBottom:11 }}>
+          <LBL t="שכר יומי (₪)"/>
+          <input type="number" value={obj.dailyRate||""} placeholder="550" onChange={e=>setObj({...obj, dailyRate:e.target.value})} style={inp}/>
+        </label>
+      )}
+      {obj.payType==="hourly" && (
+        <label style={{ display:"block", marginBottom:11 }}>
+          <LBL t="שכר שעתי (₪)"/>
+          <input type="number" value={obj.hourlyRate||""} placeholder="60" onChange={e=>setObj({...obj, hourlyRate:e.target.value})} style={inp}/>
+          <p style={{ margin:"4px 0 0", fontSize:11, color:"#888" }}>9 שעות ראשונות 100% · שעות 10-11 ‏125% · משעה 12 ‏150%</p>
+        </label>
+      )}
+      {obj.payType==="global" && (
+        <label style={{ display:"block", marginBottom:11 }}>
+          <LBL t="משכורת חודשית (₪)"/>
+          <input type="number" value={obj.monthlySalary||""} placeholder="12000" onChange={e=>setObj({...obj, monthlySalary:e.target.value})} style={inp}/>
+        </label>
+      )}
+      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", background:"#F9F9F9", borderRadius:9, padding:"9px 12px", marginBottom:11 }}>
+        <span style={{ fontSize:13, fontWeight:600 }}>⛽ הצג לעובד כפתור דלק</span>
+        <button type="button" onClick={()=>setObj({...obj, showFuel: obj.showFuel===false ? true : false})}
+          style={{ background: obj.showFuel!==false ? "#1A1A2E":"#DDD", color: obj.showFuel!==false ? "#E8C547":"#777", border:"none", borderRadius:8, padding:"4px 14px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700 }}>
+          {obj.showFuel!==false ? "✓ כן" : "לא"}
+        </button>
+      </div>
+    </>
+  );
+
   const LBL  = ({ t }) => <span style={{ fontSize:13, fontWeight:600, display:"block", marginBottom:5 }}>{t}</span>;
   const GFont = () => <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;600;700;800&display=swap" rel="stylesheet" />;
   const base = { fontFamily:"Heebo,sans-serif", direction:"rtl", minHeight:"100vh" };
@@ -820,7 +935,75 @@ export default function App() {
           );
         })()}
 
-        {workerView==="report" && (repSent ? (
+        {/* עובד שעתי — שעון נוכחות */}
+        {workerView==="report" && loggedWorker?.payType==="hourly" && (
+          <div style={{ background:"#fff", borderRadius:16, padding:22, boxShadow:"0 2px 8px rgba(0,0,0,0.07)", marginBottom:16 }}>
+            {myOpenShift ? (
+              <div style={{ textAlign:"center" }}>
+                <div style={{ fontSize:40, marginBottom:6 }}>⏱️</div>
+                <h3 style={{ margin:"0 0 4px", fontWeight:800, fontSize:18 }}>השעון רץ</h3>
+                <p style={{ margin:"0 0 4px", fontSize:14, color:"#555" }}>🏗️ {myOpenShift.projectName}</p>
+                <p style={{ margin:"0 0 4px", fontSize:13, color:"#888" }}>כניסה: {new Date(myOpenShift.clockIn).toLocaleTimeString("he-IL",{hour:"2-digit",minute:"2-digit"})}</p>
+                <p style={{ margin:"0 0 16px", fontSize:22, fontWeight:800, color:"#1A1A2E" }}>
+                  {(() => { const h = (Date.now()-myOpenShift.clockIn)/3600000; return `${Math.floor(h)}:${String(Math.floor((h%1)*60)).padStart(2,"0")} שעות`; })()}
+                </p>
+                <div style={{ marginBottom:12 }}>
+                  {loggedWorker?.showFuel!==false && (
+                    <button type="button" onClick={()=>setRepFuel(f=>!f)}
+                      style={{ width:"100%", background:(repFuel||myOpenShift.fuel)?"#1A1A2E":"#F0F0EC", color:(repFuel||myOpenShift.fuel)?"#E8C547":"#888", border:"none", borderRadius:10, padding:"10px 0", fontWeight:700, fontSize:14, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>
+                      {(repFuel||myOpenShift.fuel) ? "✅ כן — ₪50 דלק" : "לא נסעתי באוטו"}
+                    </button>
+                  )}
+                </div>
+                <button onClick={clockOut} style={{ width:"100%", background:"#B71C1C", color:"#fff", border:"none", borderRadius:12, padding:"14px 0", fontWeight:800, fontSize:16, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>
+                  🛑 יציאה — סיום יום עבודה
+                </button>
+              </div>
+            ) : repSent ? (
+              <div style={{ textAlign:"center" }}>
+                <div style={{ fontSize:46, marginBottom:10 }}>✅</div>
+                <h3 style={{ margin:"0 0 6px", fontWeight:800, fontSize:19 }}>יום העבודה נרשם!</h3>
+                <button onClick={()=>{ setRepSent(false); setRepProject(""); setRepFuel(false); }} style={{ ...btnD, marginTop:10 }}>סגור</button>
+              </div>
+            ) : (
+              <>
+                <h3 style={{ margin:"0 0 12px", fontWeight:800, fontSize:16, textAlign:"center" }}>⏱️ שעון נוכחות</h3>
+                {(() => {
+                  const myProjects = projects.filter(p => p.status !== "הושלם" && (p.workers||[]).map(String).includes(String(loggedWorker?.id)));
+                  return myProjects.length > 0 ? (
+                    <>
+                      <label style={{ display:"block", marginBottom:14 }}>
+                        <LBL t="🏗️ באיזה אתר אתה עובד היום?"/>
+                        <select value={repProject} onChange={e=>setRepProject(e.target.value)} style={{ ...inp, fontSize:15 }}>
+                          <option value="">— בחר פרויקט —</option>
+                          {myProjects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                        </select>
+                      </label>
+                      {loggedWorker?.showFuel!==false && (
+                        <div style={{ marginBottom:14 }}>
+                          <button type="button" onClick={()=>setRepFuel(f=>!f)}
+                            style={{ width:"100%", background:repFuel?"#1A1A2E":"#F0F0EC", color:repFuel?"#E8C547":"#888", border:"none", borderRadius:10, padding:"10px 0", fontWeight:700, fontSize:14, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>
+                            {repFuel ? "✅ כן — ₪50 דלק" : "לא נסעתי באוטו"}
+                          </button>
+                        </div>
+                      )}
+                      <button onClick={clockIn} disabled={!repProject}
+                        style={{ width:"100%", background:"#2E7D32", color:"#fff", border:"none", borderRadius:12, padding:"14px 0", fontWeight:800, fontSize:16, cursor:"pointer", fontFamily:"Heebo,sans-serif", opacity:repProject?1:0.4 }}>
+                        ▶️ כניסה — התחלת יום עבודה
+                      </button>
+                    </>
+                  ) : (
+                    <div style={{ background:"#FFF8E1", border:"1.5px solid #FFD54F", borderRadius:10, padding:"12px 14px" }}>
+                      <p style={{ margin:0, fontSize:13, color:"#B26A00", fontWeight:600 }}>⚠️ אינך משויך לאף פרויקט פעיל</p>
+                    </div>
+                  );
+                })()}
+              </>
+            )}
+          </div>
+        )}
+
+        {workerView==="report" && loggedWorker?.payType!=="hourly" && (repSent ? (
           <div style={{ background:"#fff", borderRadius:16, padding:36, textAlign:"center" }}>
             <div style={{ fontSize:46, marginBottom:10 }}>✅</div>
             <h3 style={{ margin:"0 0 6px", fontWeight:800, fontSize:19 }}>הדיווח נשלח!</h3>
@@ -880,6 +1063,7 @@ export default function App() {
               <LBL t="📝 הערה (אופציונלי)"/>
               <textarea value={repNote} onChange={e=>setRepNote(e.target.value)} placeholder="מה בוצע היום?" rows={3} style={{ ...inp, resize:"vertical" }}/>
             </label>
+            {loggedWorker?.showFuel!==false && (
             <div style={{ marginBottom:18 }}>
               <LBL t="⛽ דלק"/>
               <button type="button" onClick={()=>setRepFuel(f=>!f)}
@@ -887,6 +1071,7 @@ export default function App() {
                 {repFuel ? "✅ כן — ₪50 דלק" : "לא נסעתי באוטו"}
               </button>
             </div>
+            )}
             <button onClick={submitReport} disabled={!repProject} style={{ ...btnD, width:"100%", fontSize:15, opacity:repProject?1:0.4 }}>שלח דיווח יומי ✓</button>
           </div>
         ))}
@@ -982,7 +1167,7 @@ export default function App() {
                     alert("שגיאה: " + e.message);
                   }
                 }} style={{ ...btnY, padding:"7px 14px", fontSize:13 }}>✓ אשר הכל</button>}
-                <button onClick={loadAll} style={{ ...btnG, padding:"7px 14px", fontSize:13 }}>🔄 רענן</button>
+                <button onClick={()=>loadAll(true)} style={{ ...btnG, padding:"7px 14px", fontSize:13 }}>🔄 רענן</button>
               </div>
             </div>
             {/* Pending approval section */}
@@ -1020,6 +1205,18 @@ export default function App() {
                     <span style={{ background:"#F0F0EC", borderRadius:6, padding:"2px 8px", fontSize:12, color:"#555" }}>{r.projectName}</span>
                     <span style={{ fontSize:12, color:"#999" }}>📅 {r.date}</span>
                     {r.dayType==="half" && <span style={{ background:"#FFF8E1", color:"#B26A00", borderRadius:6, padding:"2px 7px", fontSize:11, fontWeight:600 }}>חצי יום</span>}
+                    {r._shift && <span style={{ background:r.clockOut?"#E3F2FD":"#FCE4EC", color:r.clockOut?"#1565C0":"#B71C1C", borderRadius:6, padding:"2px 7px", fontSize:11, fontWeight:600 }}>⏱️ {r.clockOut ? `${r.hours} שעות` : (Date.now()-r.clockIn > 16*3600000 ? "⚠️ שעון תקוע" : "שעון פתוח")}</span>}
+                    {r._shift && <button onClick={async ()=>{
+                      const cur = r.hours != null ? String(r.hours) : "";
+                      const inp2 = window.prompt(`כמה שעות עבד ${r.workerName} ב-${r.date}?`, cur);
+                      if (inp2 === null) return;
+                      const h = Number(inp2);
+                      if (isNaN(h) || h < 0 || h > 24) { alert("מספר שעות לא תקין"); return; }
+                      const updated = { ...r, hours: h, clockOut: r.clockOut || Date.now() };
+                      const { _dbid, ...data } = updated;
+                      await dbUpdate("reports", r._dbid, data);
+                      setReports(prev => prev.map(x => x._dbid===r._dbid ? updated : x));
+                    }} style={{ background:"#1A1A2E", color:"#E8C547", border:"none", borderRadius:6, padding:"2px 8px", fontSize:11, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:600 }}>✏️ שעות</button>}
                   </div>
                   {r.note && <p style={{ margin:0, fontSize:13, color:"#666", lineHeight:1.5 }}>{r.note}</p>}
                   {r.fuel && <span style={{ background:"#FFF8E1", color:"#B26A00", borderRadius:6, padding:"2px 7px", fontSize:11, fontWeight:600 }}>⛽ +₪50 דלק</span>}
@@ -1630,7 +1827,9 @@ export default function App() {
                       <span><span style={{ color:"#888" }}>קוד: </span><span style={{ fontWeight:700, letterSpacing:2 }}>{w.code||"—"}</span></span>
                       {!isForeman && <button onClick={()=>{ setEditWorker({...w}); setEditWM(true); }} style={{ background:"#1A1A2E", color:"#E8C547", border:"none", borderRadius:6, padding:"2px 9px", fontSize:11, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700 }}>ערוך</button>}
                     </div>
-                    {w.dailyRate && <p style={{ margin:"0 0 4px", fontSize:12, color:"#555" }}>💵 ₪{fmtNum(w.dailyRate)} ליום</p>}
+                    {w.payType==="hourly" ? <p style={{ margin:"0 0 4px", fontSize:12, color:"#555" }}>⏱️ ₪{fmtNum(w.hourlyRate)} לשעה</p>
+                     : w.payType==="global" ? <p style={{ margin:"0 0 4px", fontSize:12, color:"#555" }}>📅 ₪{fmtNum(w.monthlySalary)} לחודש</p>
+                     : w.dailyRate ? <p style={{ margin:"0 0 4px", fontSize:12, color:"#555" }}>💵 ₪{fmtNum(w.dailyRate)} ליום</p> : null}
                     <p style={{ margin:0, fontSize:12, color:"#999" }}>💬 {wr.length} דיווחים</p>
                   </div>
                 );
@@ -1644,7 +1843,9 @@ export default function App() {
           // calc pending/paid per worker
           const allWorkerData = workers.map(w => {
             const { totalDays, totalPay, months, projectBreakdown } = calcWorkerPayroll(w, reports);
-            const hasRate = Number(w.dailyRate||0) > 0;
+            const hasRate = (w.payType==="hourly") ? Number(w.hourlyRate||0)>0
+                          : (w.payType==="global") ? Number(w.monthlySalary||0)>0
+                          : Number(w.dailyRate||0) > 0;
             // For each month, calculate remaining balance (total earned - already paid)
             const pendingMonths = months.filter(m => {
               const info = paidMonths[`${w.id}_${m.month}`];
@@ -1773,7 +1974,7 @@ export default function App() {
                       <div style={{ width:38, height:38, borderRadius:"50%", background:"#1A1A2E", color:"#E8C547", display:"flex", alignItems:"center", justifyContent:"center", fontWeight:800, fontSize:15, flexShrink:0 }}>{w.name[0]}</div>
                       <div>
                         <p style={{ margin:0, fontWeight:700, fontSize:15 }}>{w.name}</p>
-                        <p style={{ margin:0, fontSize:12, color:"#888" }}>{w.role}{hasRate ? ` · ₪${fmtNum(w.dailyRate)}/יום` : " · אין שכר יומי"}</p>
+                        <p style={{ margin:0, fontSize:12, color:"#888" }}>{w.role}{w.payType==="hourly" ? ` · ₪${fmtNum(w.hourlyRate)}/שעה` : w.payType==="global" ? ` · ₪${fmtNum(w.monthlySalary)}/חודש` : hasRate ? ` · ₪${fmtNum(w.dailyRate)}/יום` : " · אין שכר"}</p>
                       </div>
                     </div>
                     <div style={{ display:"flex", alignItems:"center", gap:10 }}>
@@ -1815,7 +2016,12 @@ export default function App() {
                             <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:6 }}>
                               <div>
                                 <p style={{ margin:0, fontWeight:700, fontSize:14 }}>{m.label}</p>
-                                <p style={{ margin:"2px 0 0", fontSize:12, color:"#888" }}>סה"כ {m.days} ימים{m.fuel>0 ? ` · ⛽ ₪${m.fuel} דלק` : ""}</p>
+                                <p style={{ margin:"2px 0 0", fontSize:12, color:"#888" }}>
+                                  {w.payType==="hourly"
+                                    ? `${m.hours} שעות (רגילות ${m.reg} · 125% ${m.ot125} · 150% ${m.ot150})`
+                                    : w.payType==="global" ? `משכורת גלובלית · ${m.days} ימי נוכחות`
+                                    : `סה"כ ${m.days} ימים`}{m.fuel>0 ? ` · ⛽ ₪${m.fuel} דלק` : ""}
+                                </p>
                                 {paidInfo?.partial && !paidInfo.fullyPaid && (
                                   <p style={{ margin:"3px 0 0", fontSize:12, color:"#F57F17" }}>שולם חלקית: ₪{fmtNum(alreadyPaid)} · נותר: ₪{fmtNum(remaining)}</p>
                                 )}
@@ -2341,7 +2547,6 @@ export default function App() {
               { key:"name", label:"שם מלא", ph:"דוד כהן", extra:{} },
               { key:"code", label:"קוד אישי", ph:"4321", extra:{ letterSpacing:3, fontSize:17 } },
               { key:"role", label:"תפקיד", ph:"קבלן אינסטלציה", extra:{} },
-              { key:"dailyRate", label:"שכר יומי (₪)", ph:"500", extra:{ type:"number" } },
             ].map(f => (
               <label key={f.key} style={{ display:"block", marginBottom:12 }}>
                 <LBL t={f.label}/>
@@ -2349,6 +2554,7 @@ export default function App() {
                   onChange={e=>setEditWorker({...editWorker,[f.key]:e.target.value})} style={{ ...inp, ...f.extra }}/>
               </label>
             ))}
+            <PayTypeFields obj={editWorker} setObj={setEditWorker}/>
             {/* הרשאת מנהל עבודה */}
             <div style={{ background:"#FFFBF0", border:"1.5px solid #FFE082", borderRadius:12, padding:"12px 14px", marginBottom:12 }}>
               <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
@@ -2423,7 +2629,6 @@ export default function App() {
               { key:"name", label:"שם מלא", ph:"דוד כהן", extra:{} },
               { key:"code", label:"קוד אישי", ph:"לדוגמה: 4321", extra:{ letterSpacing:3, fontSize:17 } },
               { key:"role", label:"תפקיד (אופציונלי)", ph:"קבלן אינסטלציה", extra:{} },
-              { key:"dailyRate", label:"שכר יומי ₪ (אופציונלי)", ph:"500", extra:{ type:"number" } },
             ].map(f=>(
               <label key={f.key} style={{ display:"block", marginBottom:11 }}>
                 <LBL t={f.label}/>
@@ -2431,6 +2636,7 @@ export default function App() {
                   onChange={e=>setNewWorker({...newWorker,[f.key]:e.target.value})} style={{ ...inp, ...f.extra }}/>
               </label>
             ))}
+            <PayTypeFields obj={newWorker} setObj={setNewWorker}/>
             <div style={{ display:"flex", gap:10, marginTop:6 }}>
               <button onClick={addWorker} style={{ ...btnD, flex:1 }}>הוסף עובד</button>
               <button onClick={()=>setNewWM(false)} style={{ ...btnG, flex:1 }}>ביטול</button>
