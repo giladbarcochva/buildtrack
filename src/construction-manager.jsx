@@ -21,7 +21,18 @@ let CURRENT_ORG = null;
 function rememberOrg() {
   try { if (CURRENT_ORG?.slug) localStorage.setItem("bt_last_org", CURRENT_ORG.slug); } catch(e) {}
 } // set after org load; holds {id, slug, name, logo, settings, active, _dbid}
-const SUPER_ADMIN_CODE = "GNE-MASTER-2026"; // קוד סופר-אדמין — שנה אותו!
+const SUPER_ADMIN_CODE_DEFAULT = "GNE-MASTER-2026"; // קוד התחלתי — ניתן לשינוי ממסך הניהול
+async function getMasterCode() {
+  try {
+    const cfg = await orgGetBySlug("_config");
+    return cfg?.settings?.masterCode || SUPER_ADMIN_CODE_DEFAULT;
+  } catch(e) { return SUPER_ADMIN_CODE_DEFAULT; }
+}
+async function setMasterCode(newCode) {
+  let cfg = await orgGetBySlug("_config");
+  if (cfg) await orgUpdate(cfg._dbid, { settings: { ...(cfg.settings||{}), masterCode: newCode } });
+  else await orgInsert({ slug: "_config", name: "_config", active: false, settings: { masterCode: newCode } });
+}
 
 // 🔑 הדבק כאן את מפתח ה-API של Anthropic (מ-console.anthropic.com)
 const ANTHROPIC_API_KEY = "PASTE_YOUR_KEY_HERE";
@@ -891,9 +902,10 @@ export default function App() {
         <input value={saCodeInput} onChange={e=>setSaCodeInput(e.target.value)} placeholder="קוד ניהול ראשי" type="password"
           style={{ ...inp, textAlign:"center", marginBottom:8, fontSize:13 }}/>
         <button onClick={async ()=>{
-          if (saCodeInput !== SUPER_ADMIN_CODE) { alert("קוד שגוי"); return; }
+          const master = await getMasterCode();
+          if (saCodeInput !== master) { alert("קוד שגוי"); return; }
           const all = await orgGetAll();
-          setSaOrgs(all); setSuperAdmin(true); setSaCodeInput("");
+          setSaOrgs(all.filter(o=>o.slug!=="_config")); setSuperAdmin(true); setSaCodeInput("");
         }} style={{ ...btnG, width:"100%", fontSize:13 }}>ניהול ראשי</button>
       </div>
     </div>
@@ -905,7 +917,17 @@ export default function App() {
       <GFont/>
       <header style={{ background:"#1A1A2E", padding:"14px 20px", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
         <span style={{ color:"#E8C547", fontWeight:800, fontSize:16 }}>👑 ניהול ראשי — BuildTrack</span>
+        <div style={{ display:"flex", gap:8 }}>
+        <button onClick={async ()=>{
+          const cur = window.prompt("קוד ניהול חדש (לפחות 6 תווים):");
+          if (!cur) return;
+          if (cur.trim().length < 6) { alert("קוד קצר מדי"); return; }
+          if (!window.confirm(`לשנות את קוד הניהול הראשי ל: ${cur.trim()}?`)) return;
+          try { await setMasterCode(cur.trim()); alert("קוד הניהול עודכן! שמור אותו במקום בטוח."); }
+          catch(e) { alert("שגיאה: " + e.message); }
+        }} style={{ background:"rgba(232,197,71,0.2)", color:"#E8C547", border:"none", borderRadius:8, padding:"5px 12px", fontSize:13, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700 }}>🔑 שנה קוד</button>
         <button onClick={()=>{ setSuperAdmin(false); }} style={{ background:"rgba(255,255,255,0.1)", color:"#ccc", border:"none", borderRadius:8, padding:"5px 12px", fontSize:13, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>יציאה</button>
+        </div>
       </header>
       <main style={{ padding:20, maxWidth:520, margin:"0 auto" }}>
         {/* הוספת קבלן */}
@@ -924,7 +946,7 @@ export default function App() {
               // יצירת רשומת קוד מנהל בארגון החדש
               await fetch(`${SUPABASE_URL}/rest/v1/workers`, { method:"POST", headers:hdrs,
                 body: JSON.stringify({ data: { _isConfig:true, adminCode: saNewOrg.adminCode, id: Date.now() }, org_id: created.id }) });
-              setSaOrgs(await orgGetAll());
+              setSaOrgs((await orgGetAll()).filter(o=>o.slug!=="_config"));
               setSaNewOrg({ slug:"", name:"", adminCode:"" });
               alert(`נוצר! הקישור: ${window.location.origin}/${created.slug}`);
             } catch(e) { alert("שגיאה: " + e.message); }
@@ -946,7 +968,7 @@ export default function App() {
                 style={{ background:"#F0F0EC", color:"#555", border:"none", borderRadius:7, padding:"5px 11px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>🔗 פתח</button>
               <button onClick={async ()=>{
                 await orgUpdate(o._dbid, { active: o.active===false });
-                setSaOrgs(await orgGetAll());
+                setSaOrgs((await orgGetAll()).filter(o=>o.slug!=="_config"));
               }} style={{ background:o.active!==false?"#FCE4EC":"#E8F5E9", color:o.active!==false?"#B71C1C":"#2E7D32", border:"none", borderRadius:7, padding:"5px 11px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>
                 {o.active!==false?"⏸ השהה":"▶ הפעל"}
               </button>
@@ -977,7 +999,7 @@ export default function App() {
                   const reader = new FileReader();
                   reader.onload = async ev => {
                     await orgUpdate(o._dbid, { logo: ev.target.result });
-                    setSaOrgs(await orgGetAll());
+                    setSaOrgs((await orgGetAll()).filter(o=>o.slug!=="_config"));
                     alert("לוגו עודכן!");
                   };
                   reader.readAsDataURL(file);
