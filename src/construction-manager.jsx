@@ -7,7 +7,17 @@ const hdrs = { "Content-Type": "application/json", "apikey": SUPABASE_KEY, "Auth
 // ===== Multi-tenant: current org from URL path (/gne → org "gne") =====
 const ORG_SLUG = (() => {
   const seg = window.location.pathname.split("/").filter(Boolean)[0];
-  return seg ? seg.toLowerCase() : "";
+  if (seg) {
+    // זכירת הארגון האחרון — לפתיחה מאייקון מסך הבית
+    try { localStorage.setItem("bt_last_org", seg.toLowerCase()); } catch(e) {}
+    return seg.toLowerCase();
+  }
+  // נפתח בלי נתיב (אייקון מסך בית) — הפניה לארגון האחרון
+  try {
+    const last = localStorage.getItem("bt_last_org");
+    if (last) { window.location.replace("/" + last); return last; }
+  } catch(e) {}
+  return "";
 })();
 let CURRENT_ORG = null; // set after org load; holds {id, slug, name, logo, settings, active, _dbid}
 const SUPER_ADMIN_CODE = "GNE-MASTER-2026"; // קוד סופר-אדמין — שנה אותו!
