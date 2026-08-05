@@ -4,11 +4,20 @@ const SUPABASE_URL = "https://rkjcrhywhoixdkqlfnko.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJramNyaHl3aG9peGRrcWxmbmtvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwMzA2NzQsImV4cCI6MjA5NDYwNjY3NH0.yKZzdMCNOyWJClmip03QY617HX2IB-xKPKGUZtKT_Z0";
 const hdrs = { "Content-Type": "application/json", "apikey": SUPABASE_KEY, "Authorization": "Bearer " + SUPABASE_KEY };
 
+// ===== Multi-tenant: current org from URL path (/gne → org "gne") =====
+const ORG_SLUG = (() => {
+  const seg = window.location.pathname.split("/").filter(Boolean)[0];
+  return seg ? seg.toLowerCase() : "";
+})();
+let CURRENT_ORG = null; // set after org load; holds {id, slug, name, logo, settings, active, _dbid}
+const SUPER_ADMIN_CODE = "GNE-MASTER-2026"; // קוד סופר-אדמין — שנה אותו!
+
 // 🔑 הדבק כאן את מפתח ה-API של Anthropic (מ-console.anthropic.com)
 const ANTHROPIC_API_KEY = "PASTE_YOUR_KEY_HERE";
 
 async function dbGet(table) {
-  const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}?select=*&order=id.asc`, { headers: hdrs });
+  const orgFilter = CURRENT_ORG ? `&org_id=eq.${CURRENT_ORG.id}` : "";
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}?select=*&order=id.asc${orgFilter}`, { headers: hdrs });
   const rows = await r.json();
   if (!Array.isArray(rows)) throw new Error(`Table ${table} error: ${JSON.stringify(rows)}`);
   return rows.map(row => ({ ...row.data, _dbid: row.id }));
@@ -16,7 +25,7 @@ async function dbGet(table) {
 async function dbInsert(table, data) {
   const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
     method: "POST", headers: { ...hdrs, "Prefer": "return=representation" },
-    body: JSON.stringify({ data })
+    body: JSON.stringify({ data, org_id: CURRENT_ORG?.id || null })
   });
   const rows = await r.json();
   if (!Array.isArray(rows) || rows.length === 0) {
@@ -34,6 +43,42 @@ async function dbDelete(table, dbid) {
   await fetch(`${SUPABASE_URL}/rest/v1/${table}?id=eq.${dbid}`, {
     method: "DELETE", headers: hdrs
   });
+}
+
+// ===== Organizations (multi-tenant) =====
+async function orgGetBySlug(slug) {
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/organizations?select=*&slug=eq.${encodeURIComponent(slug)}`, { headers: hdrs });
+  const rows = await r.json();
+  if (!Array.isArray(rows) || rows.length===0) return null;
+  return { ...rows[0], _dbid: rows[0].id };
+}
+async function orgGetAll() {
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/organizations?select=*&order=id.asc`, { headers: hdrs });
+  const rows = await r.json();
+  return Array.isArray(rows) ? rows.map(x=>({ ...x, _dbid: x.id })) : [];
+}
+async function orgInsert(org) {
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/organizations`, {
+    method: "POST", headers: { ...hdrs, "Prefer": "return=representation" },
+    body: JSON.stringify(org)
+  });
+  const rows = await r.json();
+  if (!Array.isArray(rows) || rows.length===0) throw new Error(JSON.stringify(rows));
+  return { ...rows[0], _dbid: rows[0].id };
+}
+async function orgUpdate(dbid, changes) {
+  await fetch(`${SUPABASE_URL}/rest/v1/organizations?id=eq.${dbid}`, {
+    method: "PATCH", headers: hdrs, body: JSON.stringify(changes)
+  });
+}
+async function orgExportData(orgId) {
+  const tables = ["projects","workers","reports","calendar","equipment"];
+  const out = { exportedAt: new Date().toISOString(), orgId };
+  for (const t of tables) {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/${t}?select=*&org_id=eq.${orgId}`, { headers: hdrs });
+    out[t] = await r.json();
+  }
+  return out;
 }
 
 // ===== Supabase Storage (תוכניות אדריכליות) =====
@@ -195,6 +240,12 @@ export default function App() {
   const [adminCode, setAdminCode] = useState("1234");
   const [adminConfigDbid, setAdminConfigDbid] = useState(null);
   const [loading,   setLoading]   = useState(true);
+  const [org, setOrg] = useState(null);            // הארגון הנוכחי
+  const [orgError, setOrgError] = useState("");    // שגיאת טעינת ארגון
+  const [superAdmin, setSuperAdmin] = useState(false); // מצב סופר-אדמין
+  const [saOrgs, setSaOrgs] = useState([]);        // רשימת ארגונים לסופר-אדמין
+  const [saNewOrg, setSaNewOrg] = useState({ slug:"", name:"", adminCode:"" });
+  const [saCodeInput, setSaCodeInput] = useState("");
 
   const [screen,       setScreen]       = useState("home");
   const [codeInput,    setCodeInput]    = useState("");
@@ -314,7 +365,29 @@ export default function App() {
     setLoading(false);
   }, []);
 
-  useEffect(() => { loadAll(); }, [loadAll]);
+  // ===== אתחול: זיהוי ארגון מהכתובת → טעינת נתונים =====
+  useEffect(() => {
+    (async () => {
+      if (!ORG_SLUG) {
+        // ללא ארגון בכתובת — מסך שער (בחירה/סופר-אדמין)
+        setOrgError("landing");
+        setLoading(false);
+        return;
+      }
+      try {
+        const o = await orgGetBySlug(ORG_SLUG);
+        if (!o) { setOrgError("notfound"); setLoading(false); return; }
+        if (o.active === false) { setOrgError("suspended"); setLoading(false); return; }
+        CURRENT_ORG = o;
+        setOrg(o);
+        loadAll();
+      } catch(e) {
+        setOrgError("error: " + e.message);
+        setLoading(false);
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Auto-refresh data every 60 seconds while on manager screen
   useEffect(() => {
@@ -770,8 +843,15 @@ export default function App() {
   const GFont = () => <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;600;700;800&display=swap" rel="stylesheet" />;
   const base = { fontFamily:"Heebo,sans-serif", direction:"rtl", minHeight:"100vh" };
 
-  const LogoSmall = () => <img src={LOGO_URL} alt="G&E" style={{ height:38, borderRadius:6, objectFit:"contain", background:"#fff", padding:3 }}/>;
-  const LogoBig   = () => <div style={{ textAlign:"center", marginBottom:10 }}><img src={LOGO_URL} alt="G&E Construction" style={{ height:110, objectFit:"contain", borderRadius:12 }}/></div>;
+  const orgLogoSrc = org?.logo || (org?.slug==="gne" ? LOGO_URL : null);
+  const LogoSmall = () => orgLogoSrc
+    ? <img src={orgLogoSrc} alt={org?.name||""} style={{ height:38, borderRadius:6, objectFit:"contain", background:"#fff", padding:3 }}/>
+    : <span style={{ color:"#E8C547", fontWeight:800, fontSize:16 }}>{org?.name||"BuildTrack"}</span>;
+  const LogoBig   = () => <div style={{ textAlign:"center", marginBottom:10 }}>
+    {orgLogoSrc
+      ? <img src={orgLogoSrc} alt={org?.name||""} style={{ height:110, objectFit:"contain", borderRadius:12 }}/>
+      : <h2 style={{ color:"#1A1A2E", fontWeight:800, fontSize:22, margin:0 }}>{org?.name||"BuildTrack"}</h2>}
+  </div>;
 
   if (loading) return (
     <div style={{ ...base, background:"#1A1A2E", display:"flex", alignItems:"center", justifyContent:"center" }}>
@@ -783,11 +863,141 @@ export default function App() {
     </div>
   );
 
+  // ===== מסכי שער (ללא ארגון / שגיאה / סופר-אדמין) =====
+  if (orgError && !superAdmin) return (
+    <div style={{ ...base, background:"#1A1A2E", display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
+      <GFont/>
+      <div style={{ background:"#fff", borderRadius:20, padding:30, width:"100%", maxWidth:340, direction:"rtl", textAlign:"center" }}>
+        <div style={{ fontSize:40, marginBottom:10 }}>🏗️</div>
+        <h2 style={{ margin:"0 0 8px", fontWeight:800, fontSize:20 }}>BuildTrack</h2>
+        {orgError==="landing" && <>
+          <p style={{ margin:"0 0 16px", color:"#777", fontSize:14 }}>מערכת ניהול אתרי בנייה לקבלנים.<br/>כניסה דרך הקישור הייעודי של העסק שלך.</p>
+          <p style={{ margin:"0 0 18px", color:"#AAA", fontSize:12 }}>אין לך מערכת? צור קשר להקמה מהירה 🚀</p>
+        </>}
+        {orgError==="notfound" && <p style={{ margin:"0 0 16px", color:"#E53935", fontSize:14 }}>הכתובת לא מוכרת. בדוק את הקישור שקיבלת.</p>}
+        {orgError==="suspended" && <p style={{ margin:"0 0 16px", color:"#E53935", fontSize:14 }}>המערכת מושהית זמנית.<br/>צור קשר עם הספק.</p>}
+        {orgError.startsWith?.("error") && <p style={{ margin:"0 0 16px", color:"#E53935", fontSize:13 }}>{orgError}</p>}
+        <input value={saCodeInput} onChange={e=>setSaCodeInput(e.target.value)} placeholder="קוד ניהול ראשי" type="password"
+          style={{ ...inp, textAlign:"center", marginBottom:8, fontSize:13 }}/>
+        <button onClick={async ()=>{
+          if (saCodeInput !== SUPER_ADMIN_CODE) { alert("קוד שגוי"); return; }
+          const all = await orgGetAll();
+          setSaOrgs(all); setSuperAdmin(true); setSaCodeInput("");
+        }} style={{ ...btnG, width:"100%", fontSize:13 }}>ניהול ראשי</button>
+      </div>
+    </div>
+  );
+
+  // ===== מסך סופר-אדמין =====
+  if (superAdmin) return (
+    <div style={{ ...base, background:"#F5F5F0", minHeight:"100vh", direction:"rtl" }}>
+      <GFont/>
+      <header style={{ background:"#1A1A2E", padding:"14px 20px", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+        <span style={{ color:"#E8C547", fontWeight:800, fontSize:16 }}>👑 ניהול ראשי — BuildTrack</span>
+        <button onClick={()=>{ setSuperAdmin(false); }} style={{ background:"rgba(255,255,255,0.1)", color:"#ccc", border:"none", borderRadius:8, padding:"5px 12px", fontSize:13, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>יציאה</button>
+      </header>
+      <main style={{ padding:20, maxWidth:520, margin:"0 auto" }}>
+        {/* הוספת קבלן */}
+        <div style={{ background:"#fff", borderRadius:14, padding:"16px 18px", marginBottom:16, boxShadow:"0 2px 8px rgba(0,0,0,0.07)" }}>
+          <h3 style={{ margin:"0 0 12px", fontSize:15, fontWeight:700 }}>➕ קבלן חדש</h3>
+          <input value={saNewOrg.slug} onChange={e=>setSaNewOrg({...saNewOrg, slug:e.target.value.toLowerCase().replace(/[^a-z0-9-]/g,"")})}
+            placeholder="כתובת (אנגלית, למשל: kablan-a)" style={{ ...inp, marginBottom:8, direction:"ltr", textAlign:"left" }}/>
+          <input value={saNewOrg.name} onChange={e=>setSaNewOrg({...saNewOrg, name:e.target.value})}
+            placeholder="שם העסק (למשל: כהן בנייה)" style={{ ...inp, marginBottom:8 }}/>
+          <input value={saNewOrg.adminCode} onChange={e=>setSaNewOrg({...saNewOrg, adminCode:e.target.value})}
+            placeholder="קוד מנהל ראשוני" style={{ ...inp, marginBottom:10, letterSpacing:2 }}/>
+          <button onClick={async ()=>{
+            if (!saNewOrg.slug || !saNewOrg.name || !saNewOrg.adminCode) { alert("מלא את כל השדות"); return; }
+            try {
+              const created = await orgInsert({ slug: saNewOrg.slug, name: saNewOrg.name, active: true, settings: {} });
+              // יצירת רשומת קוד מנהל בארגון החדש
+              await fetch(`${SUPABASE_URL}/rest/v1/workers`, { method:"POST", headers:hdrs,
+                body: JSON.stringify({ data: { _isConfig:true, adminCode: saNewOrg.adminCode, id: Date.now() }, org_id: created.id }) });
+              setSaOrgs(await orgGetAll());
+              setSaNewOrg({ slug:"", name:"", adminCode:"" });
+              alert(`נוצר! הקישור: ${window.location.origin}/${created.slug}`);
+            } catch(e) { alert("שגיאה: " + e.message); }
+          }} style={{ ...btnD, width:"100%" }}>צור קבלן</button>
+        </div>
+
+        {/* רשימת קבלנים */}
+        {saOrgs.map(o => (
+          <div key={o._dbid} style={{ background:"#fff", borderRadius:14, padding:"14px 18px", marginBottom:11, boxShadow:"0 2px 8px rgba(0,0,0,0.07)", borderRight:`4px solid ${o.active!==false?"#22C55E":"#E53935"}` }}>
+            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:8 }}>
+              <div>
+                <p style={{ margin:0, fontWeight:700, fontSize:15 }}>{o.name}</p>
+                <p style={{ margin:0, fontSize:12, color:"#888", direction:"ltr", textAlign:"right" }}>/{o.slug}</p>
+              </div>
+              <span style={{ fontSize:12, fontWeight:700, color:o.active!==false?"#2E7D32":"#E53935" }}>{o.active!==false?"● פעיל":"● מושהה"}</span>
+            </div>
+            <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
+              <button onClick={()=>window.open(`/${o.slug}`, "_blank")}
+                style={{ background:"#F0F0EC", color:"#555", border:"none", borderRadius:7, padding:"5px 11px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>🔗 פתח</button>
+              <button onClick={async ()=>{
+                await orgUpdate(o._dbid, { active: o.active===false });
+                setSaOrgs(await orgGetAll());
+              }} style={{ background:o.active!==false?"#FCE4EC":"#E8F5E9", color:o.active!==false?"#B71C1C":"#2E7D32", border:"none", borderRadius:7, padding:"5px 11px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>
+                {o.active!==false?"⏸ השהה":"▶ הפעל"}
+              </button>
+              <button onClick={async ()=>{
+                const newCode = window.prompt(`קוד מנהל זמני חדש ל"${o.name}":`);
+                if (!newCode) return;
+                try {
+                  // איפוס קוד מנהל: מציאת רשומת ה-config של הארגון ועדכונה
+                  const r = await fetch(`${SUPABASE_URL}/rest/v1/workers?select=*&org_id=eq.${o.id}`, { headers: hdrs });
+                  const rows = await r.json();
+                  const cfg = rows.find(x => x.data && x.data._isConfig);
+                  if (cfg) {
+                    await fetch(`${SUPABASE_URL}/rest/v1/workers?id=eq.${cfg.id}`, { method:"PATCH", headers:hdrs,
+                      body: JSON.stringify({ data: { ...cfg.data, adminCode: newCode } }) });
+                  } else {
+                    await fetch(`${SUPABASE_URL}/rest/v1/workers`, { method:"POST", headers:hdrs,
+                      body: JSON.stringify({ data: { _isConfig:true, adminCode: newCode, id: Date.now() }, org_id: o.id }) });
+                  }
+                  alert(`קוד המנהל של "${o.name}" אופס ל: ${newCode}`);
+                } catch(e) { alert("שגיאה: " + e.message); }
+              }} style={{ background:"#FFF8E1", color:"#B26A00", border:"none", borderRadius:7, padding:"5px 11px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>🔑 איפוס קוד</button>
+              <label style={{ background:"#EDE9FE", color:"#6D28D9", borderRadius:7, padding:"5px 11px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>
+                🎨 לוגו
+                <input type="file" accept="image/*" style={{ display:"none" }} onChange={async e=>{
+                  const file = e.target.files[0]; e.target.value="";
+                  if (!file) return;
+                  if (file.size > 500*1024) { alert("לוגו עד 500KB"); return; }
+                  const reader = new FileReader();
+                  reader.onload = async ev => {
+                    await orgUpdate(o._dbid, { logo: ev.target.result });
+                    setSaOrgs(await orgGetAll());
+                    alert("לוגו עודכן!");
+                  };
+                  reader.readAsDataURL(file);
+                }}/>
+              </label>
+              <button onClick={async ()=>{
+                try {
+                  const data = await orgExportData(o.id);
+                  const blob = new Blob([JSON.stringify(data, null, 2)], { type:"application/json" });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = url; a.download = `backup_${o.slug}_${todayStr()}.json`; a.click();
+                  setTimeout(()=>URL.revokeObjectURL(url), 5000);
+                } catch(e) { alert("שגיאה: " + e.message); }
+              }} style={{ background:"#E3F2FD", color:"#1565C0", border:"none", borderRadius:7, padding:"5px 11px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>💾 גיבוי</button>
+            </div>
+          </div>
+        ))}
+      </main>
+    </div>
+  );
+
   if (screen === "home") return (
     <div style={{ ...base, background:"#1A1A2E", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:24 }}>
       <GFont/>
       <div style={{ textAlign:"center", marginBottom:40 }}>
-        <img src={LOGO_URL} alt="G&E Construction" style={{ height:140, objectFit:"contain", borderRadius:16, background:"#fff", padding:"10px 18px", boxShadow:"0 8px 32px rgba(0,0,0,0.3)", marginBottom:20 }}/>
+        {org?.logo
+          ? <img src={org.logo} alt={org?.name} style={{ height:140, objectFit:"contain", borderRadius:16, background:"#fff", padding:"10px 18px", boxShadow:"0 8px 32px rgba(0,0,0,0.3)", marginBottom:20 }}/>
+          : org?.slug==="gne"
+            ? <img src={LOGO_URL} alt="G&E Construction" style={{ height:140, objectFit:"contain", borderRadius:16, background:"#fff", padding:"10px 18px", boxShadow:"0 8px 32px rgba(0,0,0,0.3)", marginBottom:20 }}/>
+            : <h1 style={{ color:"#E8C547", fontWeight:800, fontSize:30, margin:"0 0 12px" }}>{org?.name || "BuildTrack"}</h1>}
         <p style={{ color:"#888", margin:0, fontSize:14, letterSpacing:1 }}>מערכת ניהול אתרי בנייה</p>
       </div>
       <div style={{ display:"flex", flexDirection:"column", gap:12, width:"100%", maxWidth:300 }}>
@@ -1602,7 +1812,7 @@ export default function App() {
                     try {
                       const invs = [...(editProj.invoices||[])];
                       for (const file of files) {
-                        const path = `${detailProject.id}/invoices/${Date.now()}_${file.name}`;
+                        const path = `${CURRENT_ORG?.slug||"default"}/${detailProject.id}/invoices/${Date.now()}_${file.name}`;
                         const url = await storageUpload(file, path);
                         invs.push({ name: file.name, url, path, date: todayStr() });
                       }
@@ -1653,7 +1863,7 @@ export default function App() {
                     try {
                       const plans = [...(editProj.architecturalPlans||[])];
                       for (const file of files) {
-                        const path = `${detailProject.id}/${Date.now()}_${file.name}`;
+                        const path = `${CURRENT_ORG?.slug||"default"}/${detailProject.id}/${Date.now()}_${file.name}`;
                         const url = await storageUpload(file, path);
                         plans.push({ name: file.name, url, path, date: todayStr() });
                       }
