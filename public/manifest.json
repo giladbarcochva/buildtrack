@@ -2,7 +2,7 @@
   "name": "ניהול פסגת הגלעד",
   "short_name": "פסגת הגלעד",
   "description": "מערכת ניהול בניה",
-  "start_url": "/",
+
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#1e40af",
