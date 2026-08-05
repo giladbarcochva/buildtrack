@@ -9,11 +9,7 @@ const ORG_SLUG = (() => {
   const seg = window.location.pathname.split("/").filter(Boolean)[0];
   // נתיב ייעודי לניהול ראשי — לא נשמר ולא מפנה
   if (seg === "admin") return "";
-  if (seg) {
-    // זכירת הארגון האחרון — לפתיחה מאייקון מסך הבית
-    try { localStorage.setItem("bt_last_org", seg.toLowerCase()); } catch(e) {}
-    return seg.toLowerCase();
-  }
+  if (seg) return seg.toLowerCase();
   // נפתח בלי נתיב (אייקון מסך בית) — הפניה לארגון האחרון
   try {
     const last = localStorage.getItem("bt_last_org");
@@ -21,7 +17,10 @@ const ORG_SLUG = (() => {
   } catch(e) {}
   return "";
 })();
-let CURRENT_ORG = null; // set after org load; holds {id, slug, name, logo, settings, active, _dbid}
+let CURRENT_ORG = null;
+function rememberOrg() {
+  try { if (CURRENT_ORG?.slug) localStorage.setItem("bt_last_org", CURRENT_ORG.slug); } catch(e) {}
+} // set after org load; holds {id, slug, name, logo, settings, active, _dbid}
 const SUPER_ADMIN_CODE = "GNE-MASTER-2026"; // קוד סופר-אדמין — שנה אותו!
 
 // 🔑 הדבק כאן את מפתח ה-API של Anthropic (מ-console.anthropic.com)
@@ -422,17 +421,17 @@ export default function App() {
   const foremanLogin = () => {
     const code = codeInput.trim();
     const f = workers.find(w => w.isForeman && w.foremanCode && w.foremanCode === code);
-    if (f) { setLoggedForeman(f); setCodeInput(""); setCodeError(false); setMgTab("reports"); setDetailId(null); setScreen("foreman"); }
+    if (f) { rememberOrg(); setLoggedForeman(f); setCodeInput(""); setCodeError(false); setMgTab("reports"); setDetailId(null); setScreen("foreman"); }
     else setCodeError(true);
   };
 
   const workerLogin = () => {
     const w = workers.find(w => w.code === codeInput.trim());
-    if (w) { setLoggedWorker(w); setCodeInput(""); setCodeError(false); setScreen("worker"); setRepSent(false); setRepDate(todayStr()); setRepProject(""); setRepNote(""); setDayType("full"); setRepFuel(false); setWorkerView("report"); }
+    if (w) { rememberOrg(); setLoggedWorker(w); setCodeInput(""); setCodeError(false); setScreen("worker"); setRepSent(false); setRepDate(todayStr()); setRepProject(""); setRepNote(""); setDayType("full"); setRepFuel(false); setWorkerView("report"); }
     else setCodeError(true);
   };
   const managerLogin = () => {
-    if (codeInput.trim() === adminCode) { setCodeInput(""); setCodeError(false); setScreen("mgr"); }
+    if (codeInput.trim() === adminCode) { rememberOrg(); setCodeInput(""); setCodeError(false); setScreen("mgr"); }
     else setCodeError(true);
   };
 
