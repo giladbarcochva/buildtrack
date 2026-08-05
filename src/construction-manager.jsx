@@ -7,6 +7,8 @@ const hdrs = { "Content-Type": "application/json", "apikey": SUPABASE_KEY, "Auth
 // ===== Multi-tenant: current org from URL path (/gne → org "gne") =====
 const ORG_SLUG = (() => {
   const seg = window.location.pathname.split("/").filter(Boolean)[0];
+  // נתיב ייעודי לניהול ראשי — לא נשמר ולא מפנה
+  if (seg === "admin") return "";
   if (seg) {
     // זכירת הארגון האחרון — לפתיחה מאייקון מסך הבית
     try { localStorage.setItem("bt_last_org", seg.toLowerCase()); } catch(e) {}
