@@ -945,7 +945,7 @@ export default function App() {
               const created = await orgInsert({ slug: saNewOrg.slug, name: saNewOrg.name, active: true, settings: {} });
               // יצירת רשומת קוד מנהל בארגון החדש
               await fetch(`${SUPABASE_URL}/rest/v1/workers`, { method:"POST", headers:hdrs,
-                body: JSON.stringify({ data: { _isConfig:true, adminCode: saNewOrg.adminCode, id: Date.now() }, org_id: created.id }) });
+                body: JSON.stringify({ data: { _isConfig:true, _adminCode: saNewOrg.adminCode, id: Date.now() }, org_id: created.id }) });
               setSaOrgs((await orgGetAll()).filter(o=>o.slug!=="_config"));
               setSaNewOrg({ slug:"", name:"", adminCode:"" });
               alert(`נוצר! הקישור: ${window.location.origin}/${created.slug}`);
@@ -982,10 +982,10 @@ export default function App() {
                   const cfg = rows.find(x => x.data && x.data._isConfig);
                   if (cfg) {
                     await fetch(`${SUPABASE_URL}/rest/v1/workers?id=eq.${cfg.id}`, { method:"PATCH", headers:hdrs,
-                      body: JSON.stringify({ data: { ...cfg.data, adminCode: newCode } }) });
+                      body: JSON.stringify({ data: { ...cfg.data, _adminCode: newCode } }) });
                   } else {
                     await fetch(`${SUPABASE_URL}/rest/v1/workers`, { method:"POST", headers:hdrs,
-                      body: JSON.stringify({ data: { _isConfig:true, adminCode: newCode, id: Date.now() }, org_id: o.id }) });
+                      body: JSON.stringify({ data: { _isConfig:true, _adminCode: newCode, id: Date.now() }, org_id: o.id }) });
                   }
                   alert(`קוד המנהל של "${o.name}" אופס ל: ${newCode}`);
                 } catch(e) { alert("שגיאה: " + e.message); }
