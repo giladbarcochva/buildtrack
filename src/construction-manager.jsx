@@ -333,7 +333,9 @@ export default function App() {
 
   // Debounce ref for Supabase updates
   const debounceRef = useRef({});
+  const lastEditRef = useRef(0);
   const updateProjFieldDebounced = useCallback((proj, changes) => {
+    lastEditRef.current = Date.now();
     // Update local state immediately (no cursor jump)
     setEditProj(p => p ? {...p, ...changes} : p);
     setProjects(prev => prev.map(p => p._dbid===proj._dbid ? {...p,...changes} : p));
@@ -414,7 +416,11 @@ export default function App() {
   // Auto-refresh data every 60 seconds while on manager screen
   useEffect(() => {
     if (screen !== "mgr" && screen !== "foreman") return;
-    const interval = setInterval(() => { loadAll(true); }, 60000);
+    const interval = setInterval(() => {
+      // לא מרעננים בזמן הקלדה — מונע מחיקת טקסט באמצע כתיבה
+      if (Date.now() - lastEditRef.current < 20000) return;
+      loadAll(true);
+    }, 60000);
     return () => clearInterval(interval);
   }, [screen, loadAll]);
 
@@ -1384,7 +1390,7 @@ export default function App() {
         </div>
       </header>
 
-      <div style={{ background:"#fff", borderBottom:"1.5px solid #EEE", display:"flex", justifyContent:"center", overflowX:"auto" }}>
+      <div style={{ background:"#fff", borderBottom:"1.5px solid #EEE", display:"flex", justifyContent:"flex-start", overflowX:"auto", WebkitOverflowScrolling:"touch" }}>
         {tabs.map(t => (
           <button key={t.key} onClick={()=>{ setMgTab(t.key); setDetailId(null); }} style={{ background:"none", border:"none", borderBottom:mgTab===t.key?"3px solid #E8C547":"3px solid transparent", padding:"11px 12px", fontWeight:mgTab===t.key?700:500, fontSize:13, cursor:"pointer", fontFamily:"Heebo,sans-serif", color:mgTab===t.key?"#1A1A2E":"#888", whiteSpace:"nowrap" }}>
             {t.emoji} {t.label}
