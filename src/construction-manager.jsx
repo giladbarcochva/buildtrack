@@ -948,7 +948,13 @@ export default function App() {
                 body: JSON.stringify({ data: { _isConfig:true, _adminCode: saNewOrg.adminCode, id: Date.now() }, org_id: created.id }) });
               setSaOrgs((await orgGetAll()).filter(o=>o.slug!=="_config"));
               setSaNewOrg({ slug:"", name:"", adminCode:"" });
-              alert(`נוצר! הקישור: ${window.location.origin}/${created.slug}`);
+              const link = `${window.location.origin}/${created.slug}`;
+              const text = `שלום! מצורף קישור למערכת ניהול האתרים של ${created.name}:\n${link}\n\nפתח את הקישור בטלפון ← לחץ שיתוף ← "הוספה למסך הבית" — וזהו, יש לך אפליקציה 📱`;
+              if (navigator.share) {
+                try { await navigator.share({ title: created.name, text }); } catch(e) {}
+              } else {
+                alert(`נוצר! הקישור: ${link}`);
+              }
             } catch(e) { alert("שגיאה: " + e.message); }
           }} style={{ ...btnD, width:"100%" }}>צור קבלן</button>
         </div>
@@ -966,6 +972,16 @@ export default function App() {
             <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
               <button onClick={()=>window.open(`/${o.slug}`, "_blank")}
                 style={{ background:"#F0F0EC", color:"#555", border:"none", borderRadius:7, padding:"5px 11px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>🔗 פתח</button>
+              <button onClick={async ()=>{
+                const link = `${window.location.origin}/${o.slug}`;
+                const text = `שלום! מצורף קישור למערכת ניהול האתרים של ${o.name}:\n${link}\n\nפתח את הקישור בטלפון ← לחץ שיתוף ← "הוספה למסך הבית" — וזהו, יש לך אפליקציה 📱`;
+                if (navigator.share) {
+                  try { await navigator.share({ title: o.name, text }); } catch(e) {}
+                } else {
+                  try { await navigator.clipboard.writeText(text); alert("הקישור הועתק! 📋"); }
+                  catch(e) { window.prompt("העתק את הקישור:", link); }
+                }
+              }} style={{ background:"#E8F5E9", color:"#2E7D32", border:"none", borderRadius:7, padding:"5px 11px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>📤 שתף</button>
               <button onClick={async ()=>{
                 await orgUpdate(o._dbid, { active: o.active===false });
                 setSaOrgs((await orgGetAll()).filter(o=>o.slug!=="_config"));
