@@ -1944,6 +1944,59 @@ export default function App() {
                 )}
               </div>
 
+              {/* PROJECT DESCRIPTION */}
+              <div style={{ background:"#fff", borderRadius:14, padding:"16px 20px", marginBottom:14, boxShadow:"0 2px 8px rgba(0,0,0,0.07)" }}>
+                <h3 style={{ margin:"0 0 10px", fontSize:15, fontWeight:700 }}>📋 תיאור הפרויקט</h3>
+                <textarea value={editProj.description||""} placeholder="לדוגמה: 200 מטר גבס · שלד בטון 150 מ״ר · פרגולה 40 מ״ר"
+                  onChange={e=>{ setEditProj(p=>({...p, description: e.target.value})); updateProjFieldDebounced(detailProject, { description: e.target.value }); }}
+                  rows={3}
+                  style={{ width:"100%", border:"1.5px solid #EEE", borderRadius:10, padding:"10px 12px", fontSize:14, fontFamily:"Heebo,sans-serif", outline:"none", background:"#FDFDFB", boxSizing:"border-box", resize:"vertical" }}/>
+              </div>
+
+              {/* CLIENT PAYMENT STAGES */}
+              <div style={{ background:"#fff", borderRadius:14, padding:"16px 20px", marginBottom:14, boxShadow:"0 2px 8px rgba(0,0,0,0.07)" }}>
+                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:13 }}>
+                  <h3 style={{ margin:0, fontSize:15, fontWeight:700 }}>💵 שלבי קבלת תשלום</h3>
+                  <button onClick={()=>{ const cp=[...(editProj.clientPayments||[]),{id:Date.now(),desc:"",amount:"",received:false}]; setEditProj(p=>({...p,clientPayments:cp})); updateProjField(detailProject,{clientPayments:cp}); }}
+                    style={{ background:"#1A1A2E", color:"#E8C547", border:"none", borderRadius:7, padding:"4px 12px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700 }}>+ שלב תשלום</button>
+                </div>
+                {(!editProj.clientPayments||editProj.clientPayments.length===0) && <p style={{ margin:0, fontSize:13, color:"#AAA" }}>אין שלבי תשלום — למשל: מקדמה, אחרי שלד, מסירה</p>}
+                {(editProj.clientPayments||[]).map((cp,ci) => {
+                  const updCp = (changes, isText=false) => {
+                    const clientPayments=(editProj.clientPayments||[]).map((x,i)=>i===ci?{...x,...changes}:x);
+                    setEditProj(p=>({...p,clientPayments}));
+                    if (isText) updateProjFieldDebounced(detailProject,{clientPayments});
+                    else updateProjField(detailProject,{clientPayments});
+                  };
+                  return (
+                    <div key={cp.id} style={{ display:"flex", gap:6, alignItems:"center", marginBottom:7 }}>
+                      <button onClick={()=>{
+                        if (!cp.received && !window.confirm(`לסמן שקיבלת ₪${Number(cp.amount||0).toLocaleString("he-IL")}?`)) return;
+                        updCp({received:!cp.received, receivedAt: !cp.received ? new Date().toLocaleDateString("he-IL") : ""});
+                      }}
+                        style={{ width:24, height:24, borderRadius:"50%", border:`2px solid ${cp.received?"#22C55E":"#CCC"}`, background:cp.received?"#22C55E":"#fff", cursor:"pointer", flexShrink:0, color:"#fff", fontSize:13, display:"flex", alignItems:"center", justifyContent:"center" }}>{cp.received?"✓":""}</button>
+                      <input value={cp.desc} placeholder="מתי (למשל: אחרי שלד)" onChange={e=>updCp({desc:e.target.value}, true)}
+                        style={{ flex:2, border:"1.5px solid #EEE", borderRadius:8, padding:"7px 10px", fontSize:13, fontFamily:"Heebo,sans-serif", outline:"none", background:"#fff", textDecoration:cp.received?"line-through":"none", color:cp.received?"#AAA":"#333" }}/>
+                      <input type="number" value={cp.amount} placeholder="₪" onChange={e=>updCp({amount:e.target.value}, true)}
+                        style={{ flex:1, border:"1.5px solid #EEE", borderRadius:8, padding:"7px 10px", fontSize:13, fontFamily:"Heebo,sans-serif", outline:"none", background:"#fff", textDecoration:cp.received?"line-through":"none", color:cp.received?"#AAA":"#333" }}/>
+                      <button onClick={()=>{ const clientPayments=(editProj.clientPayments||[]).filter((_,i)=>i!==ci); setEditProj(p=>({...p,clientPayments})); updateProjField(detailProject,{clientPayments}); }}
+                        style={{ background:"none", border:"none", cursor:"pointer", color:"#CCC", fontSize:14, padding:0, flexShrink:0 }}>✕</button>
+                    </div>
+                  );
+                })}
+                {(editProj.clientPayments||[]).length>0 && (() => {
+                  const cpTotal = (editProj.clientPayments||[]).reduce((s,x)=>s+Number(x.amount||0),0);
+                  const cpReceived = (editProj.clientPayments||[]).filter(x=>x.received).reduce((s,x)=>s+Number(x.amount||0),0);
+                  return (
+                    <div style={{ display:"flex", justifyContent:"space-between", flexWrap:"wrap", gap:4, paddingTop:10, borderTop:"1px solid #EEE", marginTop:6, fontSize:13 }}>
+                      <span style={{ color:"#555" }}>סה"כ: <b>₪{fmtNum(cpTotal)}</b></span>
+                      <span style={{ color:"#2E7D32" }}>התקבל: <b>₪{fmtNum(cpReceived)}</b></span>
+                      <span style={{ color:(cpTotal-cpReceived)>0?"#B71C1C":"#2E7D32" }}>נותר: <b>₪{fmtNum(cpTotal-cpReceived)}</b></span>
+                    </div>
+                  );
+                })()}
+              </div>
+
               <div style={{ background:"#fff", borderRadius:14, padding:"16px 20px", marginBottom:14, boxShadow:"0 2px 8px rgba(0,0,0,0.07)" }}>
                 <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:13 }}>
                   <h3 style={{ margin:0, fontSize:15, fontWeight:700 }}>🪜 שלבי ביצוע</h3>
