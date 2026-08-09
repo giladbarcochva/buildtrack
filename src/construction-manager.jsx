@@ -41,6 +41,7 @@ const ORG_SLUG = (() => {
   return "";
 })();
 let CURRENT_ORG = null;
+const TERMS_VERSION = "1.0"; // העלאת המספר תחייב אישור מחדש מכל הקבלנים
 function rememberOrg() {
   try { if (CURRENT_ORG?.slug) localStorage.setItem("bt_last_org", CURRENT_ORG.slug); } catch(e) {}
 } // set after org load; holds {id, slug, name, logo, settings, active, _dbid}
@@ -215,7 +216,7 @@ function calcWorkerPayroll(worker, reports) {
   };
 
   const totalDays = myReports.reduce((s, r) => s + (r._shift ? ((r.hours||0) > 0 ? 1 : 0) : Number(r.days||1)), 0);
-  const totalFuel = myReports.filter(r => r.fuel).length * 50;
+  const totalFuel = myReports.reduce((s,r) => s + (r.fuel ? Number(r.fuelAmt||50) : 0), 0);
 
   // לפי חודש
   const byMonth = {};
@@ -232,13 +233,13 @@ function calcWorkerPayroll(worker, reports) {
       m.hours += hrs; m.reg += hp.reg; m.ot125 += hp.ot125; m.ot150 += hp.ot150;
     }
     m.pay += rowValue(r);
-    if (r.fuel) m.fuel += 50;
+    if (r.fuel) m.fuel += Number(r.fuelAmt||50);
     const pName = r.projectName || String(r.projectId || "ללא פרויקט");
     m.projects.add(pName);
     if (!m.byProject[pName]) m.byProject[pName] = { days: 0, fuel: 0, pay: 0 };
     m.byProject[pName].days += dv;
     m.byProject[pName].pay += rowValue(r);
-    if (r.fuel) m.byProject[pName].fuel += 50;
+    if (r.fuel) m.byProject[pName].fuel += Number(r.fuelAmt||50);
   });
 
   // גלובלי: כל חודש עם פעילות = המשכורת הקבועה
@@ -253,7 +254,7 @@ function calcWorkerPayroll(worker, reports) {
     if (!totalByProject[pName]) totalByProject[pName] = { days: 0, fuel: 0, pay: 0 };
     totalByProject[pName].days += r._shift ? ((r.hours||0) > 0 ? 1 : 0) : Number(r.days||1);
     totalByProject[pName].pay += rowValue(r);
-    if (r.fuel) totalByProject[pName].fuel += 50;
+    if (r.fuel) totalByProject[pName].fuel += Number(r.fuelAmt||50);
   });
   const projectBreakdown = Object.entries(totalByProject)
     .sort((a,b) => b[1].days - a[1].days)
@@ -295,6 +296,7 @@ export default function App() {
   const [saOrgs, setSaOrgs] = useState([]);        // רשימת ארגונים לסופר-אדמין
   const [saNewOrg, setSaNewOrg] = useState({ slug:"", name:"", adminCode:"" });
   const [saCodeInput, setSaCodeInput] = useState("");
+  const [termsAccepted, setTermsAccepted] = useState(true); // עד שנטען — לא חוסמים
 
   const [screen,       setScreen]       = useState("home");
   const [codeInput,    setCodeInput]    = useState("");
@@ -353,7 +355,7 @@ export default function App() {
   const emptyProj = { name:"", status:"ממתין", progress:0, startDate:"", endDate:"", plannedDays:"", materialCost:"", totalCost:"", projectManager:"", plannedWorkers:"", highlights:"", phases:[], workers:[], expenses:[] };
   const [newProject, setNewProject] = useState(emptyProj);
   const [editProj,   setEditProj]   = useState(null);
-  const [newWorker,  setNewWorker]  = useState({ name:"", code:"", role:"", dailyRate:"", payType:"daily", hourlyRate:"", monthlySalary:"", showFuel:true });
+  const [newWorker,  setNewWorker]  = useState({ name:"", code:"", role:"", dailyRate:"", payType:"daily", hourlyRate:"", monthlySalary:"", showFuel:true, fuelAmount:50 });
 
   const detailProject = projects.find(p => String(p.id) === String(detailId)) || null;
   const assignProject = projects.find(p => String(p.id) === String(assignPid)) || null;
@@ -391,7 +393,9 @@ export default function App() {
         setEquipList(eq.map(e => ({...e})));
       } catch(e) { console.log("equipment table not ready yet"); }
       setProjects(p);
-      const realWorkers = w.filter(x => !x._isConfig);
+      const termsRec = w.find(x => x._termsRecord);
+      setTermsAccepted(!!termsRec && termsRec.termsVersion === TERMS_VERSION);
+      const realWorkers = w.filter(x => !x._isConfig && !x._termsRecord);
       // load payment records - keep only latest per key
       const payRecs = r.filter(x => x._paymentRecord);
       const paidMap = {};
@@ -505,7 +509,7 @@ export default function App() {
       const proj = projects.find(p => String(p.id) === String(repProject));
       const rec = { _shift:true, workerId: loggedWorker.id, workerName: loggedWorker.name,
         projectId: repProject, projectName: proj?.name||"", date: todayStr(),
-        clockIn: Date.now(), clockOut: null, fuel: repFuel, id: Date.now() };
+        clockIn: Date.now(), clockOut: null, fuel: repFuel, fuelAmt: repFuel ? Number(loggedWorker.fuelAmount||50) : 0, id: Date.now() };
       const saved = await dbInsert("reports", rec);
       setReports(prev => [...prev, saved]);
     } catch(e) { alert("שגיאה: " + e.message); }
@@ -516,7 +520,8 @@ export default function App() {
     try {
       const now = Date.now();
       const hours = (now - myOpenShift.clockIn) / 3600000;
-      const updated = { ...myOpenShift, clockOut: now, hours: Math.round(hours*100)/100, fuel: repFuel || myOpenShift.fuel };
+      const fuelOn = repFuel || myOpenShift.fuel;
+      const updated = { ...myOpenShift, clockOut: now, hours: Math.round(hours*100)/100, fuel: fuelOn, fuelAmt: fuelOn ? Number(loggedWorker.fuelAmount||50) : 0 };
       const { _dbid, ...data } = updated;
       await dbUpdate("reports", myOpenShift._dbid, data);
       setReports(prev => prev.map(r => r._dbid===myOpenShift._dbid ? updated : r));
@@ -540,7 +545,7 @@ export default function App() {
       const proj = projects.find(p => String(p.id) === String(repProject));
       const today = todayStr();
       const isPast = repDate < today; // only strictly BEFORE today
-      const newRep = { workerId: loggedWorker.id, workerName: loggedWorker.name, projectId: repProject, projectName: proj?.name || "", date: repDate, note: repNote, days: dayType==="half" ? 0.5 : 1, dayType, fuel: repFuel, id: Date.now(), pendingApproval: isPast };
+      const newRep = { workerId: loggedWorker.id, workerName: loggedWorker.name, projectId: repProject, projectName: proj?.name || "", date: repDate, note: repNote, days: dayType==="half" ? 0.5 : 1, dayType, fuel: repFuel, fuelAmt: repFuel ? Number(loggedWorker.fuelAmount||50) : 0, id: Date.now(), pendingApproval: isPast };
       const saved = await dbInsert("reports", newRep);
       if (isPast) {
         setPendingReports(prev => [...prev, saved]);
@@ -574,7 +579,7 @@ export default function App() {
     const w = { ...newWorker, id: Date.now() };
     const saved = await dbInsert("workers", w);
     setWorkers(prev => [...prev, saved]);
-    setNewWorker({ name:"", code:"", role:"", dailyRate:"", payType:"daily", hourlyRate:"", monthlySalary:"", showFuel:true }); setNewWM(false);
+    setNewWorker({ name:"", code:"", role:"", dailyRate:"", payType:"daily", hourlyRate:"", monthlySalary:"", showFuel:true, fuelAmount:50 }); setNewWM(false);
   };
 
   const saveEditWorker = async () => {
@@ -846,6 +851,14 @@ export default function App() {
     } catch(e) { alert("שגיאה: " + e.message); }
   };
 
+  const acceptTerms = async () => {
+    try {
+      const rec = { _termsRecord: true, termsVersion: TERMS_VERSION, acceptedAt: new Date().toISOString(), acceptedBy: "מנהל", id: Date.now() };
+      await dbInsert("workers", rec);
+      setTermsAccepted(true);
+    } catch(e) { alert("שגיאה בשמירת האישור: " + e.message); }
+  };
+
   const saveAdminCode = async () => {
     if (!newAdminCode.trim()) return;
     const newCode = newAdminCode.trim();
@@ -898,12 +911,22 @@ export default function App() {
           <input type="number" value={obj.monthlySalary||""} placeholder="12000" onChange={e=>setObj({...obj, monthlySalary:e.target.value})} style={inp}/>
         </label>
       )}
-      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", background:"#F9F9F9", borderRadius:9, padding:"9px 12px", marginBottom:11 }}>
-        <span style={{ fontSize:13, fontWeight:600 }}>⛽ הצג לעובד כפתור דלק</span>
-        <button type="button" onClick={()=>setObj({...obj, showFuel: obj.showFuel===false ? true : false})}
-          style={{ background: obj.showFuel!==false ? "#1A1A2E":"#DDD", color: obj.showFuel!==false ? "#E8C547":"#777", border:"none", borderRadius:8, padding:"4px 14px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700 }}>
-          {obj.showFuel!==false ? "✓ כן" : "לא"}
-        </button>
+      <div style={{ background:"#F9F9F9", borderRadius:9, padding:"9px 12px", marginBottom:11 }}>
+        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+          <span style={{ fontSize:13, fontWeight:600 }}>⛽ הצג לעובד כפתור דלק</span>
+          <button type="button" onClick={()=>setObj({...obj, showFuel: obj.showFuel===false ? true : false})}
+            style={{ background: obj.showFuel!==false ? "#1A1A2E":"#DDD", color: obj.showFuel!==false ? "#E8C547":"#777", border:"none", borderRadius:8, padding:"4px 14px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700 }}>
+            {obj.showFuel!==false ? "✓ כן" : "לא"}
+          </button>
+        </div>
+        {obj.showFuel!==false && (
+          <label style={{ display:"flex", alignItems:"center", gap:8, marginTop:8 }}>
+            <span style={{ fontSize:12, color:"#555", whiteSpace:"nowrap" }}>סכום דלק ליום (₪)</span>
+            <input type="number" value={obj.fuelAmount ?? 50} placeholder="50"
+              onChange={e=>setObj({...obj, fuelAmount: e.target.value})}
+              style={{ flex:1, border:"1.5px solid #DDD", borderRadius:8, padding:"6px 10px", fontSize:13, fontFamily:"Heebo,sans-serif", outline:"none", background:"#fff" }}/>
+          </label>
+        )}
       </div>
     </>
   );
@@ -1258,7 +1281,7 @@ export default function App() {
                   {loggedWorker?.showFuel!==false && (
                     <button type="button" onClick={()=>setRepFuel(f=>!f)}
                       style={{ width:"100%", background:(repFuel||myOpenShift.fuel)?"#1A1A2E":"#F0F0EC", color:(repFuel||myOpenShift.fuel)?"#E8C547":"#888", border:"none", borderRadius:10, padding:"10px 0", fontWeight:700, fontSize:14, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>
-                      {(repFuel||myOpenShift.fuel) ? "✅ כן — ₪50 דלק" : "לא נסעתי באוטו"}
+                      {(repFuel||myOpenShift.fuel) ? `✅ כן — ₪${loggedWorker?.fuelAmount||50} דלק` : "לא נסעתי באוטו"}
                     </button>
                   )}
                 </div>
@@ -1290,7 +1313,7 @@ export default function App() {
                         <div style={{ marginBottom:14 }}>
                           <button type="button" onClick={()=>setRepFuel(f=>!f)}
                             style={{ width:"100%", background:repFuel?"#1A1A2E":"#F0F0EC", color:repFuel?"#E8C547":"#888", border:"none", borderRadius:10, padding:"10px 0", fontWeight:700, fontSize:14, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>
-                            {repFuel ? "✅ כן — ₪50 דלק" : "לא נסעתי באוטו"}
+                            {repFuel ? `✅ כן — ₪${loggedWorker?.fuelAmount||50} דלק` : "לא נסעתי באוטו"}
                           </button>
                         </div>
                       )}
@@ -1375,7 +1398,7 @@ export default function App() {
               <LBL t="⛽ דלק"/>
               <button type="button" onClick={()=>setRepFuel(f=>!f)}
                 style={{ width:"100%", background:repFuel?"#1A1A2E":"#F0F0EC", color:repFuel?"#E8C547":"#888", border:"none", borderRadius:10, padding:"11px 0", fontWeight:700, fontSize:15, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>
-                {repFuel ? "✅ כן — ₪50 דלק" : "לא נסעתי באוטו"}
+                {repFuel ? `✅ כן — ₪${loggedWorker?.fuelAmount||50} דלק` : "לא נסעתי באוטו"}
               </button>
             </div>
             )}
@@ -1526,7 +1549,7 @@ export default function App() {
                     }} style={{ background:"#1A1A2E", color:"#E8C547", border:"none", borderRadius:6, padding:"2px 8px", fontSize:11, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:600 }}>✏️ שעות</button>}
                   </div>
                   {r.note && <p style={{ margin:0, fontSize:13, color:"#666", lineHeight:1.5 }}>{r.note}</p>}
-                  {r.fuel && <span style={{ background:"#FFF8E1", color:"#B26A00", borderRadius:6, padding:"2px 7px", fontSize:11, fontWeight:600 }}>⛽ +₪50 דלק</span>}
+                  {r.fuel && <span style={{ background:"#FFF8E1", color:"#B26A00", borderRadius:6, padding:"2px 7px", fontSize:11, fontWeight:600 }}>⛽ +₪{r.fuelAmt||50} דלק</span>}
                 </div>
                 <button onClick={()=>delReport(r)} style={{ background:"none", border:"none", cursor:"pointer", color:"#CCC", fontSize:15, padding:0, flexShrink:0 }}>✕</button>
               </div>
@@ -2867,6 +2890,28 @@ export default function App() {
               );
             })}
             <button onClick={()=>setAssignM(false)} style={{ ...btnD, width:"100%", marginTop:10 }}>סגור</button>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: אישור תנאי שימוש — חד-פעמי לכל קבלן */}
+      {!isForeman && termsAccepted === false && (
+        <div style={{ ...OVL }}>
+          <div style={{ ...MOD, maxWidth:440 }}>
+            <h3 style={{ margin:"0 0 4px", fontWeight:800, fontSize:18 }}>📜 תנאי שימוש</h3>
+            <p style={{ margin:"0 0 12px", color:"#777", fontSize:13 }}>לפני תחילת השימוש במערכת, יש לקרוא ולאשר את התנאים הבאים:</p>
+            <div style={{ background:"#F9F9F9", border:"1.5px solid #EEE", borderRadius:12, padding:"14px 16px", maxHeight:320, overflowY:"auto", fontSize:12.5, lineHeight:1.7, color:"#444", marginBottom:14, textAlign:"right" }}>
+              <p style={{ margin:"0 0 8px" }}><b>1. כללי.</b> מערכת BuildTrack ("המערכת") מסופקת כשירות מקוון לניהול אתרי בנייה, במצבה כפי שהוא (AS-IS).</p>
+              <p style={{ margin:"0 0 8px" }}><b>2. מנוי ותשלום.</b> השימוש במערכת מותנה בתשלום דמי הקמה ודמי מנוי כפי שסוכמו. אי-תשלום עלול להוביל להשהיית הגישה לאחר מתן התראה.</p>
+              <p style={{ margin:"0 0 8px" }}><b>3. הנתונים שלך.</b> כל הנתונים שמזין הלקוח שייכים ללקוח בלבד. בסיום ההתקשרות יימסר ללקוח, לפי בקשתו, ייצוא מלא של נתוניו.</p>
+              <p style={{ margin:"0 0 8px" }}><b>4. אחריות הלקוח.</b> הלקוח אחראי לשמירת סודיות קודי הגישה, לנכונות הנתונים המוזנים, ולעמידה בהוראות כל דין — לרבות דיני עבודה ושכר. המערכת היא כלי עזר ניהולי ואינה תחליף לייעוץ משפטי, חשבונאי או אחר.</p>
+              <p style={{ margin:"0 0 8px" }}><b>5. זמינות וגיבוי.</b> הספק פועל לזמינות גבוהה ולגיבוי שוטף של הנתונים, אך אינו מתחייב לפעילות רציפה וללא תקלות.</p>
+              <p style={{ margin:"0 0 8px" }}><b>6. הגבלת אחריות.</b> אחריות הספק בכל עילה שהיא מוגבלת לסכום דמי המנוי ששולמו בפועל בשלושת החודשים שקדמו לאירוע. הספק לא יישא בכל נזק עקיף, אובדן רווח, אובדן מידע או נזק תוצאתי.</p>
+              <p style={{ margin:"0 0 8px" }}><b>7. פרטיות ואבטחה.</b> הנתונים נשמרים בשרתים מאובטחים בבידוד מלא בין לקוחות. הספק לא יעשה שימוש בנתוני הלקוח אלא לצורך תפעול השירות ושיפורו.</p>
+              <p style={{ margin:"0 0 8px" }}><b>8. שינויים.</b> הספק רשאי לעדכן את המערכת ואת תנאים אלה מעת לעת; שינוי מהותי בתנאים יחייב אישור מחודש.</p>
+              <p style={{ margin:0 }}><b>9. דין.</b> על תנאים אלה יחול הדין הישראלי.</p>
+            </div>
+            <button onClick={acceptTerms} style={{ ...btnD, width:"100%", fontSize:15 }}>✓ קראתי ואני מאשר/ת את תנאי השימוש</button>
           </div>
         </div>
       )}
