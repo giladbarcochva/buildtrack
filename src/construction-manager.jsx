@@ -42,6 +42,15 @@ const ORG_SLUG = (() => {
 })();
 let CURRENT_ORG = null;
 const TERMS_VERSION = "1.0"; // העלאת המספר תחייב אישור מחדש מכל הקבלנים
+
+// ===== מסלולי מנוי =====
+const PLANS = {
+  free:     { label:"🎁 חינם",   maxWorkers:Infinity, maxProjects:Infinity, foremen:true,  subs:true  },
+  basic:    { label:"🥉 בסיס",   maxWorkers:5,        maxProjects:3,        foremen:false, subs:false },
+  pro:      { label:"🥈 מקצועי", maxWorkers:15,       maxProjects:Infinity, foremen:true,  subs:true  },
+  business: { label:"🥇 עסקי",   maxWorkers:Infinity, maxProjects:Infinity, foremen:true,  subs:true  },
+};
+const WHATSAPP_QUOTE = "https://wa.me/972543276493?text=" + encodeURIComponent("היי, אשמח לקבל הצעת מחיר למערכת BuildTrack לניהול אתרי בנייה 🏗️");
 function rememberOrg() {
   try { if (CURRENT_ORG?.slug) localStorage.setItem("bt_last_org", CURRENT_ORG.slug); } catch(e) {}
 } // set after org load; holds {id, slug, name, logo, settings, active, _dbid}
@@ -463,6 +472,9 @@ export default function App() {
   const projReports = id => reports.filter(r => String(r.projectId) === String(id));
   const getWkrNames = (ids=[]) => ids.map(id => workers.find(w => String(w.id)===String(id))?.name).filter(Boolean).join(", ");
 
+  // ====== מסלול נוכחי ======
+  const plan = PLANS[org?.settings?.plan] || PLANS.free;
+
   // ====== הרשאות מנהל עבודה ======
   const isForeman = screen === "foreman";
   const foremanProjectIds = (loggedForeman?.foremanProjects || []).map(String);
@@ -568,6 +580,11 @@ export default function App() {
 
   const addProject = async () => {
     if (!newProject.name) return;
+    const activeCount = projects.filter(p => p.status !== "הושלם").length;
+    if (activeCount >= plan.maxProjects) {
+      alert(`המסלול הנוכחי מוגבל ל-${plan.maxProjects} פרויקטים פעילים.\nסיים פרויקט קיים או צרו קשר לשדרוג המסלול.`);
+      return;
+    }
     const p = { ...newProject, id: Date.now(), progress: Number(newProject.progress)||0 };
     const saved = await dbInsert("projects", p);
     setProjects(prev => [...prev, saved]);
@@ -576,6 +593,10 @@ export default function App() {
 
   const addWorker = async () => {
     if (!newWorker.name || !newWorker.code) return;
+    if (workers.length >= plan.maxWorkers) {
+      alert(`המסלול הנוכחי מוגבל ל-${plan.maxWorkers} עובדים.\nלשדרוג המסלול צרו קשר עם הספק.`);
+      return;
+    }
     const w = { ...newWorker, id: Date.now() };
     const saved = await dbInsert("workers", w);
     setWorkers(prev => [...prev, saved]);
@@ -964,7 +985,10 @@ export default function App() {
         <h2 style={{ margin:"0 0 8px", fontWeight:800, fontSize:20 }}>BuildTrack</h2>
         {orgError==="landing" && <>
           <p style={{ margin:"0 0 16px", color:"#777", fontSize:14 }}>מערכת ניהול אתרי בנייה לקבלנים.<br/>כניסה דרך הקישור הייעודי של העסק שלך.</p>
-          <p style={{ margin:"0 0 18px", color:"#AAA", fontSize:12 }}>אין לך מערכת? צור קשר להקמה מהירה 🚀</p>
+          <a href={WHATSAPP_QUOTE} target="_blank" rel="noreferrer"
+            style={{ display:"block", background:"#25D366", color:"#fff", borderRadius:12, padding:"13px 0", fontWeight:800, fontSize:15, textDecoration:"none", marginBottom:16, fontFamily:"Heebo,sans-serif" }}>
+            💬 קבל הצעת מחיר בוואטסאפ
+          </a>
         </>}
         {orgError==="notfound" && <p style={{ margin:"0 0 16px", color:"#E53935", fontSize:14 }}>הכתובת לא מוכרת. בדוק את הקישור שקיבלת.</p>}
         {orgError==="suspended" && <p style={{ margin:"0 0 16px", color:"#E53935", fontSize:14 }}>המערכת מושהית זמנית.<br/>צור קשר עם הספק.</p>}
@@ -1039,6 +1063,20 @@ export default function App() {
                 <p style={{ margin:0, fontSize:12, color:"#888", direction:"ltr", textAlign:"right" }}>/{o.slug}</p>
               </div>
               <span style={{ fontSize:12, fontWeight:700, color:o.active!==false?"#2E7D32":"#E53935" }}>{o.active!==false?"● פעיל":"● מושהה"}</span>
+            </div>
+            <div style={{ display:"flex", gap:5, flexWrap:"wrap", marginBottom:8 }}>
+              {Object.entries(PLANS).map(([k,p]) => {
+                const cur = (o.settings?.plan || "free") === k;
+                return (
+                  <button key={k} onClick={async ()=>{
+                    if (cur) return;
+                    await orgUpdate(o._dbid, { settings: { ...(o.settings||{}), plan: k } });
+                    setSaOrgs((await orgGetAll()).filter(x=>x.slug!=="_config"));
+                  }} style={{ background:cur?"#1A1A2E":"#F0F0EC", color:cur?"#E8C547":"#777", border:"none", borderRadius:7, padding:"4px 10px", fontSize:11, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:cur?700:400 }}>
+                    {p.label}
+                  </button>
+                );
+              })}
             </div>
             <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
               <button onClick={()=>window.open(`/${o.slug}`, "_blank")}
@@ -1436,7 +1474,8 @@ export default function App() {
     { key:"settings", label:"הגדרות",   emoji:"⚙️" },
   ];
   const foremanTabs = ["reports","projects","workers","calendar"];
-  const tabs = isForeman ? allTabs.filter(t => foremanTabs.includes(t.key)) : allTabs;
+  const tabs = (isForeman ? allTabs.filter(t => foremanTabs.includes(t.key)) : allTabs)
+    .filter(t => t.key !== "foremen" || plan.foremen);
 
   return (
     <div style={{ ...base, background:"#F5F5F0" }}>
@@ -1803,6 +1842,7 @@ export default function App() {
               </div>
 
               {/* SUBCONTRACTORS */}
+              {plan.subs && (
               <div style={{ background:"#fff", borderRadius:14, padding:"16px 20px", marginBottom:14, boxShadow:"0 2px 8px rgba(0,0,0,0.07)" }}>
                 <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:13 }}>
                   <h3 style={{ margin:0, fontSize:15, fontWeight:700 }}>🔨 קבלני משנה</h3>
@@ -1885,6 +1925,8 @@ export default function App() {
                   );
                 })}
               </div>
+
+              )}
 
               {/* TOTAL PROJECT COSTS */}
               {(() => {
@@ -2267,7 +2309,7 @@ export default function App() {
 
             {/* toggle pending / history */}
             <div style={{ display:"flex", background:"#F0F0EC", borderRadius:12, padding:3, marginBottom:14, gap:3 }}>
-              {[{k:"pending",l:"לתשלום"},{k:"history",l:"היסטוריה"},{k:"subs",l:"🔨 קבלנים"}].map(t=>(
+              {[{k:"pending",l:"לתשלום"},{k:"history",l:"היסטוריה"},...(plan.subs?[{k:"subs",l:"🔨 קבלנים"}]:[])].map(t=>(
                 <button key={t.k} onClick={()=>setPayrollView(t.k)}
                   style={{ flex:1, background:payrollView===t.k?"#1A1A2E":"transparent", color:payrollView===t.k?"#E8C547":"#888", border:"none", borderRadius:10, padding:"8px 0", fontWeight:700, fontSize:13, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>
                   {t.l}
