@@ -50,6 +50,11 @@ const PLANS = {
   pro:      { label:"🥈 מקצועי", maxWorkers:15,       maxProjects:Infinity, foremen:true,  subs:true  },
   business: { label:"🥇 עסקי",   maxWorkers:Infinity, maxProjects:Infinity, foremen:true,  subs:true  },
 };
+function quoteTotal(q) {
+  return (q.items && q.items.length)
+    ? q.items.reduce((s,it) => s + Number(it.amount||0), 0)
+    : Number(q.amount||0);
+}
 const WHATSAPP_QUOTE = "https://wa.me/972543276493?text=" + encodeURIComponent("היי, אשמח לקבל הצעת מחיר למערכת BuildTrack לניהול אתרי בנייה 🏗️");
 function rememberOrg() {
   try { if (CURRENT_ORG?.slug) localStorage.setItem("bt_last_org", CURRENT_ORG.slug); } catch(e) {}
@@ -306,6 +311,9 @@ export default function App() {
   const [saNewOrg, setSaNewOrg] = useState({ slug:"", name:"", adminCode:"" });
   const [saCodeInput, setSaCodeInput] = useState("");
   const [termsAccepted, setTermsAccepted] = useState(true); // עד שנטען — לא חוסמים
+  const [quotes, setQuotes] = useState([]);
+  const [quoteM, setQuoteM] = useState(false);
+  const [editQuote, setEditQuote] = useState({ clientName:"", clientPhone:"", title:"", desc:"", amount:"", items:[] });
 
   const [screen,       setScreen]       = useState("home");
   const [codeInput,    setCodeInput]    = useState("");
@@ -401,7 +409,8 @@ export default function App() {
         const eq = await dbGet("equipment");
         setEquipList(eq.map(e => ({...e})));
       } catch(e) { console.log("equipment table not ready yet"); }
-      setProjects(p);
+      setQuotes(p.filter(x => x._quote));
+      setProjects(p.filter(x => !x._quote));
       const termsRec = w.find(x => x._termsRecord);
       setTermsAccepted(!!termsRec && termsRec.termsVersion === TERMS_VERSION);
       const realWorkers = w.filter(x => !x._isConfig && !x._termsRecord);
@@ -869,6 +878,59 @@ export default function App() {
       setWorkers(prev => [...prev, saved]);
       setNewForeman({ name:"", role:"", dailyRate:"", code:"", foremanCode:"" });
       setNewForemanM(false);
+    } catch(e) { alert("שגיאה: " + e.message); }
+  };
+
+  // ====== הצעות מחיר ======
+  const saveQuote = async () => {
+    if (!editQuote.title.trim()) { alert("יש למלא שם פרויקט/עבודה"); return; }
+    try {
+      if (editQuote._dbid) {
+        const { _dbid, ...data } = editQuote;
+        await dbUpdate("projects", _dbid, data);
+        setQuotes(prev => prev.map(q => q._dbid===_dbid ? editQuote : q));
+      } else {
+        const q = { ...editQuote, _quote:true, status:"נשלחה", id: Date.now(), date: todayStr() };
+        const saved = await dbInsert("projects", q);
+        setQuotes(prev => [...prev, saved]);
+      }
+      setQuoteM(false);
+      setEditQuote({ clientName:"", clientPhone:"", title:"", desc:"", amount:"", items:[] });
+    } catch(e) { alert("שגיאה: " + e.message); }
+  };
+
+  const delQuote = async (q) => {
+    if (!window.confirm(`למחוק את ההצעה "${q.title}"?`)) return;
+    await dbDelete("projects", q._dbid);
+    setQuotes(prev => prev.filter(x => x._dbid !== q._dbid));
+  };
+
+  const setQuoteStatus = async (q, status) => {
+    const updated = { ...q, status };
+    const { _dbid, ...data } = updated;
+    await dbUpdate("projects", _dbid, data);
+    setQuotes(prev => prev.map(x => x._dbid===q._dbid ? updated : x));
+  };
+
+  const convertQuote = async (q) => {
+    if (!window.confirm(`ההצעה "${q.title}" נסגרה? 🎉\nהיא תהפוך לפרויקט פעיל.`)) return;
+    try {
+      const total = quoteTotal(q);
+      const itemsTxt = (q.items||[]).map(it =>
+        `${it.desc||"סעיף"} — ₪${Number(it.amount||0).toLocaleString("he-IL")} (${it.withMaterial!==false?"כולל חומר":"בלי חומר"})`
+      ).join("\n");
+      const proj = { ...q, status:"בתהליך", name: q.title,
+        description: [q.desc, itemsTxt].filter(Boolean).join("\n"),
+        quoteClosedAt: todayStr(), workers: [],
+        clientPayments: total>0
+          ? [{ id: Date.now(), desc:'סה"כ לפי הצעת מחיר', amount: total, received:false }]
+          : [] };
+      delete proj._quote;
+      const { _dbid, ...data } = proj;
+      await dbUpdate("projects", q._dbid, data);
+      setQuotes(prev => prev.filter(x => x._dbid !== q._dbid));
+      setProjects(prev => [...prev, { ...proj, _dbid: q._dbid }]);
+      setMgTab("projects");
     } catch(e) { alert("שגיאה: " + e.message); }
   };
 
@@ -1466,6 +1528,7 @@ export default function App() {
   const allTabs = [
     { key:"reports",  label:"דיווחים",  emoji:"📋" },
     { key:"projects", label:"פרויקטים", emoji:"🏗️" },
+    { key:"quotes",   label:"הצעות מחיר", emoji:"📄" },
     { key:"workers",  label:"עובדים",   emoji:"👷" },
     { key:"payroll",  label:"שכר",      emoji:"💰" },
     { key:"calendar", label:"יומן",     emoji:"📅" },
@@ -2817,6 +2880,74 @@ export default function App() {
           </>
         )}
 
+        {/* QUOTES TAB */}
+        {mgTab==="quotes" && !isForeman && (() => {
+          const openQ = quotes.filter(q => q.status !== "נדחתה");
+          const openSum = openQ.reduce((s,q)=>s+quoteTotal(q),0);
+          return (
+          <>
+            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:14 }}>
+              <div>
+                <h1 style={{ margin:0, fontSize:20, fontWeight:800 }}>📄 הצעות מחיר</h1>
+                <p style={{ margin:"3px 0 0", color:"#777", fontSize:13 }}>{quotes.length} הצעות · פתוחות בשווי ₪{fmtNum(openSum)}</p>
+              </div>
+              <button onClick={()=>{ setEditQuote({ clientName:"", clientPhone:"", title:"", desc:"", amount:"", items:[] }); setQuoteM(true); }} style={btnY}>+ הצעת מחיר</button>
+            </div>
+
+            {quotes.length===0 && (
+              <div style={{ background:"#fff", borderRadius:14, padding:44, textAlign:"center", border:"1.5px dashed #DDD", color:"#AAA" }}>
+                <div style={{ fontSize:34, marginBottom:8 }}>📄</div>
+                <p style={{ margin:0 }}>אין הצעות מחיר עדיין</p>
+              </div>
+            )}
+
+            {[...quotes].reverse().map(q => (
+              <div key={q._dbid} style={{ background:"#fff", borderRadius:14, padding:"15px 18px", marginBottom:11, boxShadow:"0 2px 8px rgba(0,0,0,0.07)", borderRight:`4px solid ${q.status==="נדחתה"?"#E53935":"#0EA5E9"}`, opacity:q.status==="נדחתה"?0.6:1 }}>
+                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:6 }}>
+                  <div style={{ flex:1, cursor:"pointer" }} onClick={()=>{ setEditQuote({...q}); setQuoteM(true); }}>
+                    <p style={{ margin:0, fontWeight:700, fontSize:15 }}>{q.title}</p>
+                    <p style={{ margin:"2px 0 0", fontSize:12, color:"#888" }}>
+                      👤 {q.clientName||"ללא שם"}{q.clientPhone ? ` · 📞 ${q.clientPhone}` : ""} · 📅 {q.date}
+                    </p>
+                    {q.desc && <p style={{ margin:"4px 0 0", fontSize:12, color:"#666" }}>{q.desc}</p>}
+                    {(q.items||[]).length>0 && (
+                      <div style={{ marginTop:7, background:"#F9F9F9", borderRadius:8, padding:"7px 10px" }}>
+                        {(q.items||[]).map((it,ii)=>(
+                          <div key={ii} style={{ display:"flex", justifyContent:"space-between", padding:"2px 0", fontSize:12 }}>
+                            <span style={{ color:"#555" }}>{it.withMaterial!==false?"🧱":"🚫"} {it.desc||"סעיף"}</span>
+                            <span style={{ fontWeight:700, color:"#333", whiteSpace:"nowrap" }}>₪{fmtNum(it.amount||0)}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  <div style={{ textAlign:"left", flexShrink:0, marginRight:8 }}>
+                    <p style={{ margin:0, fontSize:17, fontWeight:800, color:"#1A1A2E" }}>₪{fmtNum(quoteTotal(q))}</p>
+                    <span style={{ fontSize:11, fontWeight:700, color: q.status==="נדחתה"?"#E53935":"#0EA5E9" }}>{q.status||"נשלחה"}</span>
+                  </div>
+                </div>
+                <div style={{ display:"flex", gap:6, flexWrap:"wrap", paddingTop:8, borderTop:"1px solid #F0F0F0" }}>
+                  <button onClick={()=>convertQuote(q)}
+                    style={{ background:"#2E7D32", color:"#fff", border:"none", borderRadius:8, padding:"6px 13px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700 }}>
+                    ✓ נסגרה — צור פרויקט
+                  </button>
+                  {q.clientPhone && (
+                    <a href={`https://wa.me/972${String(q.clientPhone).replace(/[^0-9]/g,"").replace(/^0/,"")}`} target="_blank" rel="noreferrer"
+                      style={{ background:"#25D366", color:"#fff", borderRadius:8, padding:"6px 13px", fontSize:12, textDecoration:"none", fontFamily:"Heebo,sans-serif", fontWeight:700 }}>
+                      💬 וואטסאפ
+                    </a>
+                  )}
+                  {q.status!=="נדחתה"
+                    ? <button onClick={()=>setQuoteStatus(q,"נדחתה")} style={{ background:"#FCE4EC", color:"#B71C1C", border:"none", borderRadius:8, padding:"6px 13px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>✗ נדחתה</button>
+                    : <button onClick={()=>setQuoteStatus(q,"נשלחה")} style={{ background:"#E3F2FD", color:"#1565C0", border:"none", borderRadius:8, padding:"6px 13px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>↩ החזר לפתוחה</button>}
+                  <button onClick={()=>delQuote(q)} style={{ background:"none", border:"none", cursor:"pointer", color:"#CCC", fontSize:14, marginRight:"auto" }}>✕</button>
+                </div>
+              </div>
+            ))}
+          </>
+          );
+        })()}
+
         {/* FOREMEN TAB */}
         {mgTab==="foremen" && !isForeman && (() => {
           const foremen = workers.filter(w => w.isForeman);
@@ -2932,6 +3063,85 @@ export default function App() {
               );
             })}
             <button onClick={()=>setAssignM(false)} style={{ ...btnD, width:"100%", marginTop:10 }}>סגור</button>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: הצעת מחיר */}
+      {quoteM && (
+        <div onClick={()=>setQuoteM(false)} style={OVL}>
+          <div onClick={e=>e.stopPropagation()} style={MOD}>
+            <h3 style={{ margin:"0 0 14px", fontWeight:800, fontSize:17 }}>{editQuote._dbid ? "עריכת הצעת מחיר" : "הצעת מחיר חדשה"}</h3>
+            {[
+              { key:"title", label:"שם העבודה / הפרויקט", ph:"גבס וצבע — דירה ברעננה" },
+              { key:"clientName", label:"שם הלקוח", ph:"ישראל ישראלי" },
+              { key:"clientPhone", label:"טלפון (אופציונלי)", ph:"050-1234567" },
+            ].map(f=>(
+              <label key={f.key} style={{ display:"block", marginBottom:11 }}>
+                <LBL t={f.label}/>
+                <input type={f.type||"text"} value={editQuote[f.key]||""} placeholder={f.ph}
+                  onChange={e=>setEditQuote({...editQuote,[f.key]:e.target.value})} style={inp}/>
+              </label>
+            ))}
+            {/* סעיפי ההצעה */}
+            <div style={{ background:"#F9F9F9", borderRadius:12, padding:"12px 14px", marginBottom:11 }}>
+              <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:8 }}>
+                <span style={{ fontSize:13, fontWeight:700 }}>📋 סעיפי ההצעה</span>
+                <button type="button" onClick={()=>setEditQuote(prev=>({...prev, items:[...(prev.items||[]), {id:Date.now(), desc:"", amount:"", withMaterial:true}]}))}
+                  style={{ background:"#1A1A2E", color:"#E8C547", border:"none", borderRadius:7, padding:"4px 12px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700 }}>+ סעיף</button>
+              </div>
+              {(editQuote.items||[]).length===0 && (
+                <p style={{ margin:0, fontSize:12, color:"#AAA" }}>עבודה קטנה? אפשר בלי סעיפים — רק סכום כולל למטה</p>
+              )}
+              {(editQuote.items||[]).map((it,ii) => {
+                const updIt = (changes) => setEditQuote(prev=>({...prev, items:(prev.items||[]).map((x,i)=>i===ii?{...x,...changes}:x)}));
+                return (
+                  <div key={it.id} style={{ marginBottom:8 }}>
+                    <div style={{ display:"flex", gap:6, alignItems:"center", marginBottom:5 }}>
+                      <input value={it.desc} placeholder="לדוגמה: עבודות גבס" onChange={e=>updIt({desc:e.target.value})}
+                        style={{ flex:2, border:"1.5px solid #DDD", borderRadius:8, padding:"7px 10px", fontSize:13, fontFamily:"Heebo,sans-serif", outline:"none", background:"#fff" }}/>
+                      <input type="number" value={it.amount} placeholder="₪" onChange={e=>updIt({amount:e.target.value})}
+                        style={{ flex:1, border:"1.5px solid #DDD", borderRadius:8, padding:"7px 10px", fontSize:13, fontFamily:"Heebo,sans-serif", outline:"none", background:"#fff" }}/>
+                      <button type="button" onClick={()=>setEditQuote(prev=>({...prev, items:(prev.items||[]).filter((_,i)=>i!==ii)}))}
+                        style={{ background:"none", border:"none", cursor:"pointer", color:"#CCC", fontSize:14, padding:0, flexShrink:0 }}>✕</button>
+                    </div>
+                    <div style={{ display:"flex", gap:5 }}>
+                      {[{v:true,l:"🧱 כולל חומר"},{v:false,l:"🚫 בלי חומר"}].map(opt=>(
+                        <button key={String(opt.v)} type="button" onClick={()=>updIt({withMaterial:opt.v})}
+                          style={{ flex:1, background:(it.withMaterial!==false)===opt.v?"#1A1A2E":"#EEE", color:(it.withMaterial!==false)===opt.v?"#E8C547":"#999", border:"none", borderRadius:7, padding:"4px 0", fontSize:11, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:(it.withMaterial!==false)===opt.v?700:400 }}>
+                          {opt.l}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+              {(editQuote.items||[]).length>0 && (
+                <div style={{ display:"flex", justifyContent:"space-between", paddingTop:8, borderTop:"1px solid #E5E5E0", marginTop:4 }}>
+                  <span style={{ fontSize:13, fontWeight:700 }}>סה"כ הצעה</span>
+                  <span style={{ fontSize:15, fontWeight:800, color:"#1A1A2E" }}>₪{fmtNum(quoteTotal(editQuote))}</span>
+                </div>
+              )}
+            </div>
+
+            {(editQuote.items||[]).length===0 && (
+              <label style={{ display:"block", marginBottom:11 }}>
+                <LBL t='סכום ההצעה (₪)'/>
+                <input type="number" value={editQuote.amount||""} placeholder="45000"
+                  onChange={e=>setEditQuote({...editQuote, amount:e.target.value})} style={inp}/>
+              </label>
+            )}
+
+            <label style={{ display:"block", marginBottom:11 }}>
+              <LBL t="תיאור העבודה"/>
+              <textarea value={editQuote.desc||""} placeholder="לדוגמה: 200 מטר גבס כולל חומר, צבע 2 שכבות..."
+                onChange={e=>setEditQuote({...editQuote, desc:e.target.value})} rows={3}
+                style={{ ...inp, resize:"vertical", boxSizing:"border-box" }}/>
+            </label>
+            <div style={{ display:"flex", gap:10, marginTop:6 }}>
+              <button onClick={saveQuote} style={{ ...btnD, flex:1 }}>{editQuote._dbid ? "שמור" : "הוסף"}</button>
+              <button onClick={()=>setQuoteM(false)} style={{ ...btnG, flex:1 }}>ביטול</button>
+            </div>
           </div>
         </div>
       )}
