@@ -2,7 +2,30 @@ import { useState, useEffect, useCallback, useRef } from "react";
 
 const SUPABASE_URL = "https://rkjcrhywhoixdkqlfnko.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJramNyaHl3aG9peGRrcWxmbmtvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwMzA2NzQsImV4cCI6MjA5NDYwNjY3NH0.yKZzdMCNOyWJClmip03QY617HX2IB-xKPKGUZtKT_Z0";
-const hdrs = { "Content-Type": "application/json", "apikey": SUPABASE_KEY, "Authorization": "Bearer " + SUPABASE_KEY };
+// ===== אימות מאובטח (JWT) =====
+let AUTH_TOKEN = null;
+try { AUTH_TOKEN = localStorage.getItem("bt_tok_" + (window.location.pathname.split("/").filter(Boolean)[0] || "admin")) || null; } catch(e) {}
+function setAuthToken(t) {
+  AUTH_TOKEN = t;
+  try {
+    const k = "bt_tok_" + (ORG_SLUG || "admin");
+    if (t) localStorage.setItem(k, t); else localStorage.removeItem(k);
+  } catch(e) {}
+}
+function hdrs() {
+  return { "Content-Type": "application/json", "apikey": SUPABASE_KEY, "Authorization": "Bearer " + (AUTH_TOKEN || SUPABASE_KEY) };
+}
+async function apiLogin(kind, code) {
+  const r = await fetch(`${SUPABASE_URL}/functions/v1/app-login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "apikey": SUPABASE_KEY, "Authorization": "Bearer " + SUPABASE_KEY },
+    body: JSON.stringify({ slug: ORG_SLUG, kind, code })
+  });
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok || !data.token) throw new Error(data.error || "קוד שגוי");
+  setAuthToken(data.token);
+  return data;
+}
 
 // ===== Multi-tenant: current org from URL path (/gne → org "gne") =====
 const ORG_SLUG = (() => {
@@ -39,14 +62,18 @@ const ANTHROPIC_API_KEY = "PASTE_YOUR_KEY_HERE";
 
 async function dbGet(table) {
   const orgFilter = CURRENT_ORG ? `&org_id=eq.${CURRENT_ORG.id}` : "";
-  const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}?select=*&order=id.asc${orgFilter}`, { headers: hdrs });
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}?select=*&order=id.asc${orgFilter}`, { headers: hdrs() });
   const rows = await r.json();
-  if (!Array.isArray(rows)) throw new Error(`Table ${table} error: ${JSON.stringify(rows)}`);
+  if (!Array.isArray(rows)) {
+    const msg = JSON.stringify(rows);
+    if (msg.includes("JWT") || msg.includes("jwt")) setAuthToken(null);
+    throw new Error(`Table ${table} error: ${msg}`);
+  }
   return rows.map(row => ({ ...row.data, _dbid: row.id }));
 }
 async function dbInsert(table, data) {
   const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
-    method: "POST", headers: { ...hdrs, "Prefer": "return=representation" },
+    method: "POST", headers: { ...hdrs(), "Prefer": "return=representation" },
     body: JSON.stringify({ data, org_id: CURRENT_ORG?.id || null })
   });
   const rows = await r.json();
@@ -58,30 +85,30 @@ async function dbInsert(table, data) {
 }
 async function dbUpdate(table, dbid, data) {
   await fetch(`${SUPABASE_URL}/rest/v1/${table}?id=eq.${dbid}`, {
-    method: "PATCH", headers: hdrs, body: JSON.stringify({ data })
+    method: "PATCH", headers: hdrs(), body: JSON.stringify({ data })
   });
 }
 async function dbDelete(table, dbid) {
   await fetch(`${SUPABASE_URL}/rest/v1/${table}?id=eq.${dbid}`, {
-    method: "DELETE", headers: hdrs
+    method: "DELETE", headers: hdrs()
   });
 }
 
 // ===== Organizations (multi-tenant) =====
 async function orgGetBySlug(slug) {
-  const r = await fetch(`${SUPABASE_URL}/rest/v1/organizations?select=*&slug=eq.${encodeURIComponent(slug)}`, { headers: hdrs });
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/organizations?select=*&slug=eq.${encodeURIComponent(slug)}`, { headers: hdrs() });
   const rows = await r.json();
   if (!Array.isArray(rows) || rows.length===0) return null;
   return { ...rows[0], _dbid: rows[0].id };
 }
 async function orgGetAll() {
-  const r = await fetch(`${SUPABASE_URL}/rest/v1/organizations?select=*&order=id.asc`, { headers: hdrs });
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/organizations?select=*&order=id.asc`, { headers: hdrs() });
   const rows = await r.json();
   return Array.isArray(rows) ? rows.map(x=>({ ...x, _dbid: x.id })) : [];
 }
 async function orgInsert(org) {
   const r = await fetch(`${SUPABASE_URL}/rest/v1/organizations`, {
-    method: "POST", headers: { ...hdrs, "Prefer": "return=representation" },
+    method: "POST", headers: { ...hdrs(), "Prefer": "return=representation" },
     body: JSON.stringify(org)
   });
   const rows = await r.json();
@@ -90,14 +117,14 @@ async function orgInsert(org) {
 }
 async function orgUpdate(dbid, changes) {
   await fetch(`${SUPABASE_URL}/rest/v1/organizations?id=eq.${dbid}`, {
-    method: "PATCH", headers: hdrs, body: JSON.stringify(changes)
+    method: "PATCH", headers: hdrs(), body: JSON.stringify(changes)
   });
 }
 async function orgExportData(orgId) {
   const tables = ["projects","workers","reports","calendar","equipment"];
   const out = { exportedAt: new Date().toISOString(), orgId };
   for (const t of tables) {
-    const r = await fetch(`${SUPABASE_URL}/rest/v1/${t}?select=*&org_id=eq.${orgId}`, { headers: hdrs });
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/${t}?select=*&org_id=eq.${orgId}`, { headers: hdrs() });
     out[t] = await r.json();
   }
   return out;
@@ -107,7 +134,7 @@ async function orgExportData(orgId) {
 async function storageUpload(file, path) {
   const r = await fetch(`${SUPABASE_URL}/storage/v1/object/plans/${encodeURIComponent(path)}`, {
     method: "POST",
-    headers: { "apikey": SUPABASE_KEY, "Authorization": "Bearer " + SUPABASE_KEY, "Content-Type": file.type || "application/octet-stream" },
+    headers: { "apikey": SUPABASE_KEY, "Authorization": "Bearer " + (AUTH_TOKEN || SUPABASE_KEY), "Content-Type": file.type || "application/octet-stream" },
     body: file
   });
   if (!r.ok) {
@@ -119,7 +146,7 @@ async function storageUpload(file, path) {
 async function storageDelete(path) {
   await fetch(`${SUPABASE_URL}/storage/v1/object/plans/${encodeURIComponent(path)}`, {
     method: "DELETE",
-    headers: { "apikey": SUPABASE_KEY, "Authorization": "Bearer " + SUPABASE_KEY }
+    headers: { "apikey": SUPABASE_KEY, "Authorization": "Bearer " + (AUTH_TOKEN || SUPABASE_KEY) }
   });
 }
 
@@ -404,7 +431,11 @@ export default function App() {
         if (o.active === false) { setOrgError("suspended"); setLoading(false); return; }
         CURRENT_ORG = o;
         setOrg(o);
-        loadAll();
+        if (AUTH_TOKEN) {
+          loadAll().catch(() => { setAuthToken(null); setLoading(false); });
+        } else {
+          setLoading(false);
+        }
       } catch(e) {
         setOrgError("error: " + e.message);
         setLoading(false);
@@ -417,6 +448,7 @@ export default function App() {
   useEffect(() => {
     if (screen !== "mgr" && screen !== "foreman") return;
     const interval = setInterval(() => {
+      if (!AUTH_TOKEN) return;
       // לא מרעננים בזמן הקלדה — מונע מחיקת טקסט באמצע כתיבה
       if (Date.now() - lastEditRef.current < 20000) return;
       loadAll(true);
@@ -435,21 +467,30 @@ export default function App() {
   const visibleReports  = isForeman ? reports.filter(r => canSeeProject(r.projectId)) : reports;
   const visiblePending  = isForeman ? pendingReports.filter(r => canSeeProject(r.projectId)) : pendingReports;
 
-  const foremanLogin = () => {
-    const code = codeInput.trim();
-    const f = workers.find(w => w.isForeman && w.foremanCode && w.foremanCode === code);
-    if (f) { rememberOrg(); setLoggedForeman(f); setCodeInput(""); setCodeError(false); setMgTab("reports"); setDetailId(null); setScreen("foreman"); }
-    else setCodeError(true);
+  const foremanLogin = async () => {
+    try {
+      const res = await apiLogin("foreman", codeInput.trim());
+      rememberOrg();
+      setLoggedForeman(res.worker); setCodeInput(""); setCodeError(false); setMgTab("reports"); setDetailId(null); setScreen("foreman");
+      loadAll(true);
+    } catch(e) { setCodeError(true); }
   };
 
-  const workerLogin = () => {
-    const w = workers.find(w => w.code === codeInput.trim());
-    if (w) { rememberOrg(); setLoggedWorker(w); setCodeInput(""); setCodeError(false); setScreen("worker"); setRepSent(false); setRepDate(todayStr()); setRepProject(""); setRepNote(""); setDayType("full"); setRepFuel(false); setWorkerView("report"); }
-    else setCodeError(true);
+  const workerLogin = async () => {
+    try {
+      const res = await apiLogin("worker", codeInput.trim());
+      rememberOrg();
+      setLoggedWorker(res.worker); setCodeInput(""); setCodeError(false); setScreen("worker");
+      setRepSent(false); setRepDate(todayStr()); setRepProject(""); setRepNote(""); setDayType("full"); setRepFuel(false); setWorkerView("report");
+      loadAll(true);
+    } catch(e) { setCodeError(true); }
   };
-  const managerLogin = () => {
-    if (codeInput.trim() === adminCode) { rememberOrg(); setCodeInput(""); setCodeError(false); setScreen("mgr"); }
-    else setCodeError(true);
+  const managerLogin = async () => {
+    try {
+      await apiLogin("manager", codeInput.trim());
+      rememberOrg(); setCodeInput(""); setCodeError(false); setScreen("mgr");
+      loadAll(true);
+    } catch(e) { setCodeError(true); }
   };
 
   // ====== שעון נוכחות לעובד שעתי ======
@@ -908,10 +949,11 @@ export default function App() {
         <input value={saCodeInput} onChange={e=>setSaCodeInput(e.target.value)} placeholder="קוד ניהול ראשי" type="password"
           style={{ ...inp, textAlign:"center", marginBottom:8, fontSize:13 }}/>
         <button onClick={async ()=>{
-          const master = await getMasterCode();
-          if (saCodeInput !== master) { alert("קוד שגוי"); return; }
-          const all = await orgGetAll();
-          setSaOrgs(all.filter(o=>o.slug!=="_config")); setSuperAdmin(true); setSaCodeInput("");
+          try {
+            await apiLogin("master", saCodeInput.trim());
+            const all = await orgGetAll();
+            setSaOrgs(all.filter(o=>o.slug!=="_config")); setSuperAdmin(true); setSaCodeInput("");
+          } catch(e) { alert("קוד שגוי"); }
         }} style={{ ...btnG, width:"100%", fontSize:13 }}>ניהול ראשי</button>
       </div>
     </div>
@@ -932,7 +974,7 @@ export default function App() {
           try { await setMasterCode(cur.trim()); alert("קוד הניהול עודכן! שמור אותו במקום בטוח."); }
           catch(e) { alert("שגיאה: " + e.message); }
         }} style={{ background:"rgba(232,197,71,0.2)", color:"#E8C547", border:"none", borderRadius:8, padding:"5px 12px", fontSize:13, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700 }}>🔑 שנה קוד</button>
-        <button onClick={()=>{ setSuperAdmin(false); }} style={{ background:"rgba(255,255,255,0.1)", color:"#ccc", border:"none", borderRadius:8, padding:"5px 12px", fontSize:13, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>יציאה</button>
+        <button onClick={()=>{ setSuperAdmin(false); setAuthToken(null); }} style={{ background:"rgba(255,255,255,0.1)", color:"#ccc", border:"none", borderRadius:8, padding:"5px 12px", fontSize:13, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>יציאה</button>
         </div>
       </header>
       <main style={{ padding:20, maxWidth:520, margin:"0 auto" }}>
@@ -950,7 +992,7 @@ export default function App() {
             try {
               const created = await orgInsert({ slug: saNewOrg.slug, name: saNewOrg.name, active: true, settings: {} });
               // יצירת רשומת קוד מנהל בארגון החדש
-              await fetch(`${SUPABASE_URL}/rest/v1/workers`, { method:"POST", headers:hdrs,
+              await fetch(`${SUPABASE_URL}/rest/v1/workers`, { method:"POST", headers:hdrs(),
                 body: JSON.stringify({ data: { _isConfig:true, _adminCode: saNewOrg.adminCode, id: Date.now() }, org_id: created.id }) });
               setSaOrgs((await orgGetAll()).filter(o=>o.slug!=="_config"));
               setSaNewOrg({ slug:"", name:"", adminCode:"" });
@@ -999,14 +1041,14 @@ export default function App() {
                 if (!newCode) return;
                 try {
                   // איפוס קוד מנהל: מציאת רשומת ה-config של הארגון ועדכונה
-                  const r = await fetch(`${SUPABASE_URL}/rest/v1/workers?select=*&org_id=eq.${o.id}`, { headers: hdrs });
+                  const r = await fetch(`${SUPABASE_URL}/rest/v1/workers?select=*&org_id=eq.${o.id}`, { headers: hdrs() });
                   const rows = await r.json();
                   const cfg = rows.find(x => x.data && x.data._isConfig);
                   if (cfg) {
-                    await fetch(`${SUPABASE_URL}/rest/v1/workers?id=eq.${cfg.id}`, { method:"PATCH", headers:hdrs,
+                    await fetch(`${SUPABASE_URL}/rest/v1/workers?id=eq.${cfg.id}`, { method:"PATCH", headers:hdrs(),
                       body: JSON.stringify({ data: { ...cfg.data, _adminCode: newCode } }) });
                   } else {
-                    await fetch(`${SUPABASE_URL}/rest/v1/workers`, { method:"POST", headers:hdrs,
+                    await fetch(`${SUPABASE_URL}/rest/v1/workers`, { method:"POST", headers:hdrs(),
                       body: JSON.stringify({ data: { _isConfig:true, _adminCode: newCode, id: Date.now() }, org_id: o.id }) });
                   }
                   alert(`קוד המנהל של "${o.name}" אופס ל: ${newCode}`);
@@ -1412,7 +1454,7 @@ export default function App() {
                 {!isForeman && <button onClick={async ()=>{
                   try {
                     // Get ALL rows from reports table
-                    const res = await fetch(`https://rkjcrhywhoixdkqlfnko.supabase.co/rest/v1/reports?select=*&order=id.asc`, { headers: hdrs });
+                    const res = await fetch(`https://rkjcrhywhoixdkqlfnko.supabase.co/rest/v1/reports?select=*&order=id.asc`, { headers: hdrs() });
                     const rows = await res.json();
                     let count = 0;
                     for (const row of rows) {
