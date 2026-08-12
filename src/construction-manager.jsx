@@ -4,7 +4,14 @@ const SUPABASE_URL = "https://rkjcrhywhoixdkqlfnko.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJramNyaHl3aG9peGRrcWxmbmtvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwMzA2NzQsImV4cCI6MjA5NDYwNjY3NH0.yKZzdMCNOyWJClmip03QY617HX2IB-xKPKGUZtKT_Z0";
 // ===== אימות מאובטח (JWT) =====
 let AUTH_TOKEN = null;
-try { AUTH_TOKEN = localStorage.getItem("bt_tok_" + (window.location.pathname.split("/").filter(Boolean)[0] || "admin")) || null; } catch(e) {}
+try {
+  AUTH_TOKEN = localStorage.getItem("bt_tok_" + (window.location.pathname.split("/").filter(Boolean)[0] || "admin")) || null;
+  // טוקן שפג תוקפו — מנקים מראש כדי שלא יפריע
+  if (AUTH_TOKEN) {
+    const payload = JSON.parse(atob(AUTH_TOKEN.split(".")[1] || "") || "{}");
+    if (payload.exp && payload.exp * 1000 < Date.now()) AUTH_TOKEN = null;
+  }
+} catch(e) { AUTH_TOKEN = null; }
 function setAuthToken(t) {
   AUTH_TOKEN = t;
   try {
@@ -130,7 +137,8 @@ async function dbDelete(table, dbid) {
 
 // ===== Organizations (multi-tenant) =====
 async function orgGetBySlug(slug) {
-  const r = await fetch(`${SUPABASE_URL}/rest/v1/organizations?select=*&slug=eq.${encodeURIComponent(slug)}`, { headers: hdrs() });
+  const anonH = { "Content-Type": "application/json", "apikey": SUPABASE_KEY, "Authorization": "Bearer " + SUPABASE_KEY };
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/organizations?select=*&slug=eq.${encodeURIComponent(slug)}`, { headers: anonH });
   const rows = await r.json();
   if (!Array.isArray(rows) || rows.length===0) return null;
   return { ...rows[0], _dbid: rows[0].id };
