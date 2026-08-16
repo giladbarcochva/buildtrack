@@ -61,9 +61,9 @@ const PLANS = {
 const HELP_TOPICS = [
   { icon:"🔑", title:"כניסה למערכת", body:"במסך הפתיחה שלוש כניסות:\n• כניסת עובד — עם הקוד האישי שהמנהל הגדיר לעובד.\n• כניסת מנהל עבודה — עם קוד מנהל העבודה (מוגדר בטאב מנהלי עבודה).\n• כניסת מנהל — עם קוד המנהל של העסק.\nאת הקישור של העסק מוסיפים למסך הבית: פותחים בדפדפן ← שיתוף ← הוספה למסך הבית — ומקבלים אייקון כמו אפליקציה." },
   { icon:"📝", title:"דיווח יומי של עובד", body:"העובד נכנס עם הקוד שלו, בוחר פרויקט (מוצגים רק פרויקטים שהוא משויך אליהם — השיוך בכפתור 'שייך עובדים' בפרויקט), בוחר יום מלא או חצי יום, מסמן דלק אם נסע ברכב, ולוחץ שלח.\n• אי אפשר לדווח פעמיים על אותו תאריך.\n• דיווח על תאריך שעבר נכנס ל'ממתינים לאישור' אצל המנהל ולא נספר בשכר עד שמאושר.\n• בטאב 'היומן שלי' העובד רואה את הימים שהוא משובץ בהם." },
-  { icon:"⏱️", title:"עובד שעתי — שעון נוכחות", body:"עובד שהוגדר כשעתי רואה שעון נוכחות במקום טופס דיווח: בוחר פרויקט ← ▶️ כניסה בתחילת היום ← 🛑 יציאה בסיומו.\nחישוב השכר: 9 שעות ראשונות 100%, שעות 10-11 לפי 125%, משעה 12 לפי 150%.\nשכח לסגור? המנהל רואה 'שעון תקוע' בטאב דיווחים ומתקן עם כפתור '✏️ שעות'." },
+  { icon:"⏱️", title:"עובד שעתי — שעון נוכחות", body:"עובד שהוגדר כשעתי רואה שעון נוכחות במקום טופס דיווח: בוחר פרויקט ← ▶️ כניסה בתחילת היום ← 🛑 יציאה בסיומו.\nחישוב השכר: 9 שעות ראשונות 100%, שעות 10-11 לפי 125%, משעה 12 לפי 150%.\nשכח לסגור? המנהל רואה 'שעון תקוע' בטאב דיווחים ומתקן עם כפתור '✏️ שעות'.\nאם בפרויקט הוגדר אימות מיקום — בפתיחת השעון הטלפון יבקש אישור גישה למיקום (פעם ראשונה בלבד). במצב 'חסימה' ניתן לפתוח שעון רק בקרבת האתר." },
   { icon:"👷", title:"ניהול עובדים וסוגי העסקה", body:"בטאב עובדים מוסיפים עובד עם שם, קוד אישי ותפקיד, ובוחרים סוג העסקה:\n• יומי — שכר קבוע ליום (עם אפשרות חצי יום).\n• שעתי — שכר לשעה + שעון נוכחות.\n• גלובלי — משכורת חודשית קבועה.\nלכל עובד אפשר להגדיר אם יראה כפתור דלק וכמה ₪ דלק ליום.\nחשוב: כדי שעובד יוכל לדווח, חובה לשייך אותו לפרויקט (כפתור 'שייך עובדים' בתוך הפרויקט)." },
-  { icon:"🏗️", title:"פרויקטים", body:"בטאב פרויקטים יוצרים פרויקט חדש ונכנסים אליו לניהול מלא: תיאור (מומלץ לכתוב כמויות — למשל '200 מטר גבס'), שלבי ביצוע עם סטטוס ותאריך יעד, הוצאות וחומרים, קבלני משנה, חשבוניות ותוכניות.\nסטטוס 'הושלם' מסתיר את הפרויקט מהעובדים ומרשימות השיבוץ.\nכרטיס 'סה\"כ הוצאות פרויקט' מסכם הוצאות + קבלני משנה." },
+  { icon:"🏗️", title:"פרויקטים", body:"בטאב פרויקטים יוצרים פרויקט חדש ונכנסים אליו לניהול מלא: תיאור (מומלץ לכתוב כמויות — למשל '200 מטר גבס'), שלבי ביצוע עם סטטוס ותאריך יעד, הוצאות וחומרים, קבלני משנה, חשבוניות ותוכניות.\nסטטוס 'הושלם' מסתיר את הפרויקט מהעובדים ומרשימות השיבוץ.\nכרטיס 'סה\"כ הוצאות פרויקט' מסכם הוצאות + קבלני משנה.\nבכרטיס '📍 אימות מיקום' אפשר לחייב עובדים שעתיים לפתוח שעון רק בקרבת האתר: עומדים באתר ← 'קבע את המיקום הנוכחי' ← בוחרים רדיוס ומצב (סימון בלבד / חסימה). חל רק על שעון שעתי — יומיות וגלובלי לא מושפעים." },
   { icon:"📄", title:"הצעות מחיר", body:"בטאב הצעות מחיר יוצרים הצעה עם פרטי לקוח וסכום — או מחולקת לסעיפים (גבס, בטון...) כשלכל סעיף מחיר וסימון כולל/בלי חומר; הסה\"כ מחושב אוטומטית.\nכשהלקוח מאשר לוחצים '✓ נסגרה — צור פרויקט' וההצעה הופכת לפרויקט פעיל: הסעיפים נכתבים לתיאור והסכום נכנס כשלב קבלת תשלום.\nהצעה שנדחתה נשארת לתיעוד ואפשר להחזירה." },
   { icon:"🔨", title:"קבלני משנה", body:"בתוך דף פרויקט, בקטע קבלני משנה, מוסיפים קבלן עם תיאור עבודה, מחיר, ימים מתוכננים וסימון כולל/בלי חומר.\nמגדירים שלבי תשלום (מתי וכמה) ומסמנים ✓ כשמשולם — נשמר תאריך.\nבטאב שכר ← '🔨 קבלנים' רואים את כל הקבלנים מכל הפרויקטים וכמה נשאר לשלם לכל אחד." },
   { icon:"💵", title:"קבלת תשלומים מהלקוח", body:"בכל פרויקט יש קטע 'שלבי קבלת תשלום': מגדירים שלבים (מקדמה, אחרי שלד, מסירה...) עם סכומים, ומסמנים ✓ כשכסף התקבל.\nשורת הסיכום מציגה סה\"כ / התקבל / נותר — כך רואים בכל רגע כמה הלקוח עוד חייב." },
@@ -73,8 +73,38 @@ const HELP_TOPICS = [
   { icon:"✅", title:"אישור דיווחי עבר", body:"דיווח של עובד על תאריך שכבר עבר לא נכנס ישר לשכר — הוא ממתין בקטע צהוב בראש טאב הדיווחים.\nהמנהל (או מנהל העבודה של אותו פרויקט) מאשר דיווח בודד או את כולם — ורק אז הוא נספר בשכר ובימי הפרויקט." },
   { icon:"📸", title:"חשבוניות ותוכניות", body:"בתוך דף פרויקט מעלים תמונות חשבוניות ותוכניות אדריכליות (תמונה או PDF, גם כמה יחד).\nלחיצה על שם הקובץ פותחת אותו לצפייה; ✕ מוחק (עם אישור).\nהקבצים נשמרים בענן מאובטח ונגישים מכל מכשיר." },
   { icon:"🛒", title:"ציוד — רשימת קניות", body:"טאב ציוד הוא רשימת קניות משותפת: מוסיפים פריט וכמות, מסמנים ✓ כשנקנה, ומוחקים כשלא צריך.\nמתעדכן לכל המנהלים במכשירים שלהם." },
-  { icon:"🛠️", title:"תקלות נפוצות", body:"• 'קוד שגוי' למרות קוד נכון — ודאו שנכנסתם דרך הקישור הנכון של העסק שלכם.\n• נתונים לא מתעדכנים — צאו והתחברו מחדש, או משכו לרענון.\n• המסך נראה ישן אחרי עדכון — סגרו את האפליקציה לגמרי ופתחו שוב.\n• ההתחברות תקפה 12 שעות — אחריהן פשוט מתחברים שוב.\nלכל בעיה אחרת — פנו לספק המערכת." },
+  { icon:"📶", title:"עבודה בלי קליטה (אופליין)", body:"אין אינטרנט באתר? אפשר להמשיך לעבוד:\n• לחיצה על כניסה/יציאה בשעון או שליחת דיווח יומי נשמרות במכשיר עם השעה המדויקת, ומופיעה הודעה 'יסונכרן כשתחזור הקליטה'.\n• ברגע שחוזרת קליטה — הנתונים עולים אוטומטית לשרת עם הזמנים האמיתיים, גם אם עברו שעות.\n• המנהל רואה על דיווח שעוד לא סונכרן תג '📶 ממתין לסנכרון'.\nחשוב: לא למחוק את האפליקציה/נתוני האתר לפני שהסנכרון הושלם." },
+  { icon:"🛠️", title:"תקלות נפוצות", body:"• 'קוד שגוי' למרות קוד נכון — ודאו שנכנסתם דרך הקישור הנכון של העסק שלכם.\n• נתונים לא מתעדכנים — צאו והתחברו מחדש, או משכו לרענון.\n• המסך נראה ישן אחרי עדכון — סגרו את האפליקציה לגמרי ופתחו שוב.\n• ההתחברות תקפה 12 שעות — אחריהן פשוט מתחברים שוב.\n• 'לא ניתן לאמת מיקום' — יש לאשר גישה למיקום: הגדרות הטלפון ← ספארי/כרום ← מיקום ← אפשר.\nלכל בעיה אחרת — פנו לספק המערכת." },
 ];
+
+// ===== מיקום (GPS) =====
+function getPosition() {
+  return new Promise((res, rej) => {
+    if (!navigator.geolocation) return rej(new Error("אין תמיכת מיקום במכשיר"));
+    navigator.geolocation.getCurrentPosition(
+      p => res({ lat: p.coords.latitude, lng: p.coords.longitude, acc: p.coords.accuracy }),
+      rej,
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 }
+    );
+  });
+}
+function distMeters(lat1, lng1, lat2, lng2) {
+  const R = 6371000, toR = x => x * Math.PI / 180;
+  const dLat = toR(lat2 - lat1), dLng = toR(lng2 - lng1);
+  const a = Math.sin(dLat/2)**2 + Math.cos(toR(lat1)) * Math.cos(toR(lat2)) * Math.sin(dLng/2)**2;
+  return 2 * R * Math.asin(Math.sqrt(a));
+}
+function fmtDist(d) { return d >= 1000 ? (d/1000).toFixed(1) + ' ק"מ' : Math.round(d) + " מטר"; }
+
+// ===== תור אופליין — דיווחים שנשמרים במכשיר עד שיש קליטה =====
+function qKey() { return "bt_q_" + (ORG_SLUG || "x"); }
+function qGet() { try { return JSON.parse(localStorage.getItem(qKey()) || "[]"); } catch(e) { return []; } }
+function qSet(a) { try { localStorage.setItem(qKey(), JSON.stringify(a)); } catch(e) {} }
+function isNetErr(e) {
+  const m = String(e?.message || e);
+  return (typeof TypeError !== "undefined" && e instanceof TypeError) ||
+    m.includes("fetch") || m.includes("Load failed") || m.includes("network") || m.includes("NetworkError") || m.includes("Internet");
+}
 
 function quoteTotal(q) {
   return (q.items && q.items.length)
@@ -423,7 +453,35 @@ export default function App() {
     }, 800);
   }, []);
 
+  const flushQueue = useCallback(async () => {
+    let q = qGet();
+    if (!q.length) return;
+    const remaining = [];
+    for (let i = 0; i < q.length; i++) {
+      const op = q[i];
+      try {
+        if (op.kind === "insert") {
+          const saved = await dbInsert("reports", op.data);
+          setReports(prev => prev.map(r => r._dbid === op.tmpId ? saved : r));
+        } else {
+          await dbUpdate("reports", op.dbid, op.data);
+        }
+      } catch(e) {
+        remaining.push(...q.slice(i));
+        break;
+      }
+    }
+    qSet(remaining);
+  }, []);
+
+  useEffect(() => {
+    const h = () => { if (AUTH_TOKEN) flushQueue(); };
+    window.addEventListener("online", h);
+    return () => window.removeEventListener("online", h);
+  }, [flushQueue]);
+
   const loadAll = useCallback(async (silent = false) => {
+    if (AUTH_TOKEN) { try { await flushQueue(); } catch(e) {} }
     if (!silent) setLoading(true);
     try {
       const [p, w, r] = await Promise.all([dbGet("projects"), dbGet("workers"), dbGet("reports")]);
@@ -459,7 +517,8 @@ export default function App() {
       // Reports: anything without _paymentRecord goes to normal OR pending
       const normalReports = r.filter(x => !x._paymentRecord && x.pendingApproval !== true);
       const pendingReps = r.filter(x => !x._paymentRecord && x.pendingApproval === true);
-      setReports(normalReports);
+      const pendQ = qGet().filter(o => o.kind === "insert").map(o => ({ ...o.data, _dbid: o.tmpId, _pending: true }));
+      setReports([...normalReports, ...pendQ]);
       setPendingReports(pendingReps);
       const configRow = w.find(x => x._isConfig && x._adminCode);
       if (configRow) { setAdminCode(configRow._adminCode); setAdminConfigDbid(configRow._dbid); }
@@ -555,28 +614,78 @@ export default function App() {
 
   const clockIn = async () => {
     if (!repProject) { alert("בחר פרויקט לפני הפעלת השעון"); return; }
+    const proj = projects.find(p => String(p.id) === String(repProject));
+    const rec = { _shift:true, workerId: loggedWorker.id, workerName: loggedWorker.name,
+      projectId: repProject, projectName: proj?.name||"", date: todayStr(),
+      clockIn: Date.now(), clockOut: null, fuel: repFuel, fuelAmt: repFuel ? Number(loggedWorker.fuelAmount||50) : 0, id: Date.now() };
+
+    // ===== אימות מיקום (אם מוגדר בפרויקט) =====
+    const mode = proj?.locationMode || "off";
+    if (mode !== "off" && proj?.siteLat != null) {
+      let loc = null;
+      try { loc = await getPosition(); } catch(e) {}
+      if (loc) {
+        const dist = distMeters(loc.lat, loc.lng, proj.siteLat, proj.siteLng);
+        const radius = Number(proj.siteRadius || 300);
+        rec.locDist = Math.round(dist);
+        rec.locOk = dist <= radius;
+        if (!rec.locOk && mode === "block") {
+          alert(`לא ניתן לפתוח שעון — אתה במרחק ${fmtDist(dist)} מהאתר.\nיש להגיע לאתר ולנסות שוב.`);
+          return;
+        }
+      } else {
+        if (mode === "block") {
+          alert("לא ניתן לאמת מיקום — יש לאשר גישה למיקום בדפדפן ולנסות שוב.");
+          return;
+        }
+        rec.locUnknown = true;
+      }
+    }
+
     try {
-      const proj = projects.find(p => String(p.id) === String(repProject));
-      const rec = { _shift:true, workerId: loggedWorker.id, workerName: loggedWorker.name,
-        projectId: repProject, projectName: proj?.name||"", date: todayStr(),
-        clockIn: Date.now(), clockOut: null, fuel: repFuel, fuelAmt: repFuel ? Number(loggedWorker.fuelAmount||50) : 0, id: Date.now() };
       const saved = await dbInsert("reports", rec);
       setReports(prev => [...prev, saved]);
-    } catch(e) { alert("שגיאה: " + e.message); }
+    } catch(e) {
+      if (isNetErr(e)) {
+        const tmpId = "tmp_" + rec.id;
+        qSet([...qGet(), { kind:"insert", tmpId, data: rec }]);
+        setReports(prev => [...prev, { ...rec, _dbid: tmpId, _pending: true }]);
+        alert("אין קליטה כרגע 📶\nהכניסה נרשמה במכשיר עם השעה המדויקת, ותסונכרן אוטומטית כשתחזור הקליטה.");
+      } else alert("שגיאה: " + e.message);
+    }
   };
 
   const clockOut = async () => {
     if (!myOpenShift) return;
+    const now = Date.now();
+    const hours = (now - myOpenShift.clockIn) / 3600000;
+    const fuelOn = repFuel || myOpenShift.fuel;
+    const updated = { ...myOpenShift, clockOut: now, hours: Math.round(hours*100)/100, fuel: fuelOn, fuelAmt: fuelOn ? Number(loggedWorker.fuelAmount||50) : 0 };
+
+    // המשמרת עצמה עדיין בתור אופליין — מעדכנים אותה שם
+    if (myOpenShift._pending) {
+      const q = qGet();
+      const op = q.find(o => o.tmpId === myOpenShift._dbid);
+      if (op) { const { _dbid, _pending, ...data } = updated; op.data = data; qSet(q); }
+      setReports(prev => prev.map(r => r._dbid===myOpenShift._dbid ? updated : r));
+      setRepSent(true);
+      return;
+    }
+
     try {
-      const now = Date.now();
-      const hours = (now - myOpenShift.clockIn) / 3600000;
-      const fuelOn = repFuel || myOpenShift.fuel;
-      const updated = { ...myOpenShift, clockOut: now, hours: Math.round(hours*100)/100, fuel: fuelOn, fuelAmt: fuelOn ? Number(loggedWorker.fuelAmount||50) : 0 };
       const { _dbid, ...data } = updated;
       await dbUpdate("reports", myOpenShift._dbid, data);
       setReports(prev => prev.map(r => r._dbid===myOpenShift._dbid ? updated : r));
       setRepSent(true);
-    } catch(e) { alert("שגיאה: " + e.message); }
+    } catch(e) {
+      if (isNetErr(e)) {
+        const { _dbid, ...data } = updated;
+        qSet([...qGet(), { kind:"update", dbid: myOpenShift._dbid, data }]);
+        setReports(prev => prev.map(r => r._dbid===myOpenShift._dbid ? updated : r));
+        setRepSent(true);
+        alert("אין קליטה כרגע 📶\nהיציאה נרשמה במכשיר ותסונכרן אוטומטית.");
+      } else alert("שגיאה: " + e.message);
+    }
   };
 
   const submitReport = async () => {
@@ -596,7 +705,16 @@ export default function App() {
       const today = todayStr();
       const isPast = repDate < today; // only strictly BEFORE today
       const newRep = { workerId: loggedWorker.id, workerName: loggedWorker.name, projectId: repProject, projectName: proj?.name || "", date: repDate, note: repNote, days: dayType==="half" ? 0.5 : 1, dayType, fuel: repFuel, fuelAmt: repFuel ? Number(loggedWorker.fuelAmount||50) : 0, id: Date.now(), pendingApproval: isPast };
-      const saved = await dbInsert("reports", newRep);
+      let saved;
+      try {
+        saved = await dbInsert("reports", newRep);
+      } catch(err) {
+        if (!isNetErr(err)) throw err;
+        const tmpId = "tmp_" + newRep.id;
+        qSet([...qGet(), { kind:"insert", tmpId, data: newRep }]);
+        saved = { ...newRep, _dbid: tmpId, _pending: true };
+        alert("אין קליטה כרגע 📶\nהדיווח נשמר במכשיר ויסונכרן אוטומטית כשתחזור הקליטה.");
+      }
       if (isPast) {
         setPendingReports(prev => [...prev, saved]);
       } else {
@@ -604,7 +722,7 @@ export default function App() {
       }
       const uniqueDays = uniqueWorkDaysForProject([...reports, saved], repProject);
       const proj2 = projects.find(p => String(p.id) === String(repProject));
-      if (proj2) {
+      if (proj2 && !saved._pending) {
         const updated = { ...proj2, actualDays: uniqueDays };
         await dbUpdate("projects", proj2._dbid, updated);
         setProjects(prev => prev.map(p => String(p.id)===String(repProject) ? updated : p));
@@ -1679,6 +1797,13 @@ export default function App() {
                       await dbUpdate("reports", r._dbid, data);
                       setReports(prev => prev.map(x => x._dbid===r._dbid ? updated : x));
                     }} style={{ background:"#1A1A2E", color:"#E8C547", border:"none", borderRadius:6, padding:"2px 8px", fontSize:11, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:600 }}>✏️ שעות</button>}
+                    {r._shift && r.locDist!=null && (
+                      r.locOk
+                        ? <span style={{ background:"#E8F5E9", color:"#2E7D32", borderRadius:6, padding:"2px 7px", fontSize:11, fontWeight:600 }}>📍 באתר</span>
+                        : <span style={{ background:"#FCE4EC", color:"#B71C1C", borderRadius:6, padding:"2px 7px", fontSize:11, fontWeight:700 }}>⚠️ {fmtDist(r.locDist)} מהאתר</span>
+                    )}
+                    {r._shift && r.locUnknown && <span style={{ background:"#FFF8E1", color:"#B26A00", borderRadius:6, padding:"2px 7px", fontSize:11, fontWeight:600 }}>⚠️ מיקום לא אומת</span>}
+                    {r._pending && <span style={{ background:"#EDE9FE", color:"#6D28D9", borderRadius:6, padding:"2px 7px", fontSize:11, fontWeight:600 }}>📶 ממתין לסנכרון</span>}
                   </div>
                   {r.note && <p style={{ margin:0, fontSize:13, color:"#666", lineHeight:1.5 }}>{r.note}</p>}
                   {r.fuel && <span style={{ background:"#FFF8E1", color:"#B26A00", borderRadius:6, padding:"2px 7px", fontSize:11, fontWeight:600 }}>⛽ +₪{r.fuelAmt||50} דלק</span>}
@@ -2157,6 +2282,47 @@ export default function App() {
                   onChange={e=>{ setEditProj(p=>({...p, description: e.target.value})); updateProjFieldDebounced(detailProject, { description: e.target.value }); }}
                   rows={3}
                   style={{ width:"100%", border:"1.5px solid #EEE", borderRadius:10, padding:"10px 12px", fontSize:14, fontFamily:"Heebo,sans-serif", outline:"none", background:"#FDFDFB", boxSizing:"border-box", resize:"vertical" }}/>
+              </div>
+
+              {/* LOCATION VERIFICATION (hourly clock) */}
+              <div style={{ background:"#fff", borderRadius:14, padding:"16px 20px", marginBottom:14, boxShadow:"0 2px 8px rgba(0,0,0,0.07)" }}>
+                <h3 style={{ margin:"0 0 4px", fontSize:15, fontWeight:700 }}>📍 אימות מיקום לשעון נוכחות</h3>
+                <p style={{ margin:"0 0 12px", fontSize:12, color:"#888" }}>חל רק על עובדים שעתיים בפתיחת שעון. עובדי יומית וגלובלי — ללא אימות.</p>
+                <div style={{ display:"flex", gap:6, marginBottom:12 }}>
+                  {[{v:"off",l:"בלי אימות"},{v:"flag",l:"⚠️ סימון בלבד"},{v:"block",l:"🚫 חסימה"}].map(o=>(
+                    <button key={o.v} onClick={()=>{ setEditProj(p=>({...p, locationMode:o.v})); updateProjField(detailProject, { locationMode:o.v }); }}
+                      style={{ flex:1, background:(editProj.locationMode||"off")===o.v?"#1A1A2E":"#F0F0EC", color:(editProj.locationMode||"off")===o.v?"#E8C547":"#777", border:"none", borderRadius:9, padding:"9px 0", fontSize:12, fontWeight:700, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>
+                      {o.l}
+                    </button>
+                  ))}
+                </div>
+                {(editProj.locationMode||"off")!=="off" && (
+                  <>
+                    <div style={{ display:"flex", gap:8, alignItems:"center", marginBottom:10 }}>
+                      <button onClick={async ()=>{
+                        try {
+                          const loc = await getPosition();
+                          setEditProj(p=>({...p, siteLat:loc.lat, siteLng:loc.lng}));
+                          updateProjField(detailProject, { siteLat:loc.lat, siteLng:loc.lng });
+                          alert(`מיקום האתר נקבע! 📍\n(דיוק: ±${Math.round(loc.acc)} מטר)`);
+                        } catch(e) { alert("לא ניתן לקבל מיקום — יש לאשר גישה למיקום בדפדפן."); }
+                      }} style={{ flex:1, background:"#E8C547", color:"#1A1A2E", border:"none", borderRadius:9, padding:"10px 0", fontSize:13, fontWeight:700, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>
+                        📍 קבע את המיקום הנוכחי כאתר
+                      </button>
+                    </div>
+                    <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", gap:10 }}>
+                      <span style={{ fontSize:12, color:editProj.siteLat!=null?"#2E7D32":"#E53935", fontWeight:600 }}>
+                        {editProj.siteLat!=null ? "✓ מיקום אתר מוגדר" : "✗ טרם נקבע מיקום — האימות לא פעיל"}
+                      </span>
+                      <label style={{ display:"flex", alignItems:"center", gap:6 }}>
+                        <span style={{ fontSize:12, color:"#555", whiteSpace:"nowrap" }}>רדיוס (מ')</span>
+                        <input type="number" value={editProj.siteRadius ?? 300}
+                          onChange={e=>{ setEditProj(p=>({...p, siteRadius:e.target.value})); updateProjFieldDebounced(detailProject, { siteRadius:e.target.value }); }}
+                          style={{ width:75, border:"1.5px solid #DDD", borderRadius:8, padding:"6px 9px", fontSize:13, fontFamily:"Heebo,sans-serif", outline:"none", background:"#fff" }}/>
+                      </label>
+                    </div>
+                  </>
+                )}
               </div>
 
               {/* CLIENT PAYMENT STAGES */}
