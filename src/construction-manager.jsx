@@ -63,15 +63,15 @@ const HELP_TOPICS = [
   { icon:"📝", title:"דיווח יומי של עובד", body:"העובד נכנס עם הקוד שלו, בוחר פרויקט (מוצגים רק פרויקטים שהוא משויך אליהם — השיוך בכפתור 'שייך עובדים' בפרויקט), בוחר יום מלא או חצי יום, מסמן דלק אם נסע ברכב, ולוחץ שלח.\n• אי אפשר לדווח פעמיים על אותו תאריך.\n• דיווח על תאריך שעבר נכנס ל'ממתינים לאישור' אצל המנהל ולא נספר בשכר עד שמאושר.\n• בטאב 'היומן שלי' העובד רואה את הימים שהוא משובץ בהם." },
   { icon:"⏱️", title:"עובד שעתי — שעון נוכחות", body:"עובד שהוגדר כשעתי רואה שעון נוכחות במקום טופס דיווח: בוחר פרויקט ← ▶️ כניסה בתחילת היום ← 🛑 יציאה בסיומו.\nחישוב השכר: 9 שעות ראשונות 100%, שעות 10-11 לפי 125%, משעה 12 לפי 150%.\nשכח לסגור? המנהל רואה 'שעון תקוע' בטאב דיווחים ומתקן עם כפתור '✏️ שעות'.\nאם בפרויקט הוגדר אימות מיקום — בפתיחת השעון הטלפון יבקש אישור גישה למיקום (פעם ראשונה בלבד). במצב 'חסימה' ניתן לפתוח שעון רק בקרבת האתר." },
   { icon:"👷", title:"ניהול עובדים וסוגי העסקה", body:"בטאב עובדים מוסיפים עובד עם שם, קוד אישי ותפקיד, ובוחרים סוג העסקה:\n• יומי — שכר קבוע ליום (עם אפשרות חצי יום).\n• שעתי — שכר לשעה + שעון נוכחות.\n• גלובלי — משכורת חודשית קבועה.\nלכל עובד אפשר להגדיר אם יראה כפתור דלק וכמה ₪ דלק ליום.\nחשוב: כדי שעובד יוכל לדווח, חובה לשייך אותו לפרויקט (כפתור 'שייך עובדים' בתוך הפרויקט)." },
-  { icon:"🏗️", title:"פרויקטים", body:"בטאב פרויקטים יוצרים פרויקט חדש ונכנסים אליו לניהול מלא: תיאור (מומלץ לכתוב כמויות — למשל '200 מטר גבס'), שלבי ביצוע עם סטטוס ותאריך יעד, הוצאות וחומרים, קבלני משנה, חשבוניות ותוכניות.\nסטטוס 'הושלם' מסתיר את הפרויקט מהעובדים ומרשימות השיבוץ.\nכרטיס 'סה\"כ הוצאות פרויקט' מסכם הוצאות + קבלני משנה.\nבכרטיס '📍 אימות מיקום' אפשר לחייב עובדים שעתיים לפתוח שעון רק בקרבת האתר: עומדים באתר ← 'קבע את המיקום הנוכחי' ← בוחרים רדיוס ומצב (סימון בלבד / חסימה). חל רק על שעון שעתי — יומיות וגלובלי לא מושפעים." },
-  { icon:"📄", title:"הצעות מחיר", body:"בטאב הצעות מחיר יוצרים הצעה עם פרטי לקוח וסכום — או מחולקת לסעיפים (גבס, בטון...) כשלכל סעיף מחיר וסימון כולל/בלי חומר; הסה\"כ מחושב אוטומטית.\nכשהלקוח מאשר לוחצים '✓ נסגרה — צור פרויקט' וההצעה הופכת לפרויקט פעיל: הסעיפים נכתבים לתיאור והסכום נכנס כשלב קבלת תשלום.\nהצעה שנדחתה נשארת לתיעוד ואפשר להחזירה." },
+  { icon:"🏗️", title:"פרויקטים", body:"בטאב פרויקטים יוצרים פרויקט חדש ונכנסים אליו לניהול מלא: תיאור (מומלץ לכתוב כמויות — למשל '200 מטר גבס'), שלבי ביצוע עם סטטוס ותאריך יעד, הוצאות וחומרים, קבלני משנה, חשבוניות ותוכניות.\nלכל שלב ביצוע אפשר לתת משקל באחוזים (למשל: ניצבים 30%, גבס צד אחד 20%) — סימון שלב כ'הושלם' מעדכן אוטומטית את גרף ההתקדמות של הפרויקט. בלי משקלים — הגרף לפי הסליידר הידני.\nסטטוס 'הושלם' מסתיר את הפרויקט מהעובדים ומרשימות השיבוץ.\nכרטיס 'סה\"כ הוצאות פרויקט' מסכם הוצאות + קבלני משנה.\nבכרטיס '📍 אימות מיקום' אפשר לחייב עובדים שעתיים לפתוח שעון רק בקרבת האתר: עומדים באתר ← 'קבע את המיקום הנוכחי' ← בוחרים רדיוס ומצב (סימון בלבד / חסימה). חל רק על שעון שעתי — יומיות וגלובלי לא מושפעים." },
+  { icon:"📄", title:"הצעות מחיר", body:"בטאב הצעות מחיר יוצרים הצעה עם פרטי לקוח וסכום — או מחולקת לסעיפים (גבס, בטון...) כשלכל סעיף מחיר וסימון כולל/בלי חומר; הסה\"כ מחושב אוטומטית.\nכשהלקוח מאשר לוחצים '✓ נסגרה — צור פרויקט' וההצעה הופכת לפרויקט פעיל: הסעיפים נכתבים לתיאור והסכום נכנס כשלב קבלת תשלום.\nהצעה שנדחתה נשארת לתיעוד ואפשר להחזירה.\nכפתור '📤 הצג ללקוח' פותח דף הצעה מעוצב עם הלוגו והסעיפים — אפשר לשתף, להדפיס או לשמור כ-PDF ולשלוח ללקוח." },
   { icon:"🔨", title:"קבלני משנה", body:"בתוך דף פרויקט, בקטע קבלני משנה, מוסיפים קבלן עם תיאור עבודה, מחיר, ימים מתוכננים וסימון כולל/בלי חומר.\nמגדירים שלבי תשלום (מתי וכמה) ומסמנים ✓ כשמשולם — נשמר תאריך.\nבטאב שכר ← '🔨 קבלנים' רואים את כל הקבלנים מכל הפרויקטים וכמה נשאר לשלם לכל אחד." },
   { icon:"💵", title:"קבלת תשלומים מהלקוח", body:"בכל פרויקט יש קטע 'שלבי קבלת תשלום': מגדירים שלבים (מקדמה, אחרי שלד, מסירה...) עם סכומים, ומסמנים ✓ כשכסף התקבל.\nשורת הסיכום מציגה סה\"כ / התקבל / נותר — כך רואים בכל רגע כמה הלקוח עוד חייב." },
   { icon:"📅", title:"יומן ושיבוץ עובדים", body:"לוחצים על יום ← '+ הוסף פרויקט' ← בוחרים פרויקט ומסמנים עובדים. אפשר כמה פרויקטים באותו יום.\nעובד שכבר משובץ לפרויקט אחר באותו יום — המערכת מתריעה ומציגה מי שיבץ; מנהל ראשי יכול לאשר בכל זאת, מנהל עבודה חסום.\nהעובד רואה את השיבוצים שלו בטאב 'היומן שלי'." },
   { icon:"💰", title:"שכר עובדים", body:"בטאב שכר: 'לתשלום' מציג כמה מגיע לכל עובד, עם פירוט לפי חודש ולפי פרויקט.\n• 'שולם במלואו' סוגר את החודש, 'שולם חלקית' מזין סכום ומשאיר יתרה.\n• 'היסטוריה' מציגה תשלומים שבוצעו + סה\"כ ימים לפי פרויקט, ומאפשרת עריכה או ביטול.\nשעתי מוצג עם פירוט שעות רגילות/נוספות; גלובלי מופיע עם המשכורת הקבועה בכל חודש פעיל." },
   { icon:"🦺", title:"מנהלי עבודה", body:"בטאב מנהלי עבודה: מוסיפים מנהל חדש או הופכים עובד קיים, מגדירים לו קוד כניסה נפרד ומשייכים פרויקטים (פעילים בלבד).\nמנהל עבודה רואה רק את הפרויקטים שלו: דיווחים, פרויקטים (בלי יצירה/מחיקה), עובדים (צפייה ושיוך), ויומן. בלי שכר, ציוד והגדרות.\nכפתור '📝 דיווח יום' בכותרת מאפשר לו לדווח ימי עבודה לעצמו." },
   { icon:"✅", title:"אישור דיווחי עבר", body:"דיווח של עובד על תאריך שכבר עבר לא נכנס ישר לשכר — הוא ממתין בקטע צהוב בראש טאב הדיווחים.\nהמנהל (או מנהל העבודה של אותו פרויקט) מאשר דיווח בודד או את כולם — ורק אז הוא נספר בשכר ובימי הפרויקט." },
-  { icon:"📸", title:"חשבוניות ותוכניות", body:"בתוך דף פרויקט מעלים תמונות חשבוניות ותוכניות אדריכליות (תמונה או PDF, גם כמה יחד).\nלחיצה על שם הקובץ פותחת אותו לצפייה; ✕ מוחק (עם אישור).\nהקבצים נשמרים בענן מאובטח ונגישים מכל מכשיר." },
+  { icon:"📸", title:"חשבוניות ותוכניות", body:"בתוך דף פרויקט מעלים תמונות חשבוניות ותוכניות אדריכליות (תמונה או PDF, גם כמה יחד).\nלחיצה על שם הקובץ פותחת אותו לצפייה; ✕ מוחק (עם אישור).\nהקבצים נשמרים בענן מאובטח ונגישים מכל מכשיר.\nעל כל חשבונית יש כפתור '💸 רשום כהוצאה' — מזינים סכום ותיאור וההוצאה נכנסת אוטומטית לרשימת ההוצאות ולסה\"כ הפרויקט.\nגם לקבלן משנה אפשר לצרף קובץ הצעת מחיר בתוך הכרטיס שלו." },
   { icon:"🛒", title:"ציוד — רשימת קניות", body:"טאב ציוד הוא רשימת קניות משותפת: מוסיפים פריט וכמות, מסמנים ✓ כשנקנה, ומוחקים כשלא צריך.\nמתעדכן לכל המנהלים במכשירים שלהם." },
   { icon:"📶", title:"עבודה בלי קליטה (אופליין)", body:"אין אינטרנט באתר? אפשר להמשיך לעבוד:\n• לחיצה על כניסה/יציאה בשעון או שליחת דיווח יומי נשמרות במכשיר עם השעה המדויקת, ומופיעה הודעה 'יסונכרן כשתחזור הקליטה'.\n• ברגע שחוזרת קליטה — הנתונים עולים אוטומטית לשרת עם הזמנים האמיתיים, גם אם עברו שעות.\n• המנהל רואה על דיווח שעוד לא סונכרן תג '📶 ממתין לסנכרון'.\nחשוב: לא למחוק את האפליקציה/נתוני האתר לפני שהסנכרון הושלם." },
   { icon:"🛠️", title:"תקלות נפוצות", body:"• 'קוד שגוי' למרות קוד נכון — ודאו שנכנסתם דרך הקישור הנכון של העסק שלכם.\n• נתונים לא מתעדכנים — צאו והתחברו מחדש, או משכו לרענון.\n• המסך נראה ישן אחרי עדכון — סגרו את האפליקציה לגמרי ופתחו שוב.\n• ההתחברות תקפה 12 שעות — אחריהן פשוט מתחברים שוב.\n• 'לא ניתן לאמת מיקום' — יש לאשר גישה למיקום: הגדרות הטלפון ← ספארי/כרום ← מיקום ← אפשר.\nלכל בעיה אחרת — פנו לספק המערכת." },
@@ -104,6 +104,20 @@ function isNetErr(e) {
   const m = String(e?.message || e);
   return (typeof TypeError !== "undefined" && e instanceof TypeError) ||
     m.includes("fetch") || m.includes("Load failed") || m.includes("network") || m.includes("NetworkError") || m.includes("Internet");
+}
+
+// התקדמות פרויקט: לפי משקלי שלבים אם הוגדרו, אחרת הסליידר הידני
+function projProgress(p) {
+  const phases = p?.phases || [];
+  const weighted = phases.filter(ph => Number(ph.weight) > 0);
+  if (weighted.length > 0) {
+    const total = weighted.reduce((s,ph) => s + Number(ph.weight||0), 0);
+    if (total > 0) {
+      const done = weighted.filter(ph => ph.status==="הושלם" || ph.done).reduce((s,ph) => s + Number(ph.weight||0), 0);
+      return Math.round((done / total) * 100);
+    }
+  }
+  return Number(p?.progress || 0);
 }
 
 function quoteTotal(q) {
@@ -979,6 +993,18 @@ export default function App() {
   };
 
   // ====== ניהול מנהלי עבודה ======
+  const updateWorkerFieldsDebounced = (w, changes) => {
+    lastEditRef.current = Date.now();
+    setWorkers(prev => prev.map(x => x._dbid===w._dbid ? {...x, ...changes} : x));
+    const key = "wkr_" + w._dbid;
+    if (debounceRef.current[key]) clearTimeout(debounceRef.current[key]);
+    debounceRef.current[key] = setTimeout(async () => {
+      const cur = { ...w, ...changes };
+      const { _dbid, ...data } = cur;
+      await dbUpdate("workers", w._dbid, data);
+    }, 800);
+  };
+
   const updateWorkerFields = async (w, changes) => {
     const updated = { ...w, ...changes };
     await dbUpdate("workers", w._dbid, updated);
@@ -1059,6 +1085,59 @@ export default function App() {
     setQuotes(prev => prev.map(x => x._dbid===q._dbid ? updated : x));
   };
 
+  const openQuoteDoc = (q) => {
+    const total = quoteTotal(q);
+    const logo = org?.logo || (org?.slug==="gne" ? LOGO_URL : "");
+    const rows = (q.items||[]).map(it => `
+      <tr>
+        <td>${(it.desc||"").replace(/</g,"&lt;")}</td>
+        <td class="mat">${it.withMaterial!==false ? "כולל חומר" : "ללא חומר"}</td>
+        <td class="amt">₪${Number(it.amount||0).toLocaleString("he-IL")}</td>
+      </tr>`).join("");
+    const html = `<!DOCTYPE html><html dir="rtl" lang="he"><head><meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>הצעת מחיר — ${(q.title||"").replace(/</g,"&lt;")}</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Heebo:wght@400;600;800&display=swap');
+  body { font-family:'Heebo',sans-serif; background:#F5F5F0; margin:0; padding:24px 14px; color:#1A1A2E; }
+  .doc { background:#fff; max-width:640px; margin:0 auto; border-radius:16px; padding:30px 28px; box-shadow:0 4px 20px rgba(0,0,0,0.08); }
+  .head { display:flex; justify-content:space-between; align-items:center; border-bottom:3px solid #E8C547; padding-bottom:16px; margin-bottom:20px; }
+  .head img { height:64px; object-fit:contain; }
+  .head .biz { font-size:22px; font-weight:800; }
+  h1 { font-size:20px; margin:0 0 4px; }
+  .meta { color:#777; font-size:13px; margin-bottom:18px; }
+  .desc { background:#F9F9F9; border-radius:10px; padding:12px 14px; font-size:14px; line-height:1.7; margin-bottom:18px; white-space:pre-wrap; }
+  table { width:100%; border-collapse:collapse; margin-bottom:14px; }
+  th { text-align:right; font-size:12px; color:#888; padding:8px 6px; border-bottom:1.5px solid #EEE; }
+  td { padding:10px 6px; border-bottom:1px solid #F2F2EE; font-size:14px; }
+  td.mat { color:#888; font-size:12px; white-space:nowrap; }
+  td.amt { font-weight:700; white-space:nowrap; text-align:left; }
+  .total { display:flex; justify-content:space-between; align-items:center; background:#1A1A2E; color:#fff; border-radius:12px; padding:14px 18px; margin-top:6px; }
+  .total .sum { color:#E8C547; font-size:22px; font-weight:800; }
+  .foot { text-align:center; color:#AAA; font-size:11px; margin-top:22px; }
+  .valid { color:#888; font-size:12px; margin-top:14px; }
+  @media print { body { background:#fff; padding:0; } .doc { box-shadow:none; } }
+</style></head><body>
+<div class="doc">
+  <div class="head">
+    <div class="biz">${(org?.name||"").replace(/</g,"&lt;")}</div>
+    ${logo ? `<img src="${logo}"/>` : ""}
+  </div>
+  <h1>הצעת מחיר — ${(q.title||"").replace(/</g,"&lt;")}</h1>
+  <div class="meta">לכבוד: ${(q.clientName||"").replace(/</g,"&lt;")} · תאריך: ${q.date||todayStr()}</div>
+  ${q.desc ? `<div class="desc">${(q.desc||"").replace(/</g,"&lt;")}</div>` : ""}
+  ${rows ? `<table><thead><tr><th>תיאור העבודה</th><th>חומר</th><th>מחיר</th></tr></thead><tbody>${rows}</tbody></table>` : ""}
+  <div class="total"><span>סה"כ הצעת מחיר</span><span class="sum">₪${total.toLocaleString("he-IL")}</span></div>
+  <div class="valid">* המחירים אינם כוללים מע"מ אלא אם צוין אחרת. תוקף ההצעה: 30 יום.</div>
+  <div class="foot">הופק באמצעות BuildTrack</div>
+</div>
+</body></html>`;
+    const w = window.open("", "_blank");
+    if (!w) { alert("יש לאפשר חלונות קופצים בדפדפן"); return; }
+    w.document.write(html);
+    w.document.close();
+  };
+
   const convertQuote = async (q) => {
     if (!window.confirm(`ההצעה "${q.title}" נסגרה? 🎉\nהיא תהפוך לפרויקט פעיל.`)) return;
     try {
@@ -1109,7 +1188,7 @@ export default function App() {
   const btnY = { background:"#E8C547", color:"#1A1A2E", border:"none", borderRadius:10, padding:"10px 20px", fontWeight:700, fontSize:14, cursor:"pointer", fontFamily:"Heebo,sans-serif" };
   const btnD = { background:"#1A1A2E", color:"#E8C547", border:"none", borderRadius:10, padding:"10px 20px", fontWeight:700, fontSize:14, cursor:"pointer", fontFamily:"Heebo,sans-serif" };
   const btnG = { background:"#F0F0EC", color:"#555", border:"none", borderRadius:10, padding:"10px 20px", fontWeight:600, fontSize:14, cursor:"pointer", fontFamily:"Heebo,sans-serif" };
-  const PayTypeFields = ({ obj, setObj }) => (
+  const renderPayTypeFields = (obj, setObj) => (
     <>
       <div style={{ marginBottom:11 }}>
         <LBL t="סוג העסקה"/>
@@ -1863,10 +1942,10 @@ export default function App() {
                   <div style={{ marginBottom:9 }}>
                     <div style={{ display:"flex", justifyContent:"space-between", marginBottom:3 }}>
                       <span style={{ fontSize:12, color:"#666" }}>אחוז ביצוע</span>
-                      <span style={{ fontSize:12, fontWeight:700 }}>{p.progress||0}%</span>
+                      <span style={{ fontSize:12, fontWeight:700 }}>{projProgress(p)}%</span>
                     </div>
                     <div style={{ background:"#EEE", borderRadius:99, height:6 }}>
-                      <div style={{ height:"100%", width:`${p.progress||0}%`, background:p.progress>=100?"#43A047":"#E8C547", borderRadius:99 }}/>
+                      <div style={{ height:"100%", width:`${projProgress(p)}%`, background:projProgress(p)>=100?"#43A047":"#E8C547", borderRadius:99 }}/>
                     </div>
                   </div>
                   <div style={{ display:"flex", gap:8, flexWrap:"wrap", marginBottom:9 }}>
@@ -1923,7 +2002,7 @@ export default function App() {
                 <div>
                   <div style={{ display:"flex", justifyContent:"space-between", marginBottom:5 }}>
                     <span style={{ fontSize:12, color:"#AAA" }}>אחוז ביצוע</span>
-                    <span style={{ fontSize:12, fontWeight:700, color:"#E8C547" }}>{editProj.progress||0}%</span>
+                    <span style={{ fontSize:12, fontWeight:700, color:"#E8C547" }}>{projProgress(editProj)}%{(editProj.phases||[]).some(ph=>Number(ph.weight)>0) ? " (לפי שלבים)" : ""}</span>
                   </div>
                   <input type="range" min="0" max="100" value={editProj.progress||0}
                     onChange={e=>{ const v=Number(e.target.value); setEditProj(p=>({...p,progress:v})); updateProjField(detailProject,{progress:v}); }}
@@ -1972,7 +2051,7 @@ export default function App() {
                     <label key={f.key} style={{ display:"block" }}>
                       <span style={{ fontSize:12, fontWeight:600, display:"block", marginBottom:4, color:"#555" }}>{f.label}</span>
                       <input type="number" value={editProj[f.key]||""} placeholder="0"
-                        onChange={e=>{ const v=e.target.value; setEditProj(p=>({...p,[f.key]:v})); updateProjField(detailProject,{[f.key]:v}); }}
+                        onChange={e=>{ const v=e.target.value; setEditProj(p=>({...p,[f.key]:v})); updateProjFieldDebounced(detailProject,{[f.key]:v}); }}
                         style={{ ...inp, fontSize:15 }}/>
                     </label>
                   ))}
@@ -2088,6 +2167,35 @@ export default function App() {
                       </div>
                       <input value={sc.work} placeholder="תיאור העבודה (למשל: אינסטלציה קומה א)" onChange={e=>updSub({work:e.target.value}, true)}
                         style={{ width:"100%", border:"1.5px solid #EEE", borderRadius:8, padding:"7px 10px", fontSize:13, fontFamily:"Heebo,sans-serif", outline:"none", background:"#fff", boxSizing:"border-box", marginBottom:8 }}/>
+                      {/* קובץ הצעת מחיר של הקבלן */}
+                      <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:8 }}>
+                        {sc.quoteFile ? (
+                          <>
+                            <button onClick={()=>window.open(sc.quoteFile.url, "_blank")}
+                              style={{ background:"none", border:"none", cursor:"pointer", fontSize:12, color:"#6D28D9", fontWeight:600, fontFamily:"Heebo,sans-serif", padding:0 }}>
+                              📎 {sc.quoteFile.name}
+                            </button>
+                            <button onClick={async ()=>{
+                              if (!window.confirm("למחוק את קובץ ההצעה?")) return;
+                              if (sc.quoteFile.path) { try { await storageDelete(sc.quoteFile.path); } catch(e) {} }
+                              updSub({quoteFile: null});
+                            }} style={{ background:"none", border:"none", cursor:"pointer", color:"#CCC", fontSize:12, padding:0 }}>✕</button>
+                          </>
+                        ) : (
+                          <label style={{ background:"#EDE9FE", color:"#6D28D9", borderRadius:7, padding:"5px 12px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:600 }}>
+                            📎 צרף הצעת מחיר של הקבלן
+                            <input type="file" accept="image/*,application/pdf" style={{ display:"none" }} onChange={async e=>{
+                              const file = e.target.files[0]; e.target.value="";
+                              if (!file) return;
+                              try {
+                                const path = `${CURRENT_ORG?.slug||"default"}/${detailProject.id}/subquotes/${Date.now()}_${file.name}`;
+                                const url = await storageUpload(file, path);
+                                updSub({quoteFile: { name: file.name, url, path }});
+                              } catch(err) { alert("שגיאה בהעלאה: " + err.message); }
+                            }}/>
+                          </label>
+                        )}
+                      </div>
                       <div style={{ display:"flex", gap:8, marginBottom:8 }}>
                         <input type="number" value={sc.price} placeholder="מחיר ₪" onChange={e=>updSub({price:e.target.value}, true)}
                           style={{ flex:1, border:"1.5px solid #EEE", borderRadius:8, padding:"7px 10px", fontSize:13, fontFamily:"Heebo,sans-serif", outline:"none", background:"#fff" }}/>
@@ -2213,6 +2321,19 @@ export default function App() {
                           🧾 {inv.name}
                         </button>
                         <span style={{ fontSize:11, color:"#AAA" }}>{inv.date}</span>
+                        {inv.expensed
+                          ? <span style={{ background:"#E8F5E9", color:"#2E7D32", borderRadius:6, padding:"2px 7px", fontSize:10, fontWeight:600 }}>✓ נרשם כהוצאה</span>
+                          : <button onClick={()=>{
+                              const amtStr = window.prompt(`מה הסכום בחשבונית "${inv.name}"? (₪)`);
+                              if (amtStr === null) return;
+                              const amt = Number(amtStr);
+                              if (isNaN(amt) || amt <= 0) { alert("סכום לא תקין"); return; }
+                              const desc = window.prompt("תיאור ההוצאה:", inv.name.replace(/\.[^.]+$/,"")) || inv.name;
+                              const expenses = [...(editProj.expenses||[]), { id:Date.now(), desc, amount:amt, date: inv.date||todayStr(), fromInvoice: inv.name }];
+                              const invoices = (editProj.invoices||[]).map(x => x===inv ? {...x, expensed:true} : x);
+                              setEditProj(p=>({...p, expenses, invoices}));
+                              updateProjField(detailProject, { expenses, invoices });
+                            }} style={{ background:"#FFF8E1", color:"#B26A00", border:"none", borderRadius:6, padding:"3px 9px", fontSize:11, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:600 }}>💸 רשום כהוצאה</button>}
                         <button onClick={async ()=>{
                           if (!window.confirm(`למחוק את "${inv.name}"?`)) return;
                           if (inv.path) { try { await storageDelete(inv.path); } catch(e) {} }
@@ -2408,6 +2529,9 @@ export default function App() {
                         ))}
                       </div>
                       <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:8 }}>
+                        <span style={{ fontSize:12, color:"#888", whiteSpace:"nowrap" }}>⚖️ משקל:</span>
+                        <input type="number" value={ph.weight||""} placeholder="%" onChange={e=>updPhase({weight:e.target.value}, true)}
+                          style={{ width:60, border:"1px solid #DDD", borderRadius:7, padding:"4px 8px", fontSize:13, fontFamily:"Heebo,sans-serif", background:"#fff", outline:"none" }}/>
                         <span style={{ fontSize:12, color:"#888", whiteSpace:"nowrap" }}>🎯 יעד:</span>
                         <input type="date" value={ph.targetDate||""} onChange={e=>updPhase({targetDate:e.target.value})}
                           style={{ border:"1px solid #DDD", borderRadius:7, padding:"4px 8px", fontSize:13, fontFamily:"Heebo,sans-serif", background:"#fff", outline:"none" }}/>
@@ -2421,9 +2545,12 @@ export default function App() {
                 })}
                 {(editProj.phases||[]).length>0 && (
                   <div style={{ marginTop:10, paddingTop:10, borderTop:"1px solid #EEE", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-                    <span style={{ fontSize:13, color:"#666" }}>{(editProj.phases||[]).filter(p=>p.status==="הושלם"||p.done).length} / {(editProj.phases||[]).length} שלבים הושלמו</span>
+                    <span style={{ fontSize:13, color:"#666" }}>
+                      {(editProj.phases||[]).filter(p=>p.status==="הושלם"||p.done).length} / {(editProj.phases||[]).length} שלבים · {projProgress(editProj)}%
+                      {(() => { const ws=(editProj.phases||[]).reduce((s,p)=>s+Number(p.weight||0),0); return ws>0 && ws!==100 ? ` · ⚠️ סה"כ משקלים ${ws}%` : ""; })()}
+                    </span>
                     <div style={{ background:"#EEE", borderRadius:99, height:7, width:120 }}>
-                      <div style={{ height:"100%", borderRadius:99, background:"#22C55E", width:`${Math.round(((editProj.phases||[]).filter(p=>p.status==="הושלם"||p.done).length/Math.max((editProj.phases||[]).length,1))*100)}%` }}/>
+                      <div style={{ height:"100%", borderRadius:99, background:"#22C55E", width:`${projProgress(editProj)}%` }}/>
                     </div>
                   </div>
                 )}
@@ -3123,6 +3250,10 @@ export default function App() {
                   </div>
                 </div>
                 <div style={{ display:"flex", gap:6, flexWrap:"wrap", paddingTop:8, borderTop:"1px solid #F0F0F0" }}>
+                  <button onClick={()=>openQuoteDoc(q)}
+                    style={{ background:"#1A1A2E", color:"#E8C547", border:"none", borderRadius:8, padding:"6px 13px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700 }}>
+                    📤 הצג ללקוח
+                  </button>
                   <button onClick={()=>convertQuote(q)}
                     style={{ background:"#2E7D32", color:"#fff", border:"none", borderRadius:8, padding:"6px 13px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700 }}>
                     ✓ נסגרה — צור פרויקט
@@ -3231,7 +3362,7 @@ export default function App() {
                   <label style={{ display:"block", marginBottom:12 }}>
                     <span style={{ fontSize:12, fontWeight:600, display:"block", marginBottom:4, color:"#555" }}>🔑 קוד מנהל עבודה</span>
                     <input value={w.foremanCode||""} placeholder="לדוגמה: 7788"
-                      onChange={e=>updateWorkerFields(w, { foremanCode: e.target.value })}
+                      onChange={e=>updateWorkerFieldsDebounced(w, { foremanCode: e.target.value })}
                       style={{ ...inp, letterSpacing:3, fontSize:16 }}/>
                     {!w.foremanCode && <p style={{ margin:"4px 0 0", fontSize:11, color:"#E53935" }}>ללא קוד לא ניתן להתחבר</p>}
                   </label>
@@ -3441,7 +3572,7 @@ export default function App() {
                   onChange={e=>setEditWorker({...editWorker,[f.key]:e.target.value})} style={{ ...inp, ...f.extra }}/>
               </label>
             ))}
-            <PayTypeFields obj={editWorker} setObj={setEditWorker}/>
+            {renderPayTypeFields(editWorker, setEditWorker)}
             {/* הרשאת מנהל עבודה */}
             <div style={{ background:"#FFFBF0", border:"1.5px solid #FFE082", borderRadius:12, padding:"12px 14px", marginBottom:12 }}>
               <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
@@ -3523,7 +3654,7 @@ export default function App() {
                   onChange={e=>setNewWorker({...newWorker,[f.key]:e.target.value})} style={{ ...inp, ...f.extra }}/>
               </label>
             ))}
-            <PayTypeFields obj={newWorker} setObj={setNewWorker}/>
+            {renderPayTypeFields(newWorker, setNewWorker)}
             <div style={{ display:"flex", gap:10, marginTop:6 }}>
               <button onClick={addWorker} style={{ ...btnD, flex:1 }}>הוסף עובד</button>
               <button onClick={()=>setNewWM(false)} style={{ ...btnG, flex:1 }}>ביטול</button>
