@@ -1088,6 +1088,16 @@ export default function App() {
   const openQuoteDoc = (q) => {
     const total = quoteTotal(q);
     const logo = org?.logo || (org?.slug==="gne" ? LOGO_URL : "");
+    const phoneDigits = String(q.clientPhone||"").replace(/[^0-9]/g,"").replace(/^0/,"");
+    const waTextLines = [
+      `היי ${q.clientName||""}, מצורפת הצעת מחיר מ-${org?.name||""}:`,
+      `*${q.title||""}*`,
+      ...(q.items||[]).map(it => `• ${it.desc||"סעיף"} — ₪${Number(it.amount||0).toLocaleString("he-IL")} (${it.withMaterial!==false?"כולל חומר":"בלי חומר"})`),
+      q.desc ? q.desc : "",
+      `*סה"כ: ₪${total.toLocaleString("he-IL")}*`,
+      "המחירים אינם כוללים מע\"מ. תוקף ההצעה: 30 יום."
+    ].filter(Boolean);
+    const waUrl = phoneDigits ? `https://wa.me/972${phoneDigits}?text=${encodeURIComponent(waTextLines.join("\n"))}` : "";
     const rows = (q.items||[]).map(it => `
       <tr>
         <td>${(it.desc||"").replace(/</g,"&lt;")}</td>
@@ -1116,8 +1126,18 @@ export default function App() {
   .total .sum { color:#E8C547; font-size:22px; font-weight:800; }
   .foot { text-align:center; color:#AAA; font-size:11px; margin-top:22px; }
   .valid { color:#888; font-size:12px; margin-top:14px; }
-  @media print { body { background:#fff; padding:0; } .doc { box-shadow:none; } }
-</style></head><body>
+  .actions { max-width:640px; margin:0 auto 14px; display:flex; gap:8; }
+  .actions button, .actions a { flex:1; border:none; border-radius:12px; padding:13px 0; font-size:14px; font-weight:800; font-family:'Heebo',sans-serif; cursor:pointer; text-align:center; text-decoration:none; display:block; }
+  .wa { background:#25D366; color:#fff; }
+  .shr { background:#1A1A2E; color:#E8C547; }
+  @media print { body { background:#fff; padding:0; } .doc { box-shadow:none; } .actions { display:none; } }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</head><body>
+<div class="actions">
+  ${waUrl ? `<a class="wa" href="${waUrl}" target="_blank" rel="noreferrer">💬 שלח בוואטסאפ</a>` : ""}
+  <button class="shr" onclick="shareImg()">📤 שתף כקובץ</button>
+</div>
 <div class="doc">
   <div class="head">
     <div class="biz">${(org?.name||"").replace(/</g,"&lt;")}</div>
@@ -1131,6 +1151,25 @@ export default function App() {
   <div class="valid">* המחירים אינם כוללים מע"מ אלא אם צוין אחרת. תוקף ההצעה: 30 יום.</div>
   <div class="foot">הופק באמצעות BuildTrack</div>
 </div>
+<script>
+async function shareImg() {
+  try {
+    var canvas = await html2canvas(document.querySelector(".doc"), { scale: 2, useCORS: true, backgroundColor: "#ffffff" });
+    canvas.toBlob(async function(blob) {
+      if (!blob) { alert("שגיאה ביצירת הקובץ"); return; }
+      var file = new File([blob], "הצעת-מחיר.png", { type: "image/png" });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        try { await navigator.share({ files: [file], title: "הצעת מחיר" }); } catch(e) {}
+      } else {
+        var a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "הצעת-מחיר.png";
+        a.click();
+      }
+    }, "image/png");
+  } catch(e) { alert("שגיאה: " + e.message); }
+}
+</scr` + `ipt>
 </body></html>`;
     const w = window.open("", "_blank");
     if (!w) { alert("יש לאפשר חלונות קופצים בדפדפן"); return; }
