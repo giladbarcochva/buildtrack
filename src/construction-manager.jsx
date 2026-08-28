@@ -77,6 +77,31 @@ const HELP_TOPICS = [
   { icon:"🛠️", title:"תקלות נפוצות", body:"• 'קוד שגוי' למרות קוד נכון — ודאו שנכנסתם דרך הקישור הנכון של העסק שלכם.\n• נתונים לא מתעדכנים — צאו והתחברו מחדש, או משכו לרענון.\n• המסך נראה ישן אחרי עדכון — סגרו את האפליקציה לגמרי ופתחו שוב.\n• ההתחברות תקפה 12 שעות — אחריהן פשוט מתחברים שוב.\n• 'לא ניתן לאמת מיקום' — יש לאשר גישה למיקום: הגדרות הטלפון ← ספארי/כרום ← מיקום ← אפשר.\nלכל בעיה אחרת — פנו לספק המערכת." },
 ];
 
+// כיווץ תמונת לוגו אוטומטי — כל גודל קלט הופך לקטן
+function compressImage(file, maxDim = 600, quality = 0.85) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const img = new window.Image();
+      img.onload = () => {
+        let { width, height } = img;
+        const scale = Math.min(1, maxDim / Math.max(width, height));
+        width = Math.round(width * scale); height = Math.round(height * scale);
+        const canvas = document.createElement("canvas");
+        canvas.width = width; canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, width, height);
+        ctx.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL("image/jpeg", quality));
+      };
+      img.onerror = () => reject(new Error("קובץ תמונה לא תקין"));
+      img.src = ev.target.result;
+    };
+    reader.onerror = () => reject(new Error("שגיאה בקריאת הקובץ"));
+    reader.readAsDataURL(file);
+  });
+}
+
 // שם קובץ בטוח לאחסון (בלי עברית/רווחים — נדרש ע"י השרת)
 function safeFileName(name) {
   const dot = name.lastIndexOf(".");
@@ -1456,14 +1481,12 @@ async function shareImg() {
                 <input type="file" accept="image/*" style={{ display:"none" }} onChange={async e=>{
                   const file = e.target.files[0]; e.target.value="";
                   if (!file) return;
-                  if (file.size > 500*1024) { alert("לוגו עד 500KB"); return; }
-                  const reader = new FileReader();
-                  reader.onload = async ev => {
-                    await orgUpdate(o._dbid, { logo: ev.target.result });
+                  try {
+                    const dataUrl = await compressImage(file);
+                    await orgUpdate(o._dbid, { logo: dataUrl });
                     setSaOrgs((await orgGetAll()).filter(o=>o.slug!=="_config"));
-                    alert("לוגו עודכן!");
-                  };
-                  reader.readAsDataURL(file);
+                    alert("לוגו עודכן! 🎨");
+                  } catch(err) { alert("שגיאה: " + err.message); }
                 }}/>
               </label>
               <button onClick={async ()=>{
