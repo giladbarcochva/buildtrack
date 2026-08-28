@@ -127,6 +127,9 @@ function applyOrgIcons(o) {
   try {
     if (!o) return;
     if (o.name) document.title = o.name;
+    // שמירת האייקון בזיכרון המכשיר — נכתב לדף בפתיחה הבאה (ראה index.html)
+    if (o.icon && o.slug) { try { localStorage.setItem("bt_icon_" + o.slug, o.icon); } catch(e) {} }
+    if (o.name && o.slug) { try { localStorage.setItem("bt_name_" + o.slug, o.name); } catch(e) {} }
     if (o.icon) {
       const busted = o.icon + (o.icon.includes("?") ? "&" : "?") + "v=" + Date.now();
       document.querySelectorAll('link[rel="apple-touch-icon"], link[rel="apple-touch-icon-precomposed"]').forEach(x => x.remove());
