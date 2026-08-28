@@ -60,7 +60,7 @@ const PLANS = {
 // ===== תוכן מסך העזרה =====
 const HELP_TOPICS = [
   { icon:"🔑", title:"כניסה למערכת", body:"במסך הפתיחה שלוש כניסות:\n• כניסת עובד — עם הקוד האישי שהמנהל הגדיר לעובד.\n• כניסת מנהל עבודה — עם קוד מנהל העבודה (מוגדר בטאב מנהלי עבודה).\n• כניסת מנהל — עם קוד המנהל של העסק.\nאת הקישור של העסק מוסיפים למסך הבית: פותחים בדפדפן ← שיתוף ← הוספה למסך הבית — ומקבלים אייקון כמו אפליקציה." },
-  { icon:"📝", title:"דיווח יומי של עובד", body:"העובד נכנס עם הקוד שלו, בוחר פרויקט (מוצגים רק פרויקטים שהוא משויך אליהם — השיוך בכפתור 'שייך עובדים' בפרויקט), בוחר יום מלא או חצי יום, מסמן דלק אם נסע ברכב, ולוחץ שלח.\n• אי אפשר לדווח פעמיים על אותו תאריך.\n• דיווח על תאריך שעבר נכנס ל'ממתינים לאישור' אצל המנהל ולא נספר בשכר עד שמאושר.\n• בטאב 'היומן שלי' העובד רואה את הימים שהוא משובץ בהם." },
+  { icon:"📝", title:"דיווח יומי של עובד", body:"העובד נכנס עם הקוד שלו, בוחר פרויקט (מוצגים רק פרויקטים שהוא משויך אליהם — השיוך בכפתור 'שייך עובדים' בפרויקט), בוחר יום מלא או חצי יום, מסמן דלק אם נסע ברכב, ולוחץ שלח.\n• אי אפשר לדווח פעמיים על אותו תאריך.\n• דיווח על תאריך שעבר נכנס ל'ממתינים לאישור' אצל המנהל ולא נספר בשכר עד שמאושר.\n• אי אפשר לדווח על תאריך עתידי.\n• עובד שמשובץ ביומן יכול לדווח רק על ימים ופרויקטים שהוא שובץ אליהם (רואים ב'היומן שלי'); עובד שלא מנוהל ביומן — מדווח חופשי.\n• בטאב 'היומן שלי' העובד רואה את הימים שהוא משובץ בהם." },
   { icon:"⏱️", title:"עובד שעתי — שעון נוכחות", body:"עובד שהוגדר כשעתי רואה שעון נוכחות במקום טופס דיווח: בוחר פרויקט ← ▶️ כניסה בתחילת היום ← 🛑 יציאה בסיומו.\nחישוב השכר: 9 שעות ראשונות 100%, שעות 10-11 לפי 125%, משעה 12 לפי 150%.\nשכח לסגור? המנהל רואה 'שעון תקוע' בטאב דיווחים ומתקן עם כפתור '✏️ שעות'.\nאם בפרויקט הוגדר אימות מיקום — בפתיחת השעון הטלפון יבקש אישור גישה למיקום (פעם ראשונה בלבד). במצב 'חסימה' ניתן לפתוח שעון רק בקרבת האתר." },
   { icon:"👷", title:"ניהול עובדים וסוגי העסקה", body:"בטאב עובדים מוסיפים עובד עם שם, קוד אישי ותפקיד, ובוחרים סוג העסקה:\n• יומי — שכר קבוע ליום (עם אפשרות חצי יום).\n• שעתי — שכר לשעה + שעון נוכחות.\n• גלובלי — משכורת חודשית קבועה.\nלכל עובד אפשר להגדיר אם יראה כפתור דלק וכמה ₪ דלק ליום.\nחשוב: כדי שעובד יוכל לדווח, חובה לשייך אותו לפרויקט (כפתור 'שייך עובדים' בתוך הפרויקט)." },
   { icon:"🏗️", title:"פרויקטים", body:"בטאב פרויקטים יוצרים פרויקט חדש ונכנסים אליו לניהול מלא: תיאור (מומלץ לכתוב כמויות — למשל '200 מטר גבס'), שלבי ביצוע עם סטטוס ותאריך יעד, הוצאות וחומרים, קבלני משנה, חשבוניות ותוכניות.\nלכל שלב ביצוע אפשר לתת משקל באחוזים (למשל: ניצבים 30%, גבס צד אחד 20%) — סימון שלב כ'הושלם' מעדכן אוטומטית את גרף ההתקדמות של הפרויקט. בלי משקלים — הגרף לפי הסליידר הידני.\nסטטוס 'הושלם' מסתיר את הפרויקט מהעובדים ומרשימות השיבוץ.\nכרטיס 'סה\"כ הוצאות פרויקט' מסכם הוצאות + קבלני משנה.\nבכרטיס '📍 אימות מיקום' אפשר לחייב עובדים שעתיים לפתוח שעון רק בקרבת האתר: עומדים באתר ← 'קבע את המיקום הנוכחי' ← בוחרים רדיוס ומצב (סימון בלבד / חסימה). חל רק על שעון שעתי — יומיות וגלובלי לא מושפעים." },
@@ -707,6 +707,16 @@ export default function App() {
 
   const clockIn = async () => {
     if (!repProject) { alert("בחר פרויקט לפני הפעלת השעון"); return; }
+    // אכיפת שיבוץ יומן גם על שעון נוכחות
+    {
+      const ai = workerAssignInfo(loggedWorker.id, todayStr());
+      if (ai.hasAny) {
+        if (ai.dayProjects.length === 0) { alert("אינך משובץ לעבודה היום.\nפנה למנהל."); return; }
+        if (!(ai.dayProjects.includes(String(repProject)) || ai.dayProjects.includes(""))) {
+          alert("היום אתה משובץ לפרויקט אחר.\nבחר את הפרויקט שאליו שובצת."); return;
+        }
+      }
+    }
     const proj = projects.find(p => String(p.id) === String(repProject));
     const rec = { _shift:true, workerId: loggedWorker.id, workerName: loggedWorker.name,
       projectId: repProject, projectName: proj?.name||"", date: todayStr(),
@@ -781,6 +791,17 @@ export default function App() {
     }
   };
 
+  // שיבוצי יומן של עובד: האם משובץ בכלל, ולאילו פרויקטים בתאריך נתון
+  const workerAssignInfo = (workerId, date) => {
+    const toAssigns = ev => ev?.assignments?.length ? ev.assignments : (ev?.workers?.length ? [{projectId:"", workers:ev.workers}] : []);
+    let hasAny = false;
+    for (const ds in calEvents) {
+      if (toAssigns(calEvents[ds]).some(a => (a.workers||[]).map(String).includes(String(workerId)))) { hasAny = true; break; }
+    }
+    const mine = toAssigns(calEvents[date]).filter(a => (a.workers||[]).map(String).includes(String(workerId)));
+    return { hasAny, dayProjects: mine.map(a => String(a.projectId)) };
+  };
+
   const submitReport = async () => {
     if (!repProject) return;
     try {
@@ -793,6 +814,24 @@ export default function App() {
       if (existingReport) {
         alert("כבר דיווחת על תאריך זה! לא ניתן לדווח פעמיים על אותו יום.");
         return;
+      }
+      // חסימת דיווח על תאריך עתידי
+      if (repDate > todayStr()) {
+        alert("לא ניתן לדווח על יום שעוד לא היה 🙂");
+        return;
+      }
+      // אכיפת שיבוץ: עובד שמנוהל ביומן מדווח רק על ימים ופרויקטים שהוא משובץ אליהם
+      const ai = workerAssignInfo(loggedWorker.id, repDate);
+      if (ai.hasAny) {
+        if (ai.dayProjects.length === 0) {
+          alert("אינך משובץ לעבודה בתאריך זה.\nבדוק בטאב 'היומן שלי', או פנה למנהל.");
+          return;
+        }
+        const okProj = ai.dayProjects.includes(String(repProject)) || ai.dayProjects.includes("");
+        if (!okProj) {
+          alert("בתאריך זה אתה משובץ לפרויקט אחר.\nבחר את הפרויקט שאליו שובצת (מופיע ב'היומן שלי').");
+          return;
+        }
       }
       const proj = projects.find(p => String(p.id) === String(repProject));
       const today = todayStr();
@@ -1792,7 +1831,7 @@ async function shareImg() {
           <div style={{ background:"#fff", borderRadius:16, padding:22, boxShadow:"0 2px 8px rgba(0,0,0,0.07)" }}>
             <label style={{ display:"block", marginBottom:14 }}>
               <LBL t="📅 תאריך"/>
-              <input type="date" value={repDate} max={todayStr()} onChange={e=>{
+              <input type="date" value={repDate} max={todayStr()} max={todayStr()} onChange={e=>{
                 const _today = todayStr(); if(e.target.value < _today) {
                   setPendingDate(e.target.value);
                   setShowDateApproval(true);
