@@ -77,6 +77,15 @@ const HELP_TOPICS = [
   { icon:"🛠️", title:"תקלות נפוצות", body:"• 'קוד שגוי' למרות קוד נכון — ודאו שנכנסתם דרך הקישור הנכון של העסק שלכם.\n• נתונים לא מתעדכנים — צאו והתחברו מחדש, או משכו לרענון.\n• המסך נראה ישן אחרי עדכון — סגרו את האפליקציה לגמרי ופתחו שוב.\n• ההתחברות תקפה 12 שעות — אחריהן פשוט מתחברים שוב.\n• 'לא ניתן לאמת מיקום' — יש לאשר גישה למיקום: הגדרות הטלפון ← ספארי/כרום ← מיקום ← אפשר.\nלכל בעיה אחרת — פנו לספק המערכת." },
 ];
 
+// שם קובץ בטוח לאחסון (בלי עברית/רווחים — נדרש ע"י השרת)
+function safeFileName(name) {
+  const dot = name.lastIndexOf(".");
+  const ext = dot > -1 ? name.slice(dot).replace(/[^\w.]/g, "") : "";
+  let base = (dot > -1 ? name.slice(0, dot) : name).replace(/[^\w\-]/g, "_").replace(/_+/g, "_").replace(/^_+|_+$/g, "");
+  if (!base) base = "file";
+  return base + ext;
+}
+
 // ===== מיקום (GPS) =====
 function getPosition() {
   return new Promise((res, rej) => {
@@ -2227,7 +2236,7 @@ async function shareImg() {
                               const file = e.target.files[0]; e.target.value="";
                               if (!file) return;
                               try {
-                                const path = `${CURRENT_ORG?.slug||"default"}/${detailProject.id}/subquotes/${Date.now()}_${file.name}`;
+                                const path = `${CURRENT_ORG?.slug||"default"}/${detailProject.id}/subquotes/${Date.now()}_${safeFileName(file.name)}`;
                                 const url = await storageUpload(file, path);
                                 updSub({quoteFile: { name: file.name, url, path }});
                               } catch(err) { alert("שגיאה בהעלאה: " + err.message); }
@@ -2339,7 +2348,7 @@ async function shareImg() {
                     try {
                       const invs = [...(editProj.invoices||[])];
                       for (const file of files) {
-                        const path = `${CURRENT_ORG?.slug||"default"}/${detailProject.id}/invoices/${Date.now()}_${file.name}`;
+                        const path = `${CURRENT_ORG?.slug||"default"}/${detailProject.id}/invoices/${Date.now()}_${safeFileName(file.name)}`;
                         const url = await storageUpload(file, path);
                         invs.push({ name: file.name, url, path, date: todayStr() });
                       }
@@ -2403,7 +2412,7 @@ async function shareImg() {
                     try {
                       const plans = [...(editProj.architecturalPlans||[])];
                       for (const file of files) {
-                        const path = `${CURRENT_ORG?.slug||"default"}/${detailProject.id}/${Date.now()}_${file.name}`;
+                        const path = `${CURRENT_ORG?.slug||"default"}/${detailProject.id}/${Date.now()}_${safeFileName(file.name)}`;
                         const url = await storageUpload(file, path);
                         plans.push({ name: file.name, url, path, date: todayStr() });
                       }
