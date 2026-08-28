@@ -102,6 +102,50 @@ function compressImage(file, maxDim = 600, quality = 0.85) {
   });
 }
 
+// יצירת אייקון ריבועי 512px מהלוגו (למסך הבית)
+function makeIconFile(dataUrl) {
+  return new Promise((resolve, reject) => {
+    const img = new window.Image();
+    img.onload = () => {
+      const S = 512;
+      const canvas = document.createElement("canvas");
+      canvas.width = S; canvas.height = S;
+      const ctx = canvas.getContext("2d");
+      ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, S, S);
+      const scale = Math.min(S * 0.86 / img.width, S * 0.86 / img.height);
+      const w = img.width * scale, h = img.height * scale;
+      ctx.drawImage(img, (S - w) / 2, (S - h) / 2, w, h);
+      canvas.toBlob(b => b ? resolve(new File([b], "icon.png", { type: "image/png" })) : reject(new Error("iconfail")), "image/png");
+    };
+    img.onerror = () => reject(new Error("iconfail"));
+    img.src = dataUrl;
+  });
+}
+
+// הזרקת אייקון וכותרת לפי הארגון — כך "הוספה למסך הבית" מקבלת את הלוגו הנכון
+function applyOrgIcons(o) {
+  try {
+    if (!o) return;
+    if (o.name) document.title = o.name;
+    if (o.icon) {
+      const busted = o.icon + (o.icon.includes("?") ? "&" : "?") + "v=" + Date.now();
+      document.querySelectorAll('link[rel="apple-touch-icon"], link[rel="apple-touch-icon-precomposed"]').forEach(x => x.remove());
+      const l = document.createElement("link");
+      l.rel = "apple-touch-icon"; l.setAttribute("sizes", "180x180"); l.href = busted;
+      document.head.appendChild(l);
+      const lp = document.createElement("link");
+      lp.rel = "apple-touch-icon-precomposed"; lp.href = busted;
+      document.head.appendChild(lp);
+    }
+    const fav = o.icon || o.logo;
+    if (fav) {
+      let f = document.querySelector('link[rel="icon"]');
+      if (!f) { f = document.createElement("link"); f.rel = "icon"; document.head.appendChild(f); }
+      f.href = fav;
+    }
+  } catch(e) {}
+}
+
 // שם קובץ בטוח לאחסון (בלי עברית/רווחים — נדרש ע"י השרת)
 function safeFileName(name) {
   const dot = name.lastIndexOf(".");
@@ -589,6 +633,7 @@ export default function App() {
         if (o.active === false) { setOrgError("suspended"); setLoading(false); return; }
         CURRENT_ORG = o;
         setOrg(o);
+        applyOrgIcons(o);
         if (AUTH_TOKEN) {
           loadAll().catch(() => { setAuthToken(null); setLoading(false); });
         } else {
@@ -1422,6 +1467,7 @@ async function shareImg() {
               <div>
                 <p style={{ margin:0, fontWeight:700, fontSize:15 }}>{o.name}</p>
                 <p style={{ margin:0, fontSize:12, color:"#888", direction:"ltr", textAlign:"right" }}>/{o.slug}</p>
+                <p style={{ margin:"2px 0 0", fontSize:11, color:o.icon?"#2E7D32":"#AAA" }}>{o.icon ? "📱 אייקון מסך בית ✓" : (o.logo ? "📱 אין אייקון — העלה לוגו מחדש" : "")}</p>
               </div>
               <span style={{ fontSize:12, fontWeight:700, color:o.active!==false?"#2E7D32":"#E53935" }}>{o.active!==false?"● פעיל":"● מושהה"}</span>
             </div>
@@ -1483,9 +1529,14 @@ async function shareImg() {
                   if (!file) return;
                   try {
                     const dataUrl = await compressImage(file);
-                    await orgUpdate(o._dbid, { logo: dataUrl });
+                    let iconUrl = null, iconErr = "";
+                    try {
+                      const iconFile = await makeIconFile(dataUrl);
+                      iconUrl = await storageUpload(iconFile, `${o.slug}/icon_${Date.now()}.png`);
+                    } catch(e2) { iconErr = String(e2?.message || e2); }
+                    await orgUpdate(o._dbid, { logo: dataUrl, ...(iconUrl ? { icon: iconUrl } : {}) });
                     setSaOrgs((await orgGetAll()).filter(o=>o.slug!=="_config"));
-                    alert("לוגו עודכן! 🎨");
+                    alert("לוגו עודכן! 🎨" + (iconUrl ? "\nגם אייקון מסך הבית נוצר ✓" : "\n⚠️ יצירת אייקון מסך הבית נכשלה: " + iconErr));
                   } catch(err) { alert("שגיאה: " + err.message); }
                 }}/>
               </label>
