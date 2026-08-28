@@ -8,10 +8,23 @@
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-    <meta name="apple-mobile-web-app-title" content="פסגת הגלעד" />
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <script>
+      (function () {
+        try {
+          var s = location.pathname.split("/").filter(Boolean)[0];
+          var icon = s ? localStorage.getItem("bt_icon_" + s) : null;
+          var name = (s ? localStorage.getItem("bt_name_" + s) : null) || "פסגת הגלעד";
+          document.write('<meta name="apple-mobile-web-app-title" content="' + name.replace(/"/g, "") + '" />');
+          document.write('<link rel="apple-touch-icon" sizes="180x180" href="' + (icon || "/apple-touch-icon.png") + '" />');
+          document.write("<title>" + name.replace(/</g, "") + "</title>");
+        } catch (e) {
+          document.write('<meta name="apple-mobile-web-app-title" content="פסגת הגלעד" />');
+          document.write('<link rel="apple-touch-icon" href="/apple-touch-icon.png" />');
+          document.write("<title>פסגת הגלעד</title>");
+        }
+      })();
+    </script>
     <link rel="manifest" href="/manifest.json" />
-    <title>פסגת הגלעד</title>
   </head>
   <body>
     <div id="root"></div>
