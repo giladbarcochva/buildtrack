@@ -232,7 +232,10 @@ async function dbGet(table) {
   const rows = await r.json();
   if (!Array.isArray(rows)) {
     const msg = JSON.stringify(rows);
-    if (msg.includes("JWT") || msg.includes("jwt")) setAuthToken(null);
+    if (msg.includes("JWT") || msg.includes("jwt")) {
+      setAuthToken(null);
+      try { window.dispatchEvent(new Event("bt_auth_expired")); } catch(e) {}
+    }
     throw new Error(`Table ${table} error: ${msg}`);
   }
   return rows.map(row => ({ ...row.data, _dbid: row.id }));
@@ -574,6 +577,22 @@ export default function App() {
     window.addEventListener("online", h);
     return () => window.removeEventListener("online", h);
   }, [flushQueue]);
+
+  // פג תוקף החיבור באמצע עבודה — הודעה ברורה וחזרה להתחברות
+  useEffect(() => {
+    let shown = false;
+    const h = () => {
+      if (shown) return;
+      shown = true;
+      alert("החיבור פג תוקף (אחרי 12 שעות) 🔐\nהתחבר מחדש כדי לראות נתונים מעודכנים.");
+      setLoggedWorker(null); setLoggedForeman(null); setSuperAdmin(false);
+      setScreen("home");
+      setTimeout(() => { shown = false; }, 5000);
+    };
+    window.addEventListener("bt_auth_expired", h);
+    return () => window.removeEventListener("bt_auth_expired", h);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const loadAll = useCallback(async (silent = false) => {
     if (AUTH_TOKEN) { try { await flushQueue(); } catch(e) {} }
@@ -1715,10 +1734,10 @@ async function shareImg() {
                 <button onClick={nextM} style={{ background:"rgba(255,255,255,0.1)", color:"#fff", border:"none", borderRadius:8, padding:"5px 12px", fontSize:15, cursor:"pointer" }}>▶</button>
               </div>
 
-              <div style={{ display:"grid", gridTemplateColumns:"repeat(7,1fr)", gap:3, marginBottom:3 }}>
+              <div style={{ display:"grid", gridTemplateColumns:"repeat(7,minmax(0,1fr))", gap:3, marginBottom:3 }}>
                 {dayNames.map(d => <div key={d} style={{ textAlign:"center", fontSize:11, fontWeight:700, color:"#888", padding:"3px 0" }}>{d}</div>)}
               </div>
-              <div style={{ display:"grid", gridTemplateColumns:"repeat(7,1fr)", gap:3, marginBottom:16 }}>
+              <div style={{ display:"grid", gridTemplateColumns:"repeat(7,minmax(0,1fr))", gap:3, marginBottom:16 }}>
                 {Array.from({length: startDow}).map((_,i) => <div key={`e${i}`}/>)}
                 {Array.from({length: daysInMonth}).map((_,i) => {
                   const day = i+1;
@@ -3156,14 +3175,14 @@ async function shareImg() {
             </div>
 
             {/* Day names header */}
-            <div style={{ display:"grid", gridTemplateColumns:"repeat(7,1fr)", gap:3, marginBottom:3 }}>
+            <div style={{ display:"grid", gridTemplateColumns:"repeat(7,minmax(0,1fr))", gap:3, marginBottom:3 }}>
               {dayNames.map(d => (
                 <div key={d} style={{ textAlign:"center", fontSize:12, fontWeight:700, color:"#888", padding:"4px 0" }}>{d}</div>
               ))}
             </div>
 
             {/* Calendar grid */}
-            <div style={{ display:"grid", gridTemplateColumns:"repeat(7,1fr)", gap:3, marginBottom:16 }}>
+            <div style={{ display:"grid", gridTemplateColumns:"repeat(7,minmax(0,1fr))", gap:3, marginBottom:16 }}>
               {Array.from({length: startDow}).map((_,i) => <div key={`e${i}`}/>)}
               {Array.from({length: daysInMonth}).map((_,i) => {
                 const day = i+1;
@@ -3178,7 +3197,7 @@ async function shareImg() {
                 const isToday = dateStr === todayStr();
                 return (
                   <div key={day} onClick={()=>{ setCalEditDay(dateStr); setCalEditData({assignments: assigns.map(a=>({projectId:a.projectId||"", workers:[...(a.workers||[])]})), tasks: ev?.tasks||""}); }}
-                    style={{ background: isToday?"#E8C547": hasData?"#E8F5E9":"#fff", borderRadius:10, padding:"6px 3px", minHeight:56, cursor:"pointer", border: isToday?"2px solid #B26A00":"1.5px solid #EEE", position:"relative" }}>
+                    style={{ background: isToday?"#E8C547": hasData?"#E8F5E9":"#fff", borderRadius:10, padding:"6px 2px", minHeight:56, minWidth:0, cursor:"pointer", border: isToday?"2px solid #B26A00":"1.5px solid #EEE", position:"relative", overflow:"hidden" }}>
                     <div style={{ fontSize:13, fontWeight:isToday?800:600, color:isToday?"#1A1A2E":hasData?"#2E7D32":"#333", textAlign:"center" }}>{day}</div>
                     {hasData && (
                       <div style={{ marginTop:2 }}>
