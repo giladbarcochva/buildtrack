@@ -64,14 +64,14 @@ const HELP_TOPICS = [
   { icon:"⏱️", title:"עובד שעתי — שעון נוכחות", body:"עובד שהוגדר כשעתי רואה שעון נוכחות במקום טופס דיווח: בוחר פרויקט ← ▶️ כניסה בתחילת היום ← 🛑 יציאה בסיומו.\nחישוב השכר: 9 שעות ראשונות 100%, שעות 10-11 לפי 125%, משעה 12 לפי 150%.\nשכח לסגור? המנהל רואה 'שעון תקוע' בטאב דיווחים ומתקן עם כפתור '✏️ שעות'.\nאם בפרויקט הוגדר אימות מיקום — בפתיחת השעון הטלפון יבקש אישור גישה למיקום (פעם ראשונה בלבד). במצב 'חסימה' ניתן לפתוח שעון רק בקרבת האתר." },
   { icon:"👷", title:"ניהול עובדים וסוגי העסקה", body:"בטאב עובדים מוסיפים עובד עם שם, קוד אישי ותפקיד, ובוחרים סוג העסקה:\n• יומי — שכר קבוע ליום (עם אפשרות חצי יום).\n• שעתי — שכר לשעה + שעון נוכחות.\n• גלובלי — משכורת חודשית קבועה.\nלכל עובד אפשר להגדיר אם יראה כפתור דלק וכמה ₪ דלק ליום.\nחשוב: כדי שעובד יוכל לדווח, חובה לשייך אותו לפרויקט (כפתור 'שייך עובדים' בתוך הפרויקט)." },
   { icon:"🏗️", title:"פרויקטים", body:"בטאב פרויקטים יוצרים פרויקט חדש ונכנסים אליו לניהול מלא: תיאור (מומלץ לכתוב כמויות — למשל '200 מטר גבס'), שלבי ביצוע עם סטטוס ותאריך יעד, הוצאות וחומרים, קבלני משנה, חשבוניות ותוכניות.\nלכל שלב ביצוע אפשר לתת משקל באחוזים (למשל: ניצבים 30%, גבס צד אחד 20%) — סימון שלב כ'הושלם' מעדכן אוטומטית את גרף ההתקדמות של הפרויקט. בלי משקלים — הגרף לפי הסליידר הידני.\nסטטוס 'הושלם' מסתיר את הפרויקט מהעובדים ומרשימות השיבוץ.\nכרטיס 'סה\"כ הוצאות פרויקט' מסכם הוצאות + קבלני משנה.\nבכרטיס '📍 אימות מיקום' אפשר לחייב עובדים שעתיים לפתוח שעון רק בקרבת האתר: עומדים באתר ← 'קבע את המיקום הנוכחי' ← בוחרים רדיוס ומצב (סימון בלבד / חסימה). חל רק על שעון שעתי — יומיות וגלובלי לא מושפעים." },
-  { icon:"📄", title:"הצעות מחיר", body:"בטאב הצעות מחיר יוצרים הצעה עם פרטי לקוח וסכום — או מחולקת לסעיפים (גבס, בטון...) כשלכל סעיף מחיר וסימון כולל/בלי חומר; הסה\"כ מחושב אוטומטית.\nכשהלקוח מאשר לוחצים '✓ נסגרה — צור פרויקט' וההצעה הופכת לפרויקט פעיל: הסעיפים נכתבים לתיאור והסכום נכנס כשלב קבלת תשלום.\nהצעה שנדחתה נשארת לתיעוד ואפשר להחזירה.\nכפתור '📤 הצג ללקוח' פותח דף הצעה מעוצב עם הלוגו והסעיפים — אפשר לשתף, להדפיס או לשמור כ-PDF ולשלוח ללקוח." },
+  { icon:"📄", title:"הצעות מחיר", body:"בטאב הצעות מחיר יוצרים הצעה עם פרטי לקוח וסכום — או מחולקת לסעיפים (גבס, בטון...) כשלכל סעיף מחיר וסימון כולל/בלי חומר; הסה\"כ מחושב אוטומטית.\nכשהלקוח מאשר לוחצים '✓ נסגרה — צור פרויקט' וההצעה הופכת לפרויקט פעיל: הסעיפים נכתבים לתיאור והסכום (לא כולל מע\"מ) נכנס ל'עלות פרויקט' בנתוני הפרויקט. את שלבי קבלת התשלום מגדירים ידנית.\nהצעה שנדחתה נשארת לתיעוד ואפשר להחזירה.\nכפתור '📤 הצג ללקוח' פותח דף הצעה מעוצב עם הלוגו, הסעיפים, סה\"כ לפני מע\"מ וסה\"כ כולל מע\"מ (18%) — אפשר לשתף, להדפיס או לשמור כ-PDF ולשלוח ללקוח." },
   { icon:"🔨", title:"קבלני משנה", body:"בתוך דף פרויקט, בקטע קבלני משנה, מוסיפים קבלן עם תיאור עבודה, מחיר, ימים מתוכננים וסימון כולל/בלי חומר.\nמגדירים שלבי תשלום (מתי וכמה) ומסמנים ✓ כשמשולם — נשמר תאריך.\nבטאב שכר ← '🔨 קבלנים' רואים את כל הקבלנים מכל הפרויקטים וכמה נשאר לשלם לכל אחד." },
   { icon:"💵", title:"קבלת תשלומים מהלקוח", body:"בכל פרויקט יש קטע 'שלבי קבלת תשלום': מגדירים שלבים (מקדמה, אחרי שלד, מסירה...) עם סכומים, ומסמנים ✓ כשכסף התקבל.\nשורת הסיכום מציגה סה\"כ / התקבל / נותר — כך רואים בכל רגע כמה הלקוח עוד חייב." },
   { icon:"📅", title:"יומן ושיבוץ עובדים", body:"לוחצים על יום ← '+ הוסף פרויקט' ← בוחרים פרויקט ומסמנים עובדים. אפשר כמה פרויקטים באותו יום.\nעובד שכבר משובץ לפרויקט אחר באותו יום — המערכת מתריעה ומציגה מי שיבץ; מנהל ראשי יכול לאשר בכל זאת, מנהל עבודה חסום.\nהעובד רואה את השיבוצים שלו בטאב 'היומן שלי'." },
   { icon:"💰", title:"שכר עובדים", body:"בטאב שכר: 'לתשלום' מציג כמה מגיע לכל עובד, עם פירוט לפי חודש ולפי פרויקט.\n• 'שולם במלואו' סוגר את החודש, 'שולם חלקית' מזין סכום ומשאיר יתרה.\n• 'היסטוריה' מציגה תשלומים שבוצעו + סה\"כ ימים לפי פרויקט, ומאפשרת עריכה או ביטול.\nשעתי מוצג עם פירוט שעות רגילות/נוספות; גלובלי מופיע עם המשכורת הקבועה בכל חודש פעיל." },
   { icon:"🦺", title:"מנהלי עבודה", body:"בטאב מנהלי עבודה: מוסיפים מנהל חדש או הופכים עובד קיים, מגדירים לו קוד כניסה נפרד ומשייכים פרויקטים (פעילים בלבד).\nמנהל עבודה רואה רק את הפרויקטים שלו: דיווחים, פרויקטים (בלי יצירה/מחיקה), עובדים (צפייה ושיוך), ויומן. בלי שכר, ציוד והגדרות.\nכפתור '📝 דיווח יום' בכותרת מאפשר לו לדווח ימי עבודה לעצמו." },
   { icon:"✅", title:"אישור דיווחי עבר", body:"דיווח של עובד על תאריך שכבר עבר לא נכנס ישר לשכר — הוא ממתין בקטע צהוב בראש טאב הדיווחים.\nהמנהל (או מנהל העבודה של אותו פרויקט) מאשר דיווח בודד או את כולם — ורק אז הוא נספר בשכר ובימי הפרויקט." },
-  { icon:"📸", title:"חשבוניות ותוכניות", body:"בתוך דף פרויקט מעלים תמונות חשבוניות ותוכניות אדריכליות (תמונה או PDF, גם כמה יחד).\nלחיצה על שם הקובץ פותחת אותו לצפייה; ✕ מוחק (עם אישור).\nהקבצים נשמרים בענן מאובטח ונגישים מכל מכשיר.\nעל כל חשבונית יש כפתור '💸 רשום כהוצאה' — מזינים סכום ותיאור וההוצאה נכנסת אוטומטית לרשימת ההוצאות ולסה\"כ הפרויקט.\nגם לקבלן משנה אפשר לצרף קובץ הצעת מחיר בתוך הכרטיס שלו." },
+  { icon:"📸", title:"חשבוניות ותוכניות", body:"בתוך דף פרויקט מעלים תמונות חשבוניות ותוכניות אדריכליות (תמונה או PDF, גם כמה יחד).\nלחיצה על שם הקובץ פותחת אותו לצפייה; ✕ מוחק (עם אישור).\nהקבצים נשמרים בענן מאובטח ונגישים מכל מכשיר.\nאם הפענוח האוטומטי פעיל במסלול — כל חשבונית שעולה נקראת ע\"י המערכת: הסכום (לפני מע\"מ) נכנס להוצאות, מחולק לפי סוג (חומר, דלק, אוכל, הובלות, קבלני משנה, כלי עבודה, אחר). חשבונית שלא הצליחה להיקרא מסומנת באדום — אפשר 'נסה שוב' או 'רשום כהוצאה' ידנית.\nבלי פענוח אוטומטי: כפתור '💸 רשום כהוצאה' — מזינים סכום, תיאור וסוג.\nבקטע ההוצאות יש סיכום '📊 הוצאות לפי סוג', ולכל הוצאה אפשר לשנות סוג.\nגם לקבלן משנה אפשר לצרף קובץ הצעת מחיר בתוך הכרטיס שלו." },
   { icon:"🛒", title:"ציוד — רשימת קניות", body:"טאב ציוד הוא רשימת קניות משותפת: מוסיפים פריט וכמות, מסמנים ✓ כשנקנה, ומוחקים כשלא צריך.\nמתעדכן לכל המנהלים במכשירים שלהם." },
   { icon:"📶", title:"עבודה בלי קליטה (אופליין)", body:"אין אינטרנט באתר? אפשר להמשיך לעבוד:\n• לחיצה על כניסה/יציאה בשעון או שליחת דיווח יומי נשמרות במכשיר עם השעה המדויקת, ומופיעה הודעה 'יסונכרן כשתחזור הקליטה'.\n• ברגע שחוזרת קליטה — הנתונים עולים אוטומטית לשרת עם הזמנים האמיתיים, גם אם עברו שעות.\n• המנהל רואה על דיווח שעוד לא סונכרן תג '📶 ממתין לסנכרון'.\nחשוב: לא למחוק את האפליקציה/נתוני האתר לפני שהסנכרון הושלם." },
   { icon:"🛠️", title:"תקלות נפוצות", body:"• 'קוד שגוי' למרות קוד נכון — ודאו שנכנסתם דרך הקישור הנכון של העסק שלכם.\n• נתונים לא מתעדכנים — צאו והתחברו מחדש, או משכו לרענון.\n• המסך נראה ישן אחרי עדכון — סגרו את האפליקציה לגמרי ופתחו שוב.\n• ההתחברות תקפה 12 שעות — אחריהן פשוט מתחברים שוב.\n• 'לא ניתן לאמת מיקום' — יש לאשר גישה למיקום: הגדרות הטלפון ← ספארי/כרום ← מיקום ← אפשר.\nלכל בעיה אחרת — פנו לספק המערכת." },
@@ -201,6 +201,7 @@ function projProgress(p) {
   return Number(p?.progress || 0);
 }
 
+const VAT_RATE = 0.18; // מע"מ — לשינוי בעתיד רק כאן
 function quoteTotal(q) {
   return (q.items && q.items.length)
     ? q.items.reduce((s,it) => s + Number(it.amount||0), 0)
@@ -223,8 +224,61 @@ async function setMasterCode(newCode) {
   else await orgInsert({ slug: "_config", name: "_config", active: false, settings: { masterCode: newCode } });
 }
 
-// 🔑 הדבק כאן את מפתח ה-API של Anthropic (מ-console.anthropic.com)
-const ANTHROPIC_API_KEY = "PASTE_YOUR_KEY_HERE";
+// ===== פענוח חשבוניות (AI) — המפתח נמצא בשרת בלבד (Edge Function: scan-invoice) =====
+const EXPENSE_CATS = [
+  { k:"חומר", icon:"🧱", color:"#B26A00" },
+  { k:"דלק", icon:"⛽", color:"#E53935" },
+  { k:"אוכל", icon:"🍔", color:"#F57C00" },
+  { k:"הובלות", icon:"🚚", color:"#1565C0" },
+  { k:"קבלני משנה", icon:"🔨", color:"#6D28D9" },
+  { k:"כלי עבודה וציוד", icon:"🛠️", color:"#00897B" },
+  { k:"אחר", icon:"📦", color:"#757575" },
+];
+const catOf = (k) => EXPENSE_CATS.find(x => x.k === k) || EXPENSE_CATS[EXPENSE_CATS.length-1];
+const AI_TIERS = [0, 10, 15, 25]; // תקציב חודשי בדולרים לפענוח חשבוניות
+const AI_AVG_COST = 0.008; // הערכת עלות ממוצעת לחשבונית ($) — להצגת "נשארו ~X חשבוניות"
+
+// קובץ → base64 (תמונה מוקטנת ל-1600px לחיסכון ודיוק; PDF כמו שהוא)
+function fileToScanPayload(file) {
+  return new Promise((resolve, reject) => {
+    const isPdf = file.type === "application/pdf" || /\.pdf$/i.test(file.name||"");
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error("שגיאה בקריאת הקובץ"));
+    if (isPdf) {
+      reader.onload = ev => resolve({ data: String(ev.target.result).split(",")[1], mimeType: "application/pdf" });
+      reader.readAsDataURL(file);
+      return;
+    }
+    reader.onload = ev => {
+      const img = new window.Image();
+      img.onload = () => {
+        const maxDim = 1600;
+        const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+        const w = Math.round(img.width * scale), h = Math.round(img.height * scale);
+        const canvas = document.createElement("canvas");
+        canvas.width = w; canvas.height = h;
+        const ctx = canvas.getContext("2d");
+        ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, w, h);
+        ctx.drawImage(img, 0, 0, w, h);
+        resolve({ data: canvas.toDataURL("image/jpeg", 0.85).split(",")[1], mimeType: "image/jpeg" });
+      };
+      img.onerror = () => reject(new Error("קובץ תמונה לא תקין"));
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+async function scanInvoiceFile(file) {
+  const payload = await fileToScanPayload(file);
+  const r = await fetch(`${SUPABASE_URL}/functions/v1/scan-invoice`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "apikey": SUPABASE_KEY, "Authorization": "Bearer " + SUPABASE_KEY, "x-app-token": AUTH_TOKEN || "" },
+    body: JSON.stringify(payload),
+  });
+  const res = await r.json().catch(() => ({ error: "server", message: "תשובה לא תקינה מהשרת" }));
+  return res;
+}
 
 async function dbGet(table) {
   const orgFilter = CURRENT_ORG ? `&org_id=eq.${CURRENT_ORG.id}` : "";
@@ -1058,63 +1112,6 @@ export default function App() {
     setEquipList(prev => prev.filter(e => e._dbid!==item._dbid));
   };
 
-  const analyzeInvoice = async (projectId, imageBase64, mimeType) => {
-    setInvoiceAnalyzing(true);
-    try {
-      if (!ANTHROPIC_API_KEY || ANTHROPIC_API_KEY === "PASTE_YOUR_KEY_HERE") {
-        alert("צריך להגדיר מפתח API של Anthropic בקוד. פנה למפתח.");
-        setInvoiceAnalyzing(false);
-        return;
-      }
-      const response = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-api-key": ANTHROPIC_API_KEY,
-          "anthropic-version": "2023-06-01",
-          "anthropic-dangerous-direct-browser-access": "true"
-        },
-        body: JSON.stringify({
-          model: "claude-sonnet-4-6",
-          max_tokens: 1000,
-          messages: [{
-            role: "user",
-            content: [
-              { type: "image", source: { type: "base64", media_type: mimeType, data: imageBase64 } },
-              { type: "text", text: 'אתה מנתח חשבוניות והצעות מחיר בעברית. חלץ מהמסמך את כל שורות המוצרים. לכל שורה: תאור מוצר (desc), כמות (qty - רק המספר), וסהכ מחיר של השורה אחרי הנחה (price - מספר בלבד ללא סימן שקל). החזר JSON בלבד ללא שום טקסט נוסף, ללא markdown, בפורמט המדויק: {"items":[{"desc":"שם","qty":"כמות","price":מספר}],"total":מספר}. total = המחיר הסופי של המסמך.' }
-            ]
-          }]
-        })
-      });
-      const data = await response.json();
-      const text = data.content?.find(b => b.type==="text")?.text || "{}";
-      const clean = text.replace(/```json|```/g,"").trim();
-      const parsed = JSON.parse(clean);
-
-      // Save to project expenses
-      const proj = projects.find(p => String(p.id)===String(projectId));
-      if (proj && parsed.items) {
-        const newExpenses = [
-          ...(proj.expenses||[]),
-          ...parsed.items.map(item => ({
-            id: Date.now() + Math.random(),
-            desc: `${item.desc}${item.qty ? " × "+item.qty : ""}`,
-            amount: item.price||0,
-            date: todayStr(),
-            fromInvoice: true,
-            qty: item.qty||""
-          }))
-        ];
-        await updateProjField(proj, { expenses: newExpenses });
-      }
-
-      setInvoiceResults(prev => ({...prev, [projectId]: parsed.items||[]}));
-    } catch(e) {
-      alert("שגיאה בניתוח: " + e.message);
-    }
-    setInvoiceAnalyzing(false);
-  };
-
   // פתיחת קובץ dataURL — ספארי חוסם data: ב-target blank, לכן ממירים ל-Blob
   const openPlan = (plan) => {
     // תוכניות חדשות — קישור ישיר ל-Storage
@@ -1234,8 +1231,9 @@ export default function App() {
       `*${q.title||""}*`,
       ...(q.items||[]).map(it => `• ${it.desc||"סעיף"} — ₪${Number(it.amount||0).toLocaleString("he-IL")} (${it.withMaterial!==false?"כולל חומר":"בלי חומר"})`),
       q.desc ? q.desc : "",
-      `*סה"כ: ₪${total.toLocaleString("he-IL")}*`,
-      "המחירים אינם כוללים מע\"מ. תוקף ההצעה: 30 יום."
+      `סה"כ לא כולל מע"מ: ₪${total.toLocaleString("he-IL")}`,
+      `*סה"כ כולל מע"מ (${Math.round(VAT_RATE*100)}%): ₪${Math.round(total*(1+VAT_RATE)).toLocaleString("he-IL")}*`,
+      "תוקף ההצעה: 30 יום."
     ].filter(Boolean);
     const waUrl = phoneDigits ? `https://wa.me/972${phoneDigits}?text=${encodeURIComponent(waTextLines.join("\n"))}` : "";
     const rows = (q.items||[]).map(it => `
@@ -1262,6 +1260,8 @@ export default function App() {
   td { padding:10px 6px; border-bottom:1px solid #F2F2EE; font-size:14px; }
   td.mat { color:#888; font-size:12px; white-space:nowrap; }
   td.amt { font-weight:700; white-space:nowrap; text-align:left; }
+  .subtotal { display:flex; justify-content:space-between; padding:6px 4px; font-size:14px; color:#555; border-bottom:1px solid #F2F2EE; }
+  .subtotal:last-of-type { margin-bottom:8px; }
   .total { display:flex; justify-content:space-between; align-items:center; background:#1A1A2E; color:#fff; border-radius:12px; padding:14px 18px; margin-top:6px; }
   .total .sum { color:#E8C547; font-size:22px; font-weight:800; }
   .foot { text-align:center; color:#AAA; font-size:11px; margin-top:22px; }
@@ -1287,8 +1287,10 @@ export default function App() {
   <div class="meta">לכבוד: ${(q.clientName||"").replace(/</g,"&lt;")} · תאריך: ${q.date||todayStr()}</div>
   ${q.desc ? `<div class="desc">${(q.desc||"").replace(/</g,"&lt;")}</div>` : ""}
   ${rows ? `<table><thead><tr><th>תיאור העבודה</th><th>חומר</th><th>מחיר</th></tr></thead><tbody>${rows}</tbody></table>` : ""}
-  <div class="total"><span>סה"כ הצעת מחיר</span><span class="sum">₪${total.toLocaleString("he-IL")}</span></div>
-  <div class="valid">* המחירים אינם כוללים מע"מ אלא אם צוין אחרת. תוקף ההצעה: 30 יום.</div>
+  <div class="subtotal"><span>סה"כ לא כולל מע"מ</span><span>₪${total.toLocaleString("he-IL")}</span></div>
+  <div class="subtotal"><span>מע"מ (${Math.round(VAT_RATE*100)}%)</span><span>₪${Math.round(total*VAT_RATE).toLocaleString("he-IL")}</span></div>
+  <div class="total"><span>סה"כ כולל מע"מ</span><span class="sum">₪${Math.round(total*(1+VAT_RATE)).toLocaleString("he-IL")}</span></div>
+  <div class="valid">* תוקף ההצעה: 30 יום.</div>
   <div class="foot">הופק באמצעות BuildTrack</div>
 </div>
 <script>
@@ -1327,9 +1329,8 @@ async function shareImg() {
       const proj = { ...q, status:"בתהליך", name: q.title,
         description: [q.desc, itemsTxt].filter(Boolean).join("\n"),
         quoteClosedAt: todayStr(), workers: [],
-        clientPayments: total>0
-          ? [{ id: Date.now(), desc:'סה"כ לפי הצעת מחיר', amount: total, received:false }]
-          : [] };
+        totalCost: total>0 ? String(total) : "",
+        clientPayments: [] };
       delete proj._quote;
       const { _dbid, ...data } = proj;
       await dbUpdate("projects", q._dbid, data);
@@ -1546,6 +1547,35 @@ async function shareImg() {
                 );
               })}
             </div>
+            {(() => {
+              const tier = Number(o.settings?.aiTier || 0);
+              const mk = new Date().toISOString().slice(0,7);
+              const u = o.settings?.aiUsage?.month === mk ? o.settings.aiUsage : { usd:0, count:0 };
+              return (
+                <div style={{ background:"#F5F3FF", borderRadius:9, padding:"7px 10px", marginBottom:8 }}>
+                  <div style={{ display:"flex", alignItems:"center", gap:5, flexWrap:"wrap" }}>
+                    <span style={{ fontSize:11, fontWeight:700, color:"#6D28D9", marginLeft:4 }}>🤖 פענוח חשבוניות:</span>
+                    {AI_TIERS.map(t => {
+                      const cur = tier === t;
+                      return (
+                        <button key={t} onClick={async ()=>{
+                          if (cur) return;
+                          await orgUpdate(o._dbid, { settings: { ...(o.settings||{}), aiTier: t } });
+                          setSaOrgs((await orgGetAll()).filter(x=>x.slug!=="_config"));
+                        }} style={{ background:cur?"#6D28D9":"#fff", color:cur?"#fff":"#6D28D9", border:"1px solid #DDD6FE", borderRadius:7, padding:"3px 9px", fontSize:11, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:cur?700:500 }}>
+                          {t === 0 ? "כבוי" : `$${t}`}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {tier > 0 && (
+                    <p style={{ margin:"5px 0 0", fontSize:11, color:"#555" }}>
+                      החודש: {u.count||0} חשבוניות · ${Number(u.usd||0).toFixed(2)} מתוך ${tier} ({Math.min(100, Math.round((Number(u.usd||0)/tier)*100))}%)
+                    </p>
+                  )}
+                </div>
+              );
+            })()}
             <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
               <button onClick={()=>window.open(`/${o.slug}`, "_blank")}
                 style={{ background:"#F0F0EC", color:"#555", border:"none", borderRadius:7, padding:"5px 11px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>🔗 פתח</button>
@@ -2284,7 +2314,7 @@ async function shareImg() {
               <div style={{ background:"#fff", borderRadius:14, padding:"16px 20px", marginBottom:14, boxShadow:"0 2px 8px rgba(0,0,0,0.07)" }}>
                 <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:13 }}>
                   <h3 style={{ margin:0, fontSize:15, fontWeight:700 }}>🧾 הוצאות</h3>
-                  <button onClick={()=>{ const expenses=[...(editProj.expenses||[]),{id:Date.now(),desc:"",amount:"",date:todayStr()}]; setEditProj(p=>({...p,expenses})); updateProjField(detailProject,{expenses}); }}
+                  <button onClick={()=>{ const expenses=[...(editProj.expenses||[]),{id:Date.now(),desc:"",amount:"",category:"חומר",date:todayStr()}]; setEditProj(p=>({...p,expenses})); updateProjField(detailProject,{expenses}); }}
                     style={{ background:"#1A1A2E", color:"#E8C547", border:"none", borderRadius:7, padding:"4px 12px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700 }}>+ הוסף הוצאה</button>
                 </div>
                 {(!editProj.expenses||editProj.expenses.length===0) && <p style={{ margin:0, fontSize:13, color:"#AAA" }}>אין הוצאות רשומות</p>}
@@ -2308,13 +2338,46 @@ async function shareImg() {
                         <button onClick={()=>{ const expenses=(editProj.expenses||[]).filter((_,i)=>i!==idx); setEditProj(p=>({...p,expenses})); updateProjField(detailProject,{expenses}); }}
                           style={{ background:"none", border:"none", cursor:"pointer", color:"#CCC", fontSize:14, padding:0, flexShrink:0 }}>✕</button>
                       </div>
-                      <input type="date" value={ex.date||""} onChange={e=>updExp({date:e.target.value})}
-                        style={{ border:"1.5px solid #EEE", borderRadius:8, padding:"5px 9px", fontSize:12, fontFamily:"Heebo,sans-serif", outline:"none", background:"#fff" }}/>
+                      <div style={{ display:"flex", gap:8, alignItems:"center", flexWrap:"wrap" }}>
+                        <select value={ex.category||"אחר"} onChange={e=>updExp({category:e.target.value})}
+                          style={{ border:`1.5px solid ${catOf(ex.category).color}55`, borderRadius:8, padding:"5px 8px", fontSize:12, fontFamily:"Heebo,sans-serif", outline:"none", background:"#fff", color:catOf(ex.category).color, fontWeight:700 }}>
+                          {EXPENSE_CATS.map(cat => <option key={cat.k} value={cat.k}>{cat.icon} {cat.k}</option>)}
+                        </select>
+                        <input type="date" value={ex.date||""} onChange={e=>updExp({date:e.target.value})}
+                          style={{ border:"1.5px solid #EEE", borderRadius:8, padding:"5px 9px", fontSize:12, fontFamily:"Heebo,sans-serif", outline:"none", background:"#fff" }}/>
+                        {ex.aiScanned && <span style={{ fontSize:11, color:"#2E7D32", fontWeight:600 }}>🤖 מחשבונית</span>}
+                      </div>
                     </div>
                   );
                 })}
+                {(editProj.expenses||[]).length>0 && (() => {
+                  const tot = (editProj.expenses||[]).reduce((s,e)=>s+Number(e.amount||0),0);
+                  const byCat = {};
+                  (editProj.expenses||[]).forEach(e => { const k = catOf(e.category).k; byCat[k] = (byCat[k]||0) + Number(e.amount||0); });
+                  const rows = Object.entries(byCat).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
+                  if (!rows.length) return null;
+                  return (
+                    <div style={{ background:"#FAFAF7", borderRadius:12, padding:"12px 14px", marginTop:8 }}>
+                      <p style={{ margin:"0 0 8px", fontSize:13, fontWeight:700, color:"#333" }}>📊 הוצאות לפי סוג</p>
+                      {rows.map(([k,v]) => {
+                        const cat = catOf(k); const pct = tot>0 ? Math.round(v/tot*100) : 0;
+                        return (
+                          <div key={k} style={{ marginBottom:7 }}>
+                            <div style={{ display:"flex", justifyContent:"space-between", fontSize:12, marginBottom:3 }}>
+                              <span style={{ fontWeight:600, color:"#333" }}>{cat.icon} {k}</span>
+                              <span style={{ color:"#555" }}><b>₪{fmtNum(Math.round(v))}</b> · {pct}%</span>
+                            </div>
+                            <div style={{ height:6, background:"#EEE", borderRadius:99 }}>
+                              <div style={{ height:"100%", width:`${pct}%`, background:cat.color, borderRadius:99 }}/>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                })()}
                 {(editProj.expenses||[]).length>0 && (
-                  <div style={{ display:"flex", justifyContent:"space-between", paddingTop:10, borderTop:"1px solid #EEE", marginTop:4 }}>
+                  <div style={{ display:"flex", justifyContent:"space-between", paddingTop:10, borderTop:"1px solid #EEE", marginTop:10 }}>
                     <span style={{ fontSize:13, fontWeight:700, color:"#555" }}>סה"כ הוצאות</span>
                     <span style={{ fontSize:16, fontWeight:800, color:"#B71C1C" }}>₪{fmtNum((editProj.expenses||[]).reduce((s,e)=>s+Number(e.amount||0),0))}</span>
                   </div>
@@ -2464,71 +2527,153 @@ async function shareImg() {
               })()}
 
               {/* INVOICES */}
+              {(() => {
+                const aiLimit = Number(org?.settings?.aiTier || 0);
+                const mk = new Date().toISOString().slice(0,7);
+                const aiUsage = org?.settings?.aiUsage?.month === mk ? org.settings.aiUsage : { usd:0, count:0 };
+                const aiLeft = Math.max(0, Math.floor((aiLimit - Number(aiUsage.usd||0)) / AI_AVG_COST));
+                const aiOn = aiLimit > 0 && aiLeft > 0;
+
+                // פענוח קובץ אחד → מחזיר { invoice, newExpenses }
+                const runScan = async (file, inv) => {
+                  try {
+                    const res = await scanInvoiceFile(file);
+                    if (res.usage) setOrg(o => o ? ({ ...o, settings: { ...(o.settings||{}), aiUsage: res.usage } }) : o);
+                    if (res.error === "auth") { try { window.dispatchEvent(new Event("bt_auth_expired")); } catch(e) {} }
+                    if (res.error) return { invoice: { ...inv, scanStatus: res.error==="quota" ? "quota" : "failed", scanReason: res.message || "שגיאה" }, newExpenses: [] };
+                    if (!res.ok) return { invoice: { ...inv, scanStatus:"failed", scanReason: res.reason || "לא פוענח", scanSuggest: res.totalBeforeVat || "" }, newExpenses: [] };
+                    // קיבוץ שורות לפי קטגוריה — הוצאה אחת לכל סוג
+                    const byCat = {};
+                    res.lines.forEach(l => {
+                      if (!byCat[l.category]) byCat[l.category] = { amount:0, items:[] };
+                      byCat[l.category].amount += l.amount;
+                      byCat[l.category].items.push(l.desc);
+                    });
+                    const vendor = res.vendor || inv.name.replace(/\.[^.]+$/,"");
+                    const newExpenses = Object.entries(byCat).map(([cat, v], i) => ({
+                      id: Date.now() + i, desc: `${vendor}${Object.keys(byCat).length>1 ? " — "+cat : ""}`,
+                      amount: Math.round(v.amount*100)/100, category: cat,
+                      date: (res.date && /^\d{4}-\d{2}-\d{2}$/.test(res.date)) ? res.date : (inv.date||todayStr()),
+                      fromInvoice: inv.name, aiScanned: true, items: v.items.slice(0,30),
+                    }));
+                    return { invoice: { ...inv, scanStatus:"ok", expensed:true, scanTotal: res.totalBeforeVat, scanVendor: vendor }, newExpenses };
+                  } catch(err) {
+                    return { invoice: { ...inv, scanStatus:"failed", scanReason: "אין חיבור / שגיאה" }, newExpenses: [] };
+                  }
+                };
+
+                const retryScan = async (inv) => {
+                  setInvoiceAnalyzing(true);
+                  try {
+                    const blob = await (await fetch(inv.url)).blob();
+                    const file = new File([blob], inv.name, { type: blob.type || (/\.pdf$/i.test(inv.name) ? "application/pdf" : "image/jpeg") });
+                    const { invoice, newExpenses } = await runScan(file, inv);
+                    const invoices = (editProj.invoices||[]).map(x => x===inv ? invoice : x);
+                    const expenses = [...(editProj.expenses||[]), ...newExpenses];
+                    setEditProj(p=>({...p, invoices, expenses}));
+                    updateProjField(detailProject, { invoices, expenses });
+                    if (invoice.scanStatus !== "ok") alert("⚠️ " + (invoice.scanReason || "לא פוענח") + "\nאפשר להזין ידנית עם 'רשום כהוצאה'.");
+                  } catch(err) { alert("שגיאה: " + err.message); }
+                  setInvoiceAnalyzing(false);
+                };
+
+                const manualExpense = (inv) => {
+                  const amtStr = window.prompt(`מה הסכום בחשבונית "${inv.name}" לפני מע"מ? (₪)`, inv.scanSuggest ? String(inv.scanSuggest) : "");
+                  if (amtStr === null) return;
+                  const amt = Number(amtStr);
+                  if (isNaN(amt) || amt <= 0) { alert("סכום לא תקין"); return; }
+                  const desc = window.prompt("תיאור ההוצאה:", inv.name.replace(/\.[^.]+$/,"")) || inv.name;
+                  const catNames = EXPENSE_CATS.map((x,i)=>`${i+1}. ${x.k}`).join("\n");
+                  const catIdx = Number(window.prompt(`סוג ההוצאה (מספר):\n${catNames}`, "1")) - 1;
+                  const category = EXPENSE_CATS[catIdx]?.k || "אחר";
+                  const expenses = [...(editProj.expenses||[]), { id:Date.now(), desc, amount:amt, category, date: inv.date||todayStr(), fromInvoice: inv.name }];
+                  const invoices = (editProj.invoices||[]).map(x => x===inv ? {...x, expensed:true, scanStatus: x.scanStatus==="failed" ? "manual" : x.scanStatus} : x);
+                  setEditProj(p=>({...p, expenses, invoices}));
+                  updateProjField(detailProject, { expenses, invoices });
+                };
+
+                return (
               <div style={{ background:"#fff", borderRadius:14, padding:"16px 20px", marginBottom:14, boxShadow:"0 2px 8px rgba(0,0,0,0.07)" }}>
-                <h3 style={{ margin:"0 0 13px", fontSize:15, fontWeight:700 }}>📸 חשבוניות</h3>
-                <p style={{ margin:"0 0 12px", fontSize:13, color:"#777" }}>העלה תמונות חשבוניות של הפרויקט — נשמרות לצפייה בכל עת</p>
+                <h3 style={{ margin:"0 0 6px", fontSize:15, fontWeight:700 }}>📸 חשבוניות</h3>
+                <p style={{ margin:"0 0 12px", fontSize:13, color:"#777" }}>
+                  {aiLimit > 0
+                    ? (aiOn ? `🤖 פענוח אוטומטי פעיל — החשבונית תיקרא ותיכנס להוצאות לפי סוג. נשארו ~${aiLeft} חשבוניות החודש.`
+                            : "🤖 מכסת הפענוח החודשית נוצלה — החשבוניות נשמרות, ואת הסכום מזינים ידנית. מתאפס ב-1 לחודש.")
+                    : "העלה תמונות חשבוניות — נשמרות לצפייה, ואת הסכום רושמים עם 'רשום כהוצאה'."}
+                </p>
 
                 <label style={{ display:"block", cursor:"pointer" }}>
                   <div style={{ background:"#F0F4FF", border:"2px dashed #90CAF9", borderRadius:12, padding:"18px", textAlign:"center" }}>
                     {invoiceAnalyzing
-                      ? <p style={{ margin:0, color:"#1565C0", fontWeight:700 }}>⏳ מעלה חשבונית...</p>
+                      ? <p style={{ margin:0, color:"#1565C0", fontWeight:700 }}>{aiOn ? "🤖 קורא את החשבונית..." : "⏳ מעלה חשבונית..."}</p>
                       : <p style={{ margin:0, color:"#1565C0", fontSize:14 }}>📷 לחץ להעלאת חשבונית</p>
                     }
                   </div>
-                  <input type="file" accept="image/*,application/pdf" multiple style={{ display:"none" }} onChange={async e => {
+                  <input type="file" accept="image/*,application/pdf" multiple style={{ display:"none" }} disabled={invoiceAnalyzing} onChange={async e => {
                     const files = Array.from(e.target.files);
                     e.target.value = "";
                     if (!files.length) return;
                     setInvoiceAnalyzing(true);
+                    let invs = [...(editProj.invoices||[])];
+                    let expenses = [...(editProj.expenses||[])];
+                    let failed = 0, done = 0;
                     try {
-                      const invs = [...(editProj.invoices||[])];
                       for (const file of files) {
                         const path = `${CURRENT_ORG?.slug||"default"}/${detailProject.id}/invoices/${Date.now()}_${safeFileName(file.name)}`;
                         const url = await storageUpload(file, path);
-                        invs.push({ name: file.name, url, path, date: todayStr() });
+                        let inv = { name: file.name, url, path, date: todayStr() };
+                        if (aiOn) {
+                          const { invoice, newExpenses } = await runScan(file, inv);
+                          inv = invoice;
+                          expenses = [...expenses, ...newExpenses];
+                          if (invoice.scanStatus === "ok") done++; else failed++;
+                        }
+                        invs.push(inv);
                       }
-                      setEditProj(p=>({...p, invoices: invs}));
-                      updateProjField(detailProject, { invoices: invs });
                     } catch(err) {
                       alert("שגיאה בהעלאת חשבונית: " + err.message);
                     }
+                    setEditProj(p=>({...p, invoices: invs, expenses}));
+                    updateProjField(detailProject, { invoices: invs, expenses });
                     setInvoiceAnalyzing(false);
+                    if (aiOn && failed) alert(`✓ ${done} פוענחו ונכנסו להוצאות\n⚠️ ${failed} לא פוענחו — מסומנות באדום, הזן ידנית או נסה שוב`);
                   }}/>
                 </label>
 
                 {(editProj.invoices||[]).length>0 && (
-                  <div style={{ marginTop:12, display:"flex", flexWrap:"wrap", gap:10 }}>
-                    {(editProj.invoices||[]).map((inv,i) => (
-                      <div key={i} style={{ background:"#F5F5F0", borderRadius:10, padding:"8px 12px", display:"flex", alignItems:"center", gap:8 }}>
-                        <button onClick={()=>window.open(inv.url, "_blank")} style={{ background:"none", border:"none", cursor:"pointer", fontSize:13, color:"#1565C0", fontWeight:600, fontFamily:"Heebo,sans-serif", padding:0 }}>
+                  <div style={{ marginTop:12, display:"flex", flexDirection:"column", gap:8 }}>
+                    {(editProj.invoices||[]).map((inv,i) => {
+                      const bad = inv.scanStatus === "failed" || inv.scanStatus === "quota";
+                      return (
+                      <div key={i} style={{ background: bad ? "#FDECEC" : "#F5F5F0", border: bad ? "1.5px solid #E53935" : "1.5px solid transparent", borderRadius:10, padding:"8px 12px", display:"flex", alignItems:"center", gap:8, flexWrap:"wrap" }}>
+                        <button onClick={()=>window.open(inv.url, "_blank")} style={{ background:"none", border:"none", cursor:"pointer", fontSize:13, color: bad ? "#B71C1C" : "#1565C0", fontWeight:600, fontFamily:"Heebo,sans-serif", padding:0, maxWidth:"55%", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
                           🧾 {inv.name}
                         </button>
                         <span style={{ fontSize:11, color:"#AAA" }}>{inv.date}</span>
-                        {inv.expensed
-                          ? <span style={{ background:"#E8F5E9", color:"#2E7D32", borderRadius:6, padding:"2px 7px", fontSize:10, fontWeight:600 }}>✓ נרשם כהוצאה</span>
-                          : <button onClick={()=>{
-                              const amtStr = window.prompt(`מה הסכום בחשבונית "${inv.name}"? (₪)`);
-                              if (amtStr === null) return;
-                              const amt = Number(amtStr);
-                              if (isNaN(amt) || amt <= 0) { alert("סכום לא תקין"); return; }
-                              const desc = window.prompt("תיאור ההוצאה:", inv.name.replace(/\.[^.]+$/,"")) || inv.name;
-                              const expenses = [...(editProj.expenses||[]), { id:Date.now(), desc, amount:amt, date: inv.date||todayStr(), fromInvoice: inv.name }];
-                              const invoices = (editProj.invoices||[]).map(x => x===inv ? {...x, expensed:true} : x);
-                              setEditProj(p=>({...p, expenses, invoices}));
-                              updateProjField(detailProject, { expenses, invoices });
-                            }} style={{ background:"#FFF8E1", color:"#B26A00", border:"none", borderRadius:6, padding:"3px 9px", fontSize:11, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:600 }}>💸 רשום כהוצאה</button>}
+                        {inv.scanStatus === "ok" && <span style={{ background:"#E8F5E9", color:"#2E7D32", borderRadius:6, padding:"2px 7px", fontSize:10, fontWeight:700 }}>🤖 פוענח · ₪{fmtNum(inv.scanTotal||0)}</span>}
+                        {inv.scanStatus !== "ok" && inv.expensed && <span style={{ background:"#E8F5E9", color:"#2E7D32", borderRadius:6, padding:"2px 7px", fontSize:10, fontWeight:600 }}>✓ נרשם כהוצאה</span>}
+                        {bad && !inv.expensed && <span style={{ color:"#B71C1C", fontSize:11, fontWeight:700 }}>⚠️ {inv.scanReason || "לא פוענח"}</span>}
+                        {!inv.expensed && (
+                          <button onClick={()=>manualExpense(inv)} style={{ background:"#FFF8E1", color:"#B26A00", border:"none", borderRadius:6, padding:"3px 9px", fontSize:11, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:600 }}>💸 רשום כהוצאה</button>
+                        )}
+                        {!inv.expensed && aiOn && inv.url && (
+                          <button onClick={()=>retryScan(inv)} disabled={invoiceAnalyzing} style={{ background:"#E3F2FD", color:"#1565C0", border:"none", borderRadius:6, padding:"3px 9px", fontSize:11, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:600 }}>{inv.scanStatus ? "🔄 נסה שוב" : "🤖 פענח"}</button>
+                        )}
                         <button onClick={async ()=>{
-                          if (!window.confirm(`למחוק את "${inv.name}"?`)) return;
+                          if (!window.confirm(`למחוק את "${inv.name}"?\n(הוצאות שכבר נרשמו ממנה נשארות — אפשר למחוק אותן ברשימת ההוצאות)`)) return;
                           if (inv.path) { try { await storageDelete(inv.path); } catch(e) {} }
                           const invs=(editProj.invoices||[]).filter((_,j)=>j!==i);
                           setEditProj(p=>({...p,invoices:invs}));
                           updateProjField(detailProject,{invoices:invs});
-                        }} style={{ background:"none", border:"none", cursor:"pointer", color:"#CCC", fontSize:13 }}>✕</button>
+                        }} style={{ background:"none", border:"none", cursor:"pointer", color:"#CCC", fontSize:13, marginRight:"auto" }}>✕</button>
                       </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </div>
+                );
+              })()}
 
               {/* ARCHITECTURAL PLANS */}
               <div style={{ background:"#fff", borderRadius:14, padding:"16px 20px", marginBottom:14, boxShadow:"0 2px 8px rgba(0,0,0,0.07)" }}>
