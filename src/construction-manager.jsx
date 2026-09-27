@@ -235,6 +235,18 @@ const EXPENSE_CATS = [
   { k:"אחר", icon:"📦", color:"#757575" },
 ];
 const catOf = (k) => EXPENSE_CATS.find(x => x.k === k) || EXPENSE_CATS[EXPENSE_CATS.length-1];
+// הוצאות ישנות בלי סוג — ניחוש לפי התיאור
+const guessCat = (desc) => {
+  const d = String(desc || "");
+  if (/הובל|משלוח|מנוף|משאית/.test(d)) return "הובלות";
+  if (/דלק|סולר|בנזין|תדלוק/.test(d)) return "דלק";
+  if (/אוכל|ארוח|פיצה|קפה|מסעד|שתיי|סנדוויץ/.test(d)) return "אוכל";
+  if (/קבלן|פועל|חשמלאי|אינסטלטור|צבעי|רצף|טייח/.test(d)) return "קבלני משנה";
+  if (/השכר|כלי|ציוד|מקדח|דיסק|פטיש/.test(d)) return "כלי עבודה וציוד";
+  if (/גבס|בטון|ברזל|צבע|בלוק|מלט|חול|ברג|פרופיל|עץ|דבק|ניצב|מסלול|קרמיק|אריח/.test(d)) return "חומר";
+  return "אחר";
+};
+const expCat = (e) => e.category || guessCat(e.desc);
 const AI_TIERS = [0, 10, 15, 25]; // תקציב חודשי בדולרים לפענוח חשבוניות
 const AI_AVG_COST = 0.012; // הערכת עלות ממוצעת לחשבונית ($) — להצגת "נשארו ~X חשבוניות"
 
@@ -2385,8 +2397,8 @@ async function shareImg() {
                           style={{ background:"none", border:"none", cursor:"pointer", color:"#CCC", fontSize:14, padding:0, flexShrink:0 }}>✕</button>
                       </div>
                       <div style={{ display:"flex", gap:8, alignItems:"center", flexWrap:"wrap" }}>
-                        <select value={ex.category||"אחר"} onChange={e=>updExp({category:e.target.value})}
-                          style={{ border:`1.5px solid ${catOf(ex.category).color}55`, borderRadius:8, padding:"5px 8px", fontSize:12, fontFamily:"Heebo,sans-serif", outline:"none", background:"#fff", color:catOf(ex.category).color, fontWeight:700 }}>
+                        <select value={expCat(ex)} onChange={e=>updExp({category:e.target.value})}
+                          style={{ border:`1.5px solid ${catOf(expCat(ex)).color}55`, borderRadius:8, padding:"5px 8px", fontSize:12, fontFamily:"Heebo,sans-serif", outline:"none", background:"#fff", color:catOf(expCat(ex)).color, fontWeight:700 }}>
                           {EXPENSE_CATS.map(cat => <option key={cat.k} value={cat.k}>{cat.icon} {cat.k}</option>)}
                         </select>
                         <input type="date" value={ex.date||""} onChange={e=>updExp({date:e.target.value})}
@@ -2399,7 +2411,7 @@ async function shareImg() {
                 {(editProj.expenses||[]).length>0 && (() => {
                   const tot = (editProj.expenses||[]).reduce((s,e)=>s+Number(e.amount||0),0);
                   const byCat = {};
-                  (editProj.expenses||[]).forEach(e => { const k = catOf(e.category).k; byCat[k] = (byCat[k]||0) + Number(e.amount||0); });
+                  (editProj.expenses||[]).forEach(e => { const k = catOf(expCat(e)).k; byCat[k] = (byCat[k]||0) + Number(e.amount||0); });
                   const rows = Object.entries(byCat).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
                   if (!rows.length) return null;
                   return (
@@ -2595,9 +2607,13 @@ async function shareImg() {
                       byCat[l.category].amount += l.amount;
                       byCat[l.category].items.push(l.desc);
                     });
-                    const vendor = res.vendor || inv.name.replace(/\.[^.]+$/,"");
+                    // שם ספק אמיתי (השרת ממלא לפעמים את הפריט הראשון כשאין ספק — לא נשתמש בזה כשם)
+                    const realVendor = res.vendor && res.vendor !== String(res.lines?.[0]?.desc||"").slice(0,40) ? res.vendor : "";
+                    const vendor = realVendor;
+                    // תיאור = שם הספק בלבד (או ריק). הסוג מופיע בבחירת הסוג, הפריטים נשמרים ב-items
                     const newExpenses = Object.entries(byCat).map(([cat, v], i) => ({
-                      id: Date.now() + i, desc: `${vendor}${Object.keys(byCat).length>1 ? " — "+cat : ""}`,
+                      id: Date.now() + i,
+                      desc: realVendor,
                       amount: Math.round(v.amount*100)/100, category: cat,
                       date: (res.date && /^\d{4}-\d{2}-\d{2}$/.test(res.date)) ? res.date : (inv.date||todayStr()),
                       fromInvoice: inv.name, aiScanned: true, items: v.items.slice(0,30),
