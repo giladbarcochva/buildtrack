@@ -238,6 +238,11 @@ const catOf = (k) => EXPENSE_CATS.find(x => x.k === k) || EXPENSE_CATS[EXPENSE_C
 const AI_TIERS = [0, 10, 15, 25]; // תקציב חודשי בדולרים לפענוח חשבוניות
 const AI_AVG_COST = 0.008; // הערכת עלות ממוצעת לחשבונית ($) — להצגת "נשארו ~X חשבוניות"
 
+// מגבלת זמן לפעולה — כדי שהעלאה לא "תיתקע" לנצח
+function withTimeout(promise, ms, msg) {
+  return Promise.race([promise, new Promise((_, rej) => setTimeout(() => rej(new Error(msg)), ms))]);
+}
+
 // קובץ → base64 (תמונה מוקטנת ל-1600px לחיסכון ודיוק; PDF כמו שהוא)
 function fileToScanPayload(file) {
   return new Promise((resolve, reject) => {
@@ -270,13 +275,23 @@ function fileToScanPayload(file) {
 }
 
 async function scanInvoiceFile(file) {
-  const payload = await fileToScanPayload(file);
-  const r = await fetch(`${SUPABASE_URL}/functions/v1/scan-invoice`, {
+  const payload = await withTimeout(fileToScanPayload(file), 20000, "עיבוד התמונה לקח יותר מדי זמן");
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 90000);
+  let r;
+  try {
+    r = await fetch(`${SUPABASE_URL}/functions/v1/scan-invoice`, {
+    signal: ctrl.signal,
     method: "POST",
     headers: { "Content-Type": "application/json", "apikey": SUPABASE_KEY, "Authorization": "Bearer " + SUPABASE_KEY, "x-app-token": AUTH_TOKEN || "" },
     body: JSON.stringify(payload),
-  });
-  const res = await r.json().catch(() => ({ error: "server", message: "תשובה לא תקינה מהשרת" }));
+    });
+  } catch(e) {
+    clearTimeout(timer);
+    return { error: "network", message: e.name === "AbortError" ? "הפענוח לקח יותר מדי זמן" : "אין חיבור לשרת הפענוח" };
+  }
+  clearTimeout(timer);
+  const res = await r.json().catch(() => ({ error: "server", message: `תשובה לא תקינה מהשרת (${r.status})` }));
   return res;
 }
 
@@ -2558,7 +2573,7 @@ async function shareImg() {
                     }));
                     return { invoice: { ...inv, scanStatus:"ok", expensed:true, scanTotal: res.totalBeforeVat, scanVendor: vendor }, newExpenses };
                   } catch(err) {
-                    return { invoice: { ...inv, scanStatus:"failed", scanReason: "אין חיבור / שגיאה" }, newExpenses: [] };
+                    return { invoice: { ...inv, scanStatus:"failed", scanReason: err?.message || "שגיאה" }, newExpenses: [] };
                   }
                 };
 
@@ -2620,7 +2635,7 @@ async function shareImg() {
                     try {
                       for (const file of files) {
                         const path = `${CURRENT_ORG?.slug||"default"}/${detailProject.id}/invoices/${Date.now()}_${safeFileName(file.name)}`;
-                        const url = await storageUpload(file, path);
+                        const url = await withTimeout(storageUpload(file, path), 60000, "העלאת הקובץ לקחה יותר מדי זמן");
                         let inv = { name: file.name, url, path, date: todayStr() };
                         if (aiOn) {
                           const { invoice, newExpenses } = await runScan(file, inv);
