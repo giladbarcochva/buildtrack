@@ -236,7 +236,7 @@ const EXPENSE_CATS = [
 ];
 const catOf = (k) => EXPENSE_CATS.find(x => x.k === k) || EXPENSE_CATS[EXPENSE_CATS.length-1];
 const AI_TIERS = [0, 10, 15, 25]; // תקציב חודשי בדולרים לפענוח חשבוניות
-const AI_AVG_COST = 0.008; // הערכת עלות ממוצעת לחשבונית ($) — להצגת "נשארו ~X חשבוניות"
+const AI_AVG_COST = 0.012; // הערכת עלות ממוצעת לחשבונית ($) — להצגת "נשארו ~X חשבוניות"
 
 // מגבלת זמן לפעולה — כדי שהעלאה לא "תיתקע" לנצח
 function withTimeout(promise, ms, msg) {
@@ -257,15 +257,46 @@ function fileToScanPayload(file) {
     reader.onload = ev => {
       const img = new window.Image();
       img.onload = () => {
-        const maxDim = 1600;
-        const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
-        const w = Math.round(img.width * scale), h = Math.round(img.height * scale);
+        // 1. חיתוך שוליים לבנים — כדי שהטקסט יישאר גדול וקריא אחרי ההקטנה
+        let sx = 0, sy = 0, sw = img.width, sh = img.height;
+        try {
+          const ps = Math.min(1, 500 / Math.max(img.width, img.height));
+          const pw = Math.max(1, Math.round(img.width * ps)), ph = Math.max(1, Math.round(img.height * ps));
+          const pc = document.createElement("canvas"); pc.width = pw; pc.height = ph;
+          const pctx = pc.getContext("2d");
+          pctx.fillStyle = "#fff"; pctx.fillRect(0, 0, pw, ph);
+          pctx.drawImage(img, 0, 0, pw, ph);
+          const d = pctx.getImageData(0, 0, pw, ph).data;
+          let minX = pw, minY = ph, maxX = -1, maxY = -1;
+          for (let y = 0; y < ph; y++) for (let x = 0; x < pw; x++) {
+            const i = (y * pw + x) * 4;
+            if (d[i] * 0.3 + d[i+1] * 0.59 + d[i+2] * 0.11 < 225) {
+              if (x < minX) minX = x; if (x > maxX) maxX = x;
+              if (y < minY) minY = y; if (y > maxY) maxY = y;
+            }
+          }
+          if (maxX > minX && maxY > minY) {
+            const pad = 8;
+            minX = Math.max(0, minX - pad); minY = Math.max(0, minY - pad);
+            maxX = Math.min(pw - 1, maxX + pad); maxY = Math.min(ph - 1, maxY + pad);
+            const cw = (maxX - minX + 1) / pw, ch = (maxY - minY + 1) / ph;
+            if (cw * ch < 0.9 && cw > 0.1 && ch > 0.05) { // חותכים רק אם באמת יש הרבה לבן
+              sx = Math.round(minX / ps); sy = Math.round(minY / ps);
+              sw = Math.min(img.width - sx, Math.round((maxX - minX + 1) / ps));
+              sh = Math.min(img.height - sy, Math.round((maxY - minY + 1) / ps));
+            }
+          }
+        } catch (e) { /* אם החיתוך נכשל — שולחים את כל התמונה */ }
+        // 2. הקטנה לגודל שה-AI קורא הכי טוב
+        const maxDim = 1568;
+        const scale = Math.min(1, maxDim / Math.max(sw, sh));
+        const w = Math.round(sw * scale), h = Math.round(sh * scale);
         const canvas = document.createElement("canvas");
         canvas.width = w; canvas.height = h;
         const ctx = canvas.getContext("2d");
         ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, w, h);
-        ctx.drawImage(img, 0, 0, w, h);
-        resolve({ data: canvas.toDataURL("image/jpeg", 0.85).split(",")[1], mimeType: "image/jpeg" });
+        ctx.drawImage(img, sx, sy, sw, sh, 0, 0, w, h);
+        resolve({ data: canvas.toDataURL("image/jpeg", 0.9).split(",")[1], mimeType: "image/jpeg" });
       };
       img.onerror = () => reject(new Error("קובץ תמונה לא תקין"));
       img.src = ev.target.result;
