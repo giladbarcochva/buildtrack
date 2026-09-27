@@ -438,10 +438,23 @@ async function dbDelete(table, dbid) {
 // ===== Organizations (multi-tenant) =====
 async function orgGetBySlug(slug) {
   const anonH = { "Content-Type": "application/json", "apikey": SUPABASE_KEY, "Authorization": "Bearer " + SUPABASE_KEY };
-  const r = await fetch(`${SUPABASE_URL}/rest/v1/organizations?select=*&slug=eq.${encodeURIComponent(slug)}`, { headers: anonH });
-  const rows = await r.json();
+  const key = "bt_org_" + String(slug || "").toLowerCase();
+  let rows;
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/organizations?select=*&slug=eq.${encodeURIComponent(slug)}`, { headers: anonH });
+    rows = await r.json();
+  } catch(e) {
+    // אין קליטה — פרטי הארגון מהפעם האחרונה שנטענו במכשיר
+    try { const saved = JSON.parse(localStorage.getItem(key) || "null"); if (saved) return saved; } catch(e2) {}
+    throw new Error("אין קליטה — יש לפתוח את האפליקציה פעם אחת עם קליטה");
+  }
   if (!Array.isArray(rows) || rows.length===0) return null;
-  return { ...rows[0], _dbid: rows[0].id };
+  const o = { ...rows[0], _dbid: rows[0].id };
+  try {
+    const copy = (o.logo && o.logo.length > 300000) ? { ...o, logo: null } : o; // לוגו ענק לא נשמר
+    localStorage.setItem(key, JSON.stringify(copy));
+  } catch(e) {}
+  return o;
 }
 async function orgGetAll() {
   const r = await fetch(`${SUPABASE_URL}/rest/v1/organizations?select=*&order=id.asc`, { headers: hdrs() });
@@ -749,6 +762,19 @@ export default function App() {
     window.addEventListener("online", h);
     return () => window.removeEventListener("online", h);
   }, [flushQueue]);
+
+  // ה-Service Worker התחיל לשלוט בדף (פעם ראשונה אחרי העדכון) — טוענים שוב ברקע כדי שהנתונים יישמרו לאופליין
+  useEffect(() => {
+    if (!("serviceWorker" in navigator)) return;
+    const h = () => {
+      if (!navigator.onLine || !ORG_SLUG) return;
+      orgGetBySlug(ORG_SLUG).catch(() => {});
+      if (AUTH_TOKEN) loadAll(true);
+    };
+    navigator.serviceWorker.addEventListener("controllerchange", h);
+    return () => navigator.serviceWorker.removeEventListener("controllerchange", h);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // פג תוקף החיבור באמצע עבודה — הודעה ברורה וחזרה להתחברות
   useEffect(() => {
