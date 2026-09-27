@@ -1699,6 +1699,36 @@ async function shareImg() {
                   setTimeout(()=>URL.revokeObjectURL(url), 5000);
                 } catch(e) { alert("שגיאה: " + e.message); }
               }} style={{ background:"#E3F2FD", color:"#1565C0", border:"none", borderRadius:7, padding:"5px 11px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>💾 גיבוי</button>
+              {o.slug !== "gne" && (
+              <button onClick={async ()=>{
+                const typed = window.prompt(`⚠️ מחיקה לצמיתות של "${o.name}"\nכל הפרויקטים, העובדים, הדיווחים והקבצים שלו יימחקו ולא ניתן לשחזר.\n\nלאישור הקלד את הכתובת שלו: ${o.slug}`);
+                if (typed === null) return;
+                if (typed.trim().toLowerCase() !== o.slug) { alert("הכתובת לא תואמת — לא נמחק."); return; }
+                try {
+                  // 1. נתונים בכל הטבלאות
+                  for (const t of ["projects","workers","reports","calendar","equipment"]) {
+                    const r = await fetch(`${SUPABASE_URL}/rest/v1/${t}?org_id=eq.${o.id}`, { method:"DELETE", headers:hdrs() });
+                    if (!r.ok) throw new Error(`${t}: ${r.status}`);
+                  }
+                  // 2. קבצים (תוכניות, חשבוניות, לוגו) — ככל שאפשר
+                  try {
+                    const lr = await fetch(`${SUPABASE_URL}/storage/v1/object/list/plans`, { method:"POST", headers:hdrs(),
+                      body: JSON.stringify({ prefix: `${o.slug}/`, limit: 1000 }) });
+                    const files = lr.ok ? await lr.json() : [];
+                    const names = (files||[]).filter(f => f && f.id).map(f => `${o.slug}/${f.name}`);
+                    if (names.length) await fetch(`${SUPABASE_URL}/storage/v1/object/plans`, { method:"DELETE", headers:hdrs(),
+                      body: JSON.stringify({ prefixes: names }) });
+                  } catch(e) {}
+                  // 3. הארגון עצמו
+                  const r = await fetch(`${SUPABASE_URL}/rest/v1/organizations?id=eq.${o._dbid ?? o.id}`, { method:"DELETE",
+                    headers:{ ...hdrs(), "Prefer":"return=representation" } });
+                  const del = r.ok ? await r.json() : [];
+                  if (!r.ok || !del.length) throw new Error("הארגון לא נמחק (הרשאה?)");
+                  setSaOrgs((await orgGetAll()).filter(x=>x.slug!=="_config"));
+                  alert(`"${o.name}" נמחק ✓`);
+                } catch(e) { alert("שגיאה במחיקה: " + e.message); }
+              }} style={{ background:"#FDECEC", color:"#C62828", border:"1px solid #F5C2C2", borderRadius:7, padding:"5px 11px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>🗑 מחק</button>
+              )}
             </div>
           </div>
         ))}
