@@ -73,7 +73,7 @@ const HELP_TOPICS = [
   { icon:"✅", title:"אישור דיווחי עבר", body:"דיווח של עובד על תאריך שכבר עבר לא נכנס ישר לשכר — הוא ממתין בקטע צהוב בראש טאב הדיווחים.\nהמנהל (או מנהל העבודה של אותו פרויקט) מאשר דיווח בודד או את כולם — ורק אז הוא נספר בשכר ובימי הפרויקט." },
   { icon:"📸", title:"חשבוניות ותוכניות", body:"בתוך דף פרויקט מעלים תמונות חשבוניות ותוכניות אדריכליות (תמונה או PDF, גם כמה יחד).\nלחיצה על שם הקובץ פותחת אותו לצפייה; ✕ מוחק (עם אישור).\nהקבצים נשמרים בענן מאובטח ונגישים מכל מכשיר.\nאם הפענוח האוטומטי פעיל במסלול — כל חשבונית שעולה נקראת ע\"י המערכת: הסכום (לפני מע\"מ) נכנס להוצאות, מחולק לפי סוג (חומר, דלק, אוכל, הובלות, קבלני משנה, כלי עבודה, אחר). חשבונית שלא הצליחה להיקרא מסומנת באדום — אפשר 'נסה שוב' או 'רשום כהוצאה' ידנית.\nבלי פענוח אוטומטי: כפתור '💸 רשום כהוצאה' — מזינים סכום, תיאור וסוג.\nבקטע ההוצאות יש סיכום '📊 הוצאות לפי סוג', ולכל הוצאה אפשר לשנות סוג.\nגם לקבלן משנה אפשר לצרף קובץ הצעת מחיר בתוך הכרטיס שלו." },
   { icon:"🛒", title:"ציוד — רשימת קניות", body:"טאב ציוד הוא רשימת קניות משותפת: מוסיפים פריט וכמות, מסמנים ✓ כשנקנה, ומוחקים כשלא צריך.\nמתעדכן לכל המנהלים במכשירים שלהם." },
-  { icon:"📶", title:"עבודה בלי קליטה (אופליין)", body:"אין אינטרנט באתר? אפשר להמשיך לעבוד:\n• לחיצה על כניסה/יציאה בשעון או שליחת דיווח יומי נשמרות במכשיר עם השעה המדויקת, ומופיעה הודעה 'יסונכרן כשתחזור הקליטה'.\n• ברגע שחוזרת קליטה — הנתונים עולים אוטומטית לשרת עם הזמנים האמיתיים, גם אם עברו שעות.\n• המנהל רואה על דיווח שעוד לא סונכרן תג '📶 ממתין לסנכרון'.\nחשוב: לא למחוק את האפליקציה/נתוני האתר לפני שהסנכרון הושלם." },
+  { icon:"📶", title:"עבודה בלי קליטה (אופליין)", body:"אין אינטרנט באתר? אפשר להמשיך לעבוד:\n• האפליקציה נפתחת גם בלי קליטה (מאייקון מסך הבית), ומוצג פס כתום 'אין קליטה'.\n• כניסה עם הקוד עובדת בלי קליטה — בתנאי שנכנסת פעם אחת עם קליטה באותו טלפון (ב-30 הימים האחרונים).\n• מוצגים הנתונים האחרונים שנטענו כשהייתה קליטה.\n• לחיצה על כניסה/יציאה בשעון או שליחת דיווח יומי נשמרות במכשיר עם השעה המדויקת, ומופיעה הודעה 'יסונכרן כשתחזור הקליטה'.\n• ברגע שחוזרת קליטה — הנתונים עולים אוטומטית לשרת עם הזמנים האמיתיים, גם אם עברו שעות.\n• המנהל רואה על דיווח שעוד לא סונכרן תג '📶 ממתין לסנכרון'.\n• פענוח חשבוניות, העלאת קבצים ושינויים בניהול — דורשים קליטה.\nחשוב: לא למחוק את האפליקציה/נתוני האתר לפני שהסנכרון הושלם." },
   { icon:"🛠️", title:"תקלות נפוצות", body:"• 'קוד שגוי' למרות קוד נכון — ודאו שנכנסתם דרך הקישור הנכון של העסק שלכם.\n• נתונים לא מתעדכנים — צאו והתחברו מחדש, או משכו לרענון.\n• המסך נראה ישן אחרי עדכון — סגרו את האפליקציה לגמרי ופתחו שוב.\n• ההתחברות תקפה 12 שעות — אחריהן פשוט מתחברים שוב.\n• 'לא ניתן לאמת מיקום' — יש לאשר גישה למיקום: הגדרות הטלפון ← ספארי/כרום ← מיקום ← אפשר.\nלכל בעיה אחרת — פנו לספק המערכת." },
 ];
 
@@ -185,6 +185,66 @@ function isNetErr(e) {
   const m = String(e?.message || e);
   return (typeof TypeError !== "undefined" && e instanceof TypeError) ||
     m.includes("fetch") || m.includes("Load failed") || m.includes("network") || m.includes("NetworkError") || m.includes("Internet");
+}
+
+// ===== מצב אופליין מלא =====
+// 1. Service Worker — שומר את האפליקציה והנתונים האחרונים במכשיר (קובץ public/sw.js)
+try {
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => { navigator.serviceWorker.register("/sw.js").catch(() => {}); });
+  }
+} catch(e) {}
+// 2. פס עליון "אין קליטה" — מופיע בכל המסכים
+try {
+  const showNet = () => {
+    let el = document.getElementById("bt-offline-bar");
+    if (!navigator.onLine) {
+      if (!el) {
+        el = document.createElement("div");
+        el.id = "bt-offline-bar";
+        el.textContent = "📶 אין קליטה — עובדים במצב אופליין. כניסה/יציאה ודיווחים יסונכרנו כשתחזור הקליטה";
+        el.style.cssText = "position:fixed;top:0;left:0;right:0;z-index:99999;background:#B26A00;color:#fff;font:600 12px Heebo,sans-serif;text-align:center;padding:6px 10px;padding-top:calc(6px + env(safe-area-inset-top));direction:rtl";
+        document.body.appendChild(el);
+      }
+    } else if (el) el.remove();
+  };
+  window.addEventListener("online", showNet);
+  window.addEventListener("offline", showNet);
+  window.addEventListener("load", showNet);
+} catch(e) {}
+// 3. כניסה בלי קליטה — לפי כניסה קודמת מוצלחת באותו מכשיר (הקוד נשמר מוצפן, לא כטקסט)
+async function codeHash(kind, code) {
+  const txt = `${ORG_SLUG}|${kind}|${String(code).trim()}`;
+  try {
+    const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(txt));
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
+  } catch(e) {
+    let h = 5381; for (let i = 0; i < txt.length; i++) h = ((h << 5) + h + txt.charCodeAt(i)) | 0;
+    return "d" + (h >>> 0).toString(16);
+  }
+}
+function sessKey() { return "bt_sess_" + (ORG_SLUG || "admin"); }
+async function saveOfflineSession(kind, code, worker) {
+  try {
+    const all = JSON.parse(localStorage.getItem(sessKey()) || "{}");
+    const now = Date.now();
+    for (const k in all) if (now - (all[k].at || 0) > 30 * 864e5) delete all[k]; // עד 30 יום
+    let w = null;
+    if (worker) { const { code: _c, foremanCode: _fc, ...rest } = worker; w = rest; } // בלי הקוד עצמו
+    all[await codeHash(kind, code)] = { kind, worker: w, token: AUTH_TOKEN, at: now };
+    const keys = Object.keys(all).sort((a, b) => all[b].at - all[a].at);
+    keys.slice(15).forEach(k => delete all[k]); // עד 15 משתמשים במכשיר
+    localStorage.setItem(sessKey(), JSON.stringify(all));
+  } catch(e) {}
+}
+async function offlineLogin(kind, code) {
+  try {
+    const all = JSON.parse(localStorage.getItem(sessKey()) || "{}");
+    const s = all[await codeHash(kind, code)];
+    if (!s || s.kind !== kind || Date.now() - (s.at || 0) > 30 * 864e5) return null;
+    AUTH_TOKEN = s.token || null; // גם אם פג — הנתונים מגיעים מהמכשיר, והשליחות מחכות בתור
+    return s;
+  } catch(e) { return null; }
 }
 
 // התקדמות פרויקט: לפי משקלי שלבים אם הוגדרו, אחרת הסליידר הידני
@@ -743,8 +803,12 @@ export default function App() {
       // Reports: anything without _paymentRecord goes to normal OR pending
       const normalReports = r.filter(x => !x._paymentRecord && x.pendingApproval !== true);
       const pendingReps = r.filter(x => !x._paymentRecord && x.pendingApproval === true);
-      const pendQ = qGet().filter(o => o.kind === "insert").map(o => ({ ...o.data, _dbid: o.tmpId, _pending: true }));
-      setReports([...normalReports, ...pendQ]);
+      const qAll = qGet();
+      const pendQ = qAll.filter(o => o.kind === "insert").map(o => ({ ...o.data, _dbid: o.tmpId, _pending: true }));
+      // עדכונים שממתינים בתור (למשל יציאה מהשעון בלי קליטה) — מציגים אותם כבר עכשיו
+      const pendU = {}; qAll.filter(o => o.kind === "update").forEach(o => { pendU[o.dbid] = o.data; });
+      const merged = normalReports.map(r => pendU[r._dbid] ? { ...r, ...pendU[r._dbid], _dbid: r._dbid } : r);
+      setReports([...merged, ...pendQ]);
       setPendingReports(pendingReps);
       const configRow = w.find(x => x._isConfig && x._adminCode);
       if (configRow) { setAdminCode(configRow._adminCode); setAdminConfigDbid(configRow._dbid); }
@@ -807,9 +871,28 @@ export default function App() {
   const visibleReports  = isForeman ? reports.filter(r => canSeeProject(r.projectId)) : reports;
   const visiblePending  = isForeman ? pendingReports.filter(r => canSeeProject(r.projectId)) : pendingReports;
 
+  // כניסה עם קליטה → נשמרת במכשיר; בלי קליטה → לפי הכניסה הקודמת באותו מכשיר
+  const loginAny = async (kind) => {
+    const code = codeInput.trim();
+    try {
+      const res = await apiLogin(kind, code);
+      saveOfflineSession(kind, code, res.worker);
+      return res;
+    } catch(e) {
+      if (!isNetErr(e) && navigator.onLine) throw e;
+      const s = await offlineLogin(kind, code);
+      if (!s) {
+        alert("אין קליטה 📶\nכניסה בלי קליטה אפשרית רק אחרי שנכנסת פעם אחת עם קליטה במכשיר הזה.");
+        throw e;
+      }
+      if (!CURRENT_ORG) { const cached = await orgGetBySlug(ORG_SLUG).catch(() => null); if (cached) { CURRENT_ORG = cached; setOrg(cached); } }
+      return { worker: s.worker, offline: true };
+    }
+  };
+
   const foremanLogin = async () => {
     try {
-      const res = await apiLogin("foreman", codeInput.trim());
+      const res = await loginAny("foreman");
       rememberOrg();
       setLoggedForeman(res.worker); setCodeInput(""); setCodeError(false); setMgTab("reports"); setDetailId(null); setScreen("foreman");
       loadAll(true);
@@ -818,7 +901,7 @@ export default function App() {
 
   const workerLogin = async () => {
     try {
-      const res = await apiLogin("worker", codeInput.trim());
+      const res = await loginAny("worker");
       rememberOrg();
       setLoggedWorker(res.worker); setCodeInput(""); setCodeError(false); setScreen("worker");
       setRepSent(false); setRepDate(todayStr()); setRepProject(""); setRepNote(""); setDayType("full"); setRepFuel(false); setWorkerView("report");
@@ -827,7 +910,7 @@ export default function App() {
   };
   const managerLogin = async () => {
     try {
-      await apiLogin("manager", codeInput.trim());
+      await loginAny("manager");
       rememberOrg(); setCodeInput(""); setCodeError(false); setScreen("mgr");
       loadAll(true);
     } catch(e) { setCodeError(true); }
