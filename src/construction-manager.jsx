@@ -122,6 +122,48 @@ function makeIconFile(dataUrl) {
   });
 }
 
+// תצוגת מחשב: במסך רחב התוכן מתרחב והכרטיסים מסודרים בכמה עמודות (בטלפון — ללא שינוי)
+const BT_DESKTOP_CSS = `
+@media (min-width: 1000px) {
+  .bt-head { padding: 0 32px !important; }
+  .bt-tabs { justify-content: center !important; }
+  .bt-tabs > button { font-size: 14px !important; padding: 14px 16px !important; }
+  .bt-main { padding-top: 26px !important; }
+  .bt-main.bt-wide { max-width: 1280px !important; padding-left: 32px !important; padding-right: 32px !important; }
+  .bt-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(440px, 1fr)); column-gap: 16px; }
+  .bt-grid > * { margin-bottom: 14px !important; }
+}
+@media (min-width: 1600px) {
+  .bt-main.bt-wide { max-width: 1480px !important; }
+}
+`;
+
+// התקנה במחשב (Chrome / Edge): הדפדפן מודיע שאפשר להתקין — שומרים את ההודעה לכפתור "התקן"
+let btInstallEvt = null;
+const btInstallSubs = new Set();
+if (typeof window !== "undefined") {
+  window.addEventListener("beforeinstallprompt", (e) => {
+    e.preventDefault();
+    btInstallEvt = e;
+    btInstallSubs.forEach(f => f(true));
+  });
+  window.addEventListener("appinstalled", () => {
+    btInstallEvt = null;
+    btInstallSubs.forEach(f => f(false));
+  });
+}
+function useInstallPrompt() {
+  const [can, setCan] = useState(!!btInstallEvt);
+  useEffect(() => { btInstallSubs.add(setCan); return () => { btInstallSubs.delete(setCan); }; }, []);
+  const install = async () => {
+    if (!btInstallEvt) return;
+    const e = btInstallEvt;
+    btInstallEvt = null; setCan(false);
+    try { await e.prompt(); await e.userChoice; } catch (err) {}
+  };
+  return [can, install];
+}
+
 // הזרקת אייקון וכותרת לפי הארגון — כך "הוספה למסך הבית" מקבלת את הלוגו הנכון
 function applyOrgIcons(o) {
   try {
@@ -146,7 +188,33 @@ function applyOrgIcons(o) {
       if (!f) { f = document.createElement("link"); f.rel = "icon"; document.head.appendChild(f); }
       f.href = fav;
     }
+    if (o.slug) setOrgManifest(o.slug, o.name, o.icon);
   } catch(e) {}
+}
+
+// קובץ ההתקנה (manifest) לכל קבלן: השם והלוגו שלו, ונפתח ישר לדף שלו
+// (אותו היגיון קיים גם ב-index.html לפתיחה הראשונה)
+function setOrgManifest(slug, name, icon) {
+  try {
+    const origin = location.origin;
+    const abs = (u) => /^(https?:|data:)/.test(u) ? u : origin + (u.startsWith("/") ? "" : "/") + u;
+    const nm = name || "BuildTrack";
+    const m = {
+      name: nm, short_name: nm.length > 12 ? nm.slice(0, 12) : nm,
+      description: "מערכת ניהול בנייה",
+      id: "/" + slug, start_url: origin + "/" + slug, scope: origin + "/",
+      display: "standalone", background_color: "#F5F5F0", theme_color: "#1A1A2E",
+      lang: "he", dir: "rtl",
+      icons: [
+        { src: abs(icon || "/apple-touch-icon.png"), sizes: "512x512", type: "image/png", purpose: "any" },
+        { src: abs("/icon-192.png"), sizes: "192x192", type: "image/png", purpose: "any" },
+      ].filter((x, i) => i === 0 || !icon),
+    };
+    let l = document.querySelector('link[rel="manifest"]');
+    if (!l) { l = document.createElement("link"); l.rel = "manifest"; document.head.appendChild(l); }
+    const href = "data:application/manifest+json," + encodeURIComponent(JSON.stringify(m));
+    if (l.getAttribute("href") !== href) l.setAttribute("href", href);
+  } catch (e) {}
 }
 
 // שם קובץ בטוח לאחסון (בלי עברית/רווחים — נדרש ע"י השרת)
@@ -679,6 +747,7 @@ export default function App() {
   const [pendingReports, setPendingReports] = useState([]); // reports waiting manager approval
 
   const [mgTab,      setMgTab]      = useState("reports");
+  const [canInstall, doInstall]    = useInstallPrompt();
   const [detailId,   setDetailId]   = useState(null);
   const [projTab,    setProjTab]    = useState("active"); // "active" | "completed"
   const [newPM,      setNewPM]      = useState(false);
@@ -1588,7 +1657,10 @@ async function shareImg() {
   );
 
   const LBL  = ({ t }) => <span style={{ fontSize:13, fontWeight:600, display:"block", marginBottom:5 }}>{t}</span>;
-  const GFont = () => <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;600;700;800&display=swap" rel="stylesheet" />;
+  const GFont = () => <>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;600;700;800&display=swap" rel="stylesheet" />
+    <style>{BT_DESKTOP_CSS}</style>
+  </>;
   const base = { fontFamily:"Heebo,sans-serif", direction:"rtl", minHeight:"100vh" };
 
   const orgLogoSrc = org?.logo || (org?.slug==="gne" ? LOGO_URL : null);
@@ -2180,9 +2252,10 @@ async function shareImg() {
   return (
     <div style={{ ...base, background:"#F5F5F0" }}>
       <GFont/>
-      <header style={{ background:"#1A1A2E", padding:"0 18px", display:"flex", alignItems:"center", justifyContent:"space-between", height:60 }}>
+      <header className="bt-head" style={{ background:"#1A1A2E", padding:"0 18px", display:"flex", alignItems:"center", justifyContent:"space-between", height:60 }}>
         <LogoSmall/>
         <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+          {canInstall && <button onClick={doInstall} title="התקנת האפליקציה במחשב / בטלפון" style={{ background:"#E8C547", color:"#1A1A2E", border:"none", borderRadius:8, padding:"5px 12px", fontSize:13, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700 }}>⬇ התקן אפליקציה</button>}
           {isForeman && <>
             <span style={{ color:"#E8C547", fontSize:13, fontWeight:700 }}>🦺 {loggedForeman?.name}</span>
             <button onClick={()=>{ setLoggedWorker(loggedForeman); setRepSent(false); setRepDate(todayStr()); setRepProject(""); setRepNote(""); setDayType("full"); setRepFuel(false); setWorkerView("report"); setScreen("worker"); }}
@@ -2194,7 +2267,7 @@ async function shareImg() {
         </div>
       </header>
 
-      <div style={{ background:"#fff", borderBottom:"1.5px solid #EEE", display:"flex", justifyContent:"flex-start", overflowX:"auto", WebkitOverflowScrolling:"touch" }}>
+      <div className="bt-tabs" style={{ background:"#fff", borderBottom:"1.5px solid #EEE", display:"flex", justifyContent:"flex-start", overflowX:"auto", WebkitOverflowScrolling:"touch" }}>
         {tabs.map(t => (
           <button key={t.key} onClick={()=>{ setMgTab(t.key); setDetailId(null); }} style={{ background:"none", border:"none", borderBottom:mgTab===t.key?"3px solid #E8C547":"3px solid transparent", padding:"11px 12px", fontWeight:mgTab===t.key?700:500, fontSize:13, cursor:"pointer", fontFamily:"Heebo,sans-serif", color:mgTab===t.key?"#1A1A2E":"#888", whiteSpace:"nowrap" }}>
             {t.emoji} {t.label}
@@ -2202,7 +2275,7 @@ async function shareImg() {
         ))}
       </div>
 
-      <main style={{ maxWidth:880, margin:"0 auto", padding:"20px 14px" }}>
+      <main className={"bt-main" + ((["reports","workers","quotes","equipment","calendar"].includes(mgTab) || (mgTab==="projects" && !detailProject)) ? " bt-wide" : "")} style={{ maxWidth:880, margin:"0 auto", padding:"20px 14px" }}>
 
         {/* REPORTS */}
         {mgTab==="reports" && (
@@ -2266,6 +2339,7 @@ async function shareImg() {
             )}
 
             {visibleReports.length===0 && visiblePending.length===0 && <div style={{ background:"#fff", borderRadius:14, padding:44, textAlign:"center", border:"1.5px dashed #DDD", color:"#AAA" }}><div style={{ fontSize:34, marginBottom:8 }}>📋</div><p style={{ margin:0 }}>אין דיווחים עדיין</p></div>}
+            <div className="bt-grid">
             {[...visibleReports].reverse().map(r => (
               <div key={r._dbid} style={{ background:"#fff", borderRadius:12, padding:"13px 18px", marginBottom:9, borderRight:"4px solid #E8C547", boxShadow:"0 1px 5px rgba(0,0,0,0.06)", display:"flex", justifyContent:"space-between", alignItems:"flex-start", gap:10 }}>
                 <div style={{ flex:1 }}>
@@ -2300,6 +2374,7 @@ async function shareImg() {
                 <button onClick={()=>delReport(r)} style={{ background:"none", border:"none", cursor:"pointer", color:"#CCC", fontSize:15, padding:0, flexShrink:0 }}>✕</button>
               </div>
             ))}
+            </div>
           </>
         )}
 
@@ -2330,6 +2405,7 @@ async function shareImg() {
                 <p style={{ margin:0 }}>{projTab==="completed"?"אין פרויקטים שהושלמו עדיין":"אין פרויקטים פעילים"}</p>
               </div>
             )}
+            <div className="bt-grid">
             {visibleProjects.filter(p => projTab==="completed" ? p.status==="הושלם" : p.status!=="הושלם").map(p => {
               const sc = STATUS_COLORS[p.status]||STATUS_COLORS["ממתין"];
               const pr = projReports(p.id);
@@ -2374,6 +2450,7 @@ async function shareImg() {
                 </div>
               );
             })}
+            </div>
           </>
         )}
 
@@ -3702,6 +3779,7 @@ async function shareImg() {
                 <p style={{ margin:0 }}>הרשימה ריקה — הוסף פריטים</p>
               </div>
             )}
+            <div className="bt-grid">
             {equipList.filter(e=>!e.done).map(item => (
               <div key={item._dbid} style={{ background:"#fff", borderRadius:12, padding:"12px 16px", marginBottom:8, display:"flex", alignItems:"center", gap:12, boxShadow:"0 1px 5px rgba(0,0,0,0.06)" }}>
                 <button onClick={()=>toggleEquipDone(item)} style={{ width:24, height:24, borderRadius:"50%", border:"2px solid #DDD", background:"#fff", cursor:"pointer", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}/>
@@ -3712,11 +3790,13 @@ async function shareImg() {
                 <button onClick={()=>delEquipItem(item)} style={{ background:"none", border:"none", cursor:"pointer", color:"#CCC", fontSize:16 }}>✕</button>
               </div>
             ))}
+            </div>
 
             {/* Bought items */}
             {equipList.filter(e=>e.done).length>0 && (
               <>
                 <p style={{ margin:"14px 0 8px", fontSize:13, fontWeight:700, color:"#888" }}>✅ נקנו</p>
+                <div className="bt-grid">
                 {equipList.filter(e=>e.done).map(item => (
                   <div key={item._dbid} style={{ background:"#F9F9F9", borderRadius:12, padding:"10px 16px", marginBottom:7, display:"flex", alignItems:"center", gap:12, opacity:0.7 }}>
                     <button onClick={()=>toggleEquipDone(item)} style={{ width:24, height:24, borderRadius:"50%", border:"2px solid #22C55E", background:"#22C55E", cursor:"pointer", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center", color:"#fff", fontSize:14 }}>✓</button>
@@ -3727,6 +3807,7 @@ async function shareImg() {
                     <button onClick={()=>delEquipItem(item)} style={{ background:"none", border:"none", cursor:"pointer", color:"#DDD", fontSize:16 }}>✕</button>
                   </div>
                 ))}
+                </div>
               </>
             )}
           </>
@@ -3753,6 +3834,7 @@ async function shareImg() {
               </div>
             )}
 
+            <div className="bt-grid">
             {[...quotes].reverse().map(q => (
               <div key={q._dbid} style={{ background:"#fff", borderRadius:14, padding:"15px 18px", marginBottom:11, boxShadow:"0 2px 8px rgba(0,0,0,0.07)", borderRight:`4px solid ${q.status==="נדחתה"?"#E53935":"#0EA5E9"}`, opacity:q.status==="נדחתה"?0.6:1 }}>
                 <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:6 }}>
@@ -3800,6 +3882,7 @@ async function shareImg() {
                 </div>
               </div>
             ))}
+            </div>
           </>
           );
         })()}
