@@ -138,6 +138,14 @@ const BT_DESKTOP_CSS = `
 }
 `;
 
+// הגופן ועיצוב המחשב — רכיב קבוע (מחוץ ל-App) כדי שלא יימחק וייטען מחדש בכל הקשה
+function BtHeadStyles() {
+  return <>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;600;700;800&display=swap" rel="stylesheet" />
+    <style>{BT_DESKTOP_CSS}</style>
+  </>;
+}
+
 // התקנה במחשב (Chrome / Edge): הדפדפן מודיע שאפשר להתקין — שומרים את ההודעה לכפתור "התקן"
 let btInstallEvt = null;
 const btInstallSubs = new Set();
@@ -947,10 +955,20 @@ export default function App() {
       if (!AUTH_TOKEN) return;
       // לא מרעננים בזמן הקלדה — מונע מחיקת טקסט באמצע כתיבה
       if (Date.now() - lastEditRef.current < 20000) return;
+      // לא מרעננים כששדה כתיבה פתוח (הסמן בתוכו)
+      const ae = document.activeElement;
+      if (ae && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName)) return;
       loadAll(true);
     }, 60000);
     return () => clearInterval(interval);
   }, [screen, loadAll]);
+
+  // כל הקלדה בכל שדה במערכת נרשמת — הרענון האוטומטי מחכה 20 שניות אחרי ההקלדה האחרונה
+  useEffect(() => {
+    const h = () => { lastEditRef.current = Date.now(); };
+    document.addEventListener("input", h, true);
+    return () => document.removeEventListener("input", h, true);
+  }, []);
 
   const projReports = id => reports.filter(r => String(r.projectId) === String(id));
   const getWkrNames = (ids=[]) => ids.map(id => workers.find(w => String(w.id)===String(id))?.name).filter(Boolean).join(", ");
@@ -1657,10 +1675,7 @@ async function shareImg() {
   );
 
   const LBL  = ({ t }) => <span style={{ fontSize:13, fontWeight:600, display:"block", marginBottom:5 }}>{t}</span>;
-  const GFont = () => <>
-    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;600;700;800&display=swap" rel="stylesheet" />
-    <style>{BT_DESKTOP_CSS}</style>
-  </>;
+  const GFont = BtHeadStyles; // מוגדר מחוץ ל-App — כך הגופן והעיצוב לא נטענים מחדש בכל הקלדה
   const base = { fontFamily:"Heebo,sans-serif", direction:"rtl", minHeight:"100vh" };
 
   const orgLogoSrc = org?.logo || (org?.slug==="gne" ? LOGO_URL : null);
