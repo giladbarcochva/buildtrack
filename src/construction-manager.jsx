@@ -987,6 +987,9 @@ export default function App() {
   const isForeman = screen === "foreman";
   const foremanProjectIds = (loggedForeman?.foremanProjects || []).map(String);
   const canSeeProject = (pid) => !isForeman || foremanProjectIds.includes(String(pid));
+  // שיבוץ ביומן בלי פרויקט (או לפרויקט שנמחק) — גלוי וניתן לעריכה לכולם, כדי שלא "יתקע" עובדים בלי שרואים אותו
+  const isOrphanAssign = (a) => !a.projectId || !projects.some(p => String(p.id) === String(a.projectId));
+  const canEditAssign = (a) => canSeeProject(a.projectId) || isOrphanAssign(a);
   const visibleProjects = isForeman ? projects.filter(p => canSeeProject(p.id)) : projects;
   const visibleReports  = isForeman ? reports.filter(r => canSeeProject(r.projectId)) : reports;
   const visiblePending  = isForeman ? pendingReports.filter(r => canSeeProject(r.projectId)) : pendingReports;
@@ -1364,8 +1367,14 @@ export default function App() {
       const prevAssigns = existing?.assignments?.length
         ? existing.assignments
         : (existing?.workers?.length ? [{ projectId:"", workers: existing.workers }] : []);
-      const keepOthers = isForeman ? prevAssigns.filter(a => !canSeeProject(a.projectId)) : [];
-      const merged = [...keepOthers, ...(data.assignments || [])];
+      const keepOthers = isForeman ? prevAssigns.filter(a => !canEditAssign(a)) : [];
+      // שורות ריקות (בלי פרויקט ובלי עובדים) — נמחקות; שורה בלי פרויקט עם עובדים — חייבים לבחור פרויקט
+      const mine = (data.assignments || []).filter(a => a.projectId || (a.workers||[]).length);
+      if (mine.some(a => isOrphanAssign(a))) {
+        alert("יש שיבוץ בלי פרויקט ⚠️\nבחר פרויקט בשורה המסומנת, או מחק אותה ב-✕.");
+        return;
+      }
+      const merged = [...keepOthers, ...mine];
       // בדיקת כפילות מול הנתונים העדכניים (למנהל עבודה — חסימה; למנהל — כבר אישר בלחיצה)
       if (isForeman) {
         const seen = {};
@@ -1374,7 +1383,7 @@ export default function App() {
             if (seen[wid]) {
               const wk = workers.find(w=>String(w.id)===String(wid));
               const pr = projects.find(p=>String(p.id)===String(seen[wid].projectId));
-              alert(`${wk?.name||"עובד"} כבר משובץ ליום זה לפרויקט "${pr?.name||"אחר"}" (שובץ ע"י: ${seen[wid].assignedBy||"לא ידוע"}). השיבוץ לא נשמר.`);
+              alert(`${wk?.name||"עובד"} כבר משובץ ליום זה לפרויקט "${pr?.name||"אחר"}" (שובץ ע"י: ${seen[wid].assignedBy||"לא ידוע"}). השיבוץ לא נשמר.\nפנה למנהל הראשי לשינוי.`);
               return;
             }
             seen[wid] = a;
@@ -3748,20 +3757,20 @@ async function shareImg() {
                 const allAssigns = ev?.assignments?.length
                   ? ev.assignments
                   : (ev?.workers?.length ? [{ projectId: "", workers: ev.workers }] : []);
-                const assigns = isForeman ? allAssigns.filter(a => canSeeProject(a.projectId)) : allAssigns;
+                const assigns = isForeman ? allAssigns.filter(a => canEditAssign(a)) : allAssigns;
                 const hasData = assigns.length>0 || ev?.tasks;
                 const isToday = dateStr === todayStr();
                 return (
-                  <div key={day} onClick={()=>{ setCalEditDay(dateStr); setCalEditData({assignments: assigns.map(a=>({projectId:a.projectId||"", workers:[...(a.workers||[])]})), tasks: ev?.tasks||""}); }}
+                  <div key={day} onClick={()=>{ setCalEditDay(dateStr); setCalEditData({assignments: assigns.map(a=>({projectId: isOrphanAssign(a) ? "" : (a.projectId||""), workers:[...(a.workers||[])], assignedBy: a.assignedBy})), tasks: ev?.tasks||""}); }}
                     style={{ background: isToday?"#E8C547": hasData?"#E8F5E9":"#fff", borderRadius:10, padding:"6px 2px", minHeight:56, minWidth:0, cursor:"pointer", border: isToday?"2px solid #B26A00":"1.5px solid #EEE", position:"relative", overflow:"hidden" }}>
                     <div style={{ fontSize:13, fontWeight:isToday?800:600, color:isToday?"#1A1A2E":hasData?"#2E7D32":"#333", textAlign:"center" }}>{day}</div>
                     {hasData && (
                       <div style={{ marginTop:2 }}>
                         {assigns.slice(0,2).map((a,ai) => {
                           const pr = projects.find(p=>String(p.id)===String(a.projectId));
-                          const label = pr ? pr.name : "ללא פרויקט";
+                          const label = pr ? pr.name : "⚠️ ללא פרויקט";
                           return (
-                            <div key={ai} style={{ background:"#1A1A2E", color:"#E8C547", borderRadius:4, fontSize:8, padding:"1px 3px", marginBottom:2, textAlign:"center", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
+                            <div key={ai} style={{ background: pr ? "#1A1A2E" : "#B71C1C", color: pr ? "#E8C547" : "#fff", borderRadius:4, fontSize:8, padding:"1px 3px", marginBottom:2, textAlign:"center", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
                               {label}{a.workers?.length ? ` (${a.workers.length})` : ""}
                             </div>
                           );
@@ -3808,12 +3817,15 @@ async function shareImg() {
                       if (i===ai) return;
                       (x.workers||[]).forEach(wid=>{
                         const pr = projects.find(p=>String(p.id)===String(x.projectId));
-                        takenMap[wid] = { projectName: pr?.name || "פרויקט אחר", assignedBy: x.assignedBy || "לא ידוע", idx: i };
+                        takenMap[wid] = { projectName: pr?.name || "ללא פרויקט", assignedBy: x.assignedBy || "לא ידוע", idx: i };
                       });
                     });
                     const takenElsewhere = Object.keys(takenMap);
                     return (
-                      <div key={ai} style={{ background:"#F9F9F9", borderRadius:12, padding:"12px 14px", marginBottom:10, borderRight:"4px solid #E8C547" }}>
+                      <div key={ai} style={{ background: !a.projectId && (a.workers||[]).length ? "#FFEBEE" : "#F9F9F9", borderRadius:12, padding:"12px 14px", marginBottom:10, borderRight:`4px solid ${!a.projectId && (a.workers||[]).length ? "#B71C1C" : "#E8C547"}` }}>
+                        {!a.projectId && (a.workers||[]).length > 0 && (
+                          <p style={{ margin:"0 0 8px", fontSize:12, fontWeight:700, color:"#B71C1C" }}>⚠️ שיבוץ בלי פרויקט{a.assignedBy ? ` (שובץ ע"י: ${a.assignedBy})` : ""} — בחר פרויקט או מחק ב-✕</p>
+                        )}
                         <div style={{ display:"flex", gap:8, alignItems:"center", marginBottom:10 }}>
                           <select value={a.projectId} onChange={e=>updAssign({projectId:e.target.value})}
                             style={{ flex:1, border:"1.5px solid #DDD", borderRadius:8, padding:"7px 10px", fontSize:14, fontFamily:"Heebo,sans-serif", outline:"none", background:"#fff" }}>
