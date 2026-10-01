@@ -145,7 +145,19 @@ function wazeUrl(p) {
   const a = String(p.siteAddress || "").trim();
   if (!a) return null;
   if (/^https?:\/\//i.test(a)) return a; // הודבק קישור מוכן (Waze / גוגל מפות)
-  return `https://waze.com/ul?q=${encodeURIComponent(a)}&navigate=yes`;
+  // לפי כתובת: Waze מציג את תוצאות החיפוש והעובד בוחר — בלי ניווט אוטומטי לתוצאה הראשונה (שעלולה להיות שגויה)
+  return `https://waze.com/ul?q=${encodeURIComponent(expandAddr(a))}`;
+}
+// קיצורי ערים נפוצים → שם מלא (Waze לא מזהה "ת״א" וכו')
+const CITY_ABBR = { "ת\"א":"תל אביב", "ר\"ג":"רמת גן", "פ\"ת":"פתח תקווה", "ב\"ש":"באר שבע", "ראשל\"צ":"ראשון לציון",
+  "ק\"ש":"קריית שמונה", "ק\"ג":"קריית גת", "ק\"א":"קריית אתא", "י-ם":"ירושלים", "רמה\"ש":"רמת השרון", "ת\"א-יפו":"תל אביב-יפו" };
+function expandAddr(a) {
+  let t = String(a).replace(/[״”“]/g, '"').replace(/[׳’‘]/g, "'");
+  Object.keys(CITY_ABBR).sort((x, y) => y.length - x.length).forEach(k => {
+    const esc = k.replace(/[.*+?^${}()|[\]\\-]/g, "\\$&");
+    t = t.replace(new RegExp(`(^|[\\s,])${esc}(?=$|[\\s,])`, "g"), `$1${CITY_ABBR[k]}`);
+  });
+  return t.replace(/\s+/g, " ").trim();
 }
 function WazeBtn({ project, small, full }) {
   const url = wazeUrl(project);
@@ -3211,7 +3223,7 @@ async function shareImg() {
                   )}
                 </div>
                 <p style={{ margin:"0 0 10px", fontSize:12, fontWeight:600, color: editProj.siteLat!=null ? "#2E7D32" : (editProj.siteAddress ? "#1565C0" : "#999") }}>
-                  {editProj.siteLat!=null ? "✓ ניווט לנקודה המדויקת שנקבעה באתר" : editProj.siteAddress ? "✓ ניווט לפי הכתובת" : "טרם הוזן מיקום"}
+                  {editProj.siteLat!=null ? "✓ ניווט לנקודה המדויקת שנקבעה באתר" : editProj.siteAddress ? "✓ לפי כתובת — Waze יציג תוצאות חיפוש לבחירה. לדיוק מלא: קבע מיקום באתר או הדבק קישור מ-Waze" : "טרם הוזן מיקום"}
                 </p>
                 <WazeBtn project={editProj} full/>
               </div>
