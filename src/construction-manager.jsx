@@ -138,6 +138,28 @@ const BT_DESKTOP_CSS = `
 }
 `;
 
+// ניווט לאתר — קישור ל-Waze לפי נקודה מדויקת (אם נקבעה) או לפי הכתובת שהוזנה
+function wazeUrl(p) {
+  if (!p) return null;
+  if (p.siteLat != null && p.siteLng != null) return `https://waze.com/ul?ll=${p.siteLat},${p.siteLng}&navigate=yes`;
+  const a = String(p.siteAddress || "").trim();
+  if (!a) return null;
+  if (/^https?:\/\//i.test(a)) return a; // הודבק קישור מוכן (Waze / גוגל מפות)
+  return `https://waze.com/ul?q=${encodeURIComponent(a)}&navigate=yes`;
+}
+function WazeBtn({ project, small, full }) {
+  const url = wazeUrl(project);
+  if (!url) return null;
+  return (
+    <a href={url} target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()}
+      style={{ display: full ? "block" : "inline-flex", alignItems:"center", justifyContent:"center", gap:4, textAlign:"center",
+        background:"#33CCFF", color:"#fff", borderRadius: small ? 6 : 10, padding: small ? "3px 10px" : "10px 0",
+        fontSize: small ? 12 : 14, fontWeight:700, textDecoration:"none", fontFamily:"Heebo,sans-serif", whiteSpace:"nowrap" }}>
+      🚗 נווט עם Waze
+    </a>
+  );
+}
+
 // הגופן ועיצוב המחשב — רכיב קבוע (מחוץ ל-App) כדי שלא יימחק וייטען מחדש בכל הקשה
 function BtHeadStyles() {
   return <>
@@ -2142,7 +2164,12 @@ async function shareImg() {
                   </p>
                   {mine.map((a,ai) => {
                     const pr = projects.find(p=>String(p.id)===String(a.projectId));
-                    return <p key={ai} style={{ margin:0, fontSize:13, color:"#555" }}>🏗️ {pr?.name || "ללא פרויקט"}</p>;
+                    return (
+                      <div key={ai} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", gap:8, marginTop:4 }}>
+                        <p style={{ margin:0, fontSize:13, color:"#555" }}>🏗️ {pr?.name || "ללא פרויקט"}</p>
+                        <WazeBtn project={pr} small/>
+                      </div>
+                    );
                   })}
                 </div>
               ))}
@@ -2158,6 +2185,7 @@ async function shareImg() {
                 <div style={{ fontSize:40, marginBottom:6 }}>⏱️</div>
                 <h3 style={{ margin:"0 0 4px", fontWeight:800, fontSize:18 }}>השעון רץ</h3>
                 <p style={{ margin:"0 0 4px", fontSize:14, color:"#555" }}>🏗️ {myOpenShift.projectName}</p>
+                {wazeUrl(projects.find(p=>String(p.id)===String(myOpenShift.projectId))) && <div style={{ margin:"4px 0 8px" }}><WazeBtn project={projects.find(p=>String(p.id)===String(myOpenShift.projectId))} small/></div>}
                 <p style={{ margin:"0 0 4px", fontSize:13, color:"#888" }}>כניסה: {new Date(myOpenShift.clockIn).toLocaleTimeString("he-IL",{hour:"2-digit",minute:"2-digit"})}</p>
                 <p style={{ margin:"0 0 16px", fontSize:22, fontWeight:800, color:"#1A1A2E" }}>
                   {(() => { const h = (Date.now()-myOpenShift.clockIn)/3600000; return `${Math.floor(h)}:${String(Math.floor((h%1)*60)).padStart(2,"0")} שעות`; })()}
@@ -2212,6 +2240,7 @@ async function shareImg() {
                           <option value="">— בחר פרויקט —</option>
                           {myProjects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                         </select>
+                        {repProject && wazeUrl(projects.find(p=>String(p.id)===String(repProject))) && <div style={{ marginTop:8 }}><WazeBtn project={projects.find(p=>String(p.id)===String(repProject))} full/></div>}
                       </label>
                     );
                   })()}
@@ -2251,6 +2280,7 @@ async function shareImg() {
                           <option value="">— בחר פרויקט —</option>
                           {myProjects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                         </select>
+                        {repProject && wazeUrl(projects.find(p=>String(p.id)===String(repProject))) && <div style={{ marginTop:8 }}><WazeBtn project={projects.find(p=>String(p.id)===String(repProject))} full/></div>}
                       </label>
                       {loggedWorker?.showFuel!==false && (
                         <div style={{ marginBottom:14 }}>
@@ -2323,10 +2353,13 @@ async function shareImg() {
                 <label style={{ display:"block", marginBottom:14 }}>
                   <LBL t="🏗️ באיזה אתר עבדת?"/>
                   {myProjects.length > 0 ? (
+                    <>
                     <select value={repProject} onChange={e=>setRepProject(e.target.value)} style={{ ...inp, fontSize:15 }}>
                       <option value="">— בחר פרויקט —</option>
                       {myProjects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                     </select>
+                    {repProject && wazeUrl(projects.find(p=>String(p.id)===String(repProject))) && <div style={{ marginTop:8 }}><WazeBtn project={projects.find(p=>String(p.id)===String(repProject))} full/></div>}
+                    </>
                   ) : (
                     <div style={{ background:"#FFF8E1", border:"1.5px solid #FFD54F", borderRadius:10, padding:"12px 14px" }}>
                       <p style={{ margin:0, fontSize:13, color:"#B26A00", fontWeight:600 }}>⚠️ אינך משויך לאף פרויקט פעיל</p>
@@ -2586,6 +2619,7 @@ async function shareImg() {
                     <p style={{ margin:0, fontSize:12, color:"#666" }}>👷 {getWkrNames(p.workers)||"לא שויכו עובדים"}</p>
                     <div style={{ display:"flex", gap:8, alignItems:"center" }}>
                       <span style={{ fontSize:12, color:"#999" }}>💬 {pr.length}</span>
+                      <WazeBtn project={p} small/>
                       <button onClick={()=>{ setAssignPid(p.id); setAssignM(true); }} style={{ background:"#1A1A2E", color:"#E8C547", border:"none", borderRadius:6, padding:"3px 10px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:600 }}>שייך עובדים</button>
                     </div>
                   </div>
@@ -3151,6 +3185,35 @@ async function shareImg() {
                   onChange={e=>{ setEditProj(p=>({...p, description: e.target.value})); updateProjFieldDebounced(detailProject, { description: e.target.value }); }}
                   rows={3}
                   style={{ width:"100%", border:"1.5px solid #EEE", borderRadius:10, padding:"10px 12px", fontSize:14, fontFamily:"Heebo,sans-serif", outline:"none", background:"#FDFDFB", boxSizing:"border-box", resize:"vertical" }}/>
+              </div>
+
+              {/* SITE ADDRESS + WAZE */}
+              <div style={{ background:"#fff", borderRadius:14, padding:"16px 20px", marginBottom:14, boxShadow:"0 2px 8px rgba(0,0,0,0.07)" }}>
+                <h3 style={{ margin:"0 0 4px", fontSize:15, fontWeight:700 }}>📍 מיקום האתר</h3>
+                <p style={{ margin:"0 0 10px", fontSize:12, color:"#888" }}>העובדים יקבלו כפתור "נווט עם Waze" לאתר הזה. אפשר לכתוב כתובת, להדביק קישור מ-Waze/גוגל מפות, או לקבוע מיקום כשאתה באתר.</p>
+                <input value={editProj.siteAddress||""} placeholder="לדוגמה: הרצל 12, רמת גן"
+                  onChange={e=>{ setEditProj(p=>({...p, siteAddress: e.target.value})); updateProjFieldDebounced(detailProject, { siteAddress: e.target.value }); }}
+                  style={{ width:"100%", border:"1.5px solid #EEE", borderRadius:10, padding:"10px 12px", fontSize:14, fontFamily:"Heebo,sans-serif", outline:"none", background:"#FDFDFB", boxSizing:"border-box", marginBottom:10 }}/>
+                <div style={{ display:"flex", gap:8, marginBottom:8 }}>
+                  <button onClick={async ()=>{
+                    try {
+                      const loc = await getPosition();
+                      setEditProj(p=>({...p, siteLat:loc.lat, siteLng:loc.lng}));
+                      updateProjField(detailProject, { siteLat:loc.lat, siteLng:loc.lng });
+                      alert(`מיקום האתר נקבע! 📍\n(דיוק: ±${Math.round(loc.acc)} מטר)`);
+                    } catch(e) { alert("לא ניתן לקבל מיקום — יש לאשר גישה למיקום בדפדפן."); }
+                  }} style={{ flex:1, background:"#F0F0EC", color:"#1A1A2E", border:"none", borderRadius:9, padding:"10px 0", fontSize:13, fontWeight:700, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>
+                    📍 אני באתר — קבע מיקום נוכחי
+                  </button>
+                  {editProj.siteLat!=null && (
+                    <button onClick={()=>{ if(!window.confirm("למחוק את המיקום המדויק? (הניווט יעבוד לפי הכתובת, ואימות המיקום בשעון יכבה)")) return; setEditProj(p=>({...p, siteLat:null, siteLng:null})); updateProjField(detailProject, { siteLat:null, siteLng:null }); }}
+                      style={{ background:"#FCE4EC", color:"#B71C1C", border:"none", borderRadius:9, padding:"10px 12px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>מחק מיקום</button>
+                  )}
+                </div>
+                <p style={{ margin:"0 0 10px", fontSize:12, fontWeight:600, color: editProj.siteLat!=null ? "#2E7D32" : (editProj.siteAddress ? "#1565C0" : "#999") }}>
+                  {editProj.siteLat!=null ? "✓ ניווט לנקודה המדויקת שנקבעה באתר" : editProj.siteAddress ? "✓ ניווט לפי הכתובת" : "טרם הוזן מיקום"}
+                </p>
+                <WazeBtn project={editProj} full/>
               </div>
 
               {/* LOCATION VERIFICATION (hourly clock) */}
