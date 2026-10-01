@@ -752,6 +752,13 @@ export default function App() {
   });
   const [pendingDate, setPendingDate] = useState("");
   const [showDateApproval, setShowDateApproval] = useState(false);
+  // עובד שעתי ששכח להחתים — דיווח שעות ידני (נשלח לאישור מנהל)
+  const [manOpen,  setManOpen]  = useState(false);
+  const [manSent,  setManSent]  = useState(false);
+  const [manDate,  setManDate]  = useState("");
+  const [manIn,    setManIn]    = useState("07:00");
+  const [manOut,   setManOut]   = useState("16:00");
+  const [manNote,  setManNote]  = useState("");
   const [pendingReports, setPendingReports] = useState([]); // reports waiting manager approval
 
   const [mgTab,      setMgTab]      = useState("reports");
@@ -1087,6 +1094,52 @@ export default function App() {
       } else alert("שגיאה: " + e.message);
     }
   };
+
+  // ====== דיווח שעות ידני (שכח להחתים) — ממתין לאישור מנהל ======
+  const manHours = (() => {
+    const m = (t) => { const [h, mm] = String(t||"").split(":").map(Number); return isNaN(h) ? null : h*60 + (mm||0); };
+    const a = m(manIn), b = m(manOut);
+    if (a == null || b == null || b <= a) return null;
+    return Math.round((b - a) / 60 * 100) / 100;
+  })();
+
+  const submitManualShift = async () => {
+    if (!manDate) { alert("בחר תאריך"); return; }
+    if (manDate > todayStr()) { alert("לא ניתן לדווח על יום שעוד לא היה 🙂"); return; }
+    if (!repProject) { alert("בחר פרויקט"); return; }
+    if (manHours == null) { alert("שעת היציאה חייבת להיות אחרי שעת הכניסה"); return; }
+    if (manHours > 16) { alert("יותר מ-16 שעות ביום — בדוק את השעות שהזנת"); return; }
+    const ai = workerAssignInfo(loggedWorker.id, manDate);
+    if (ai.hasAny) {
+      if (ai.dayProjects.length === 0) { alert("אינך משובץ לעבודה בתאריך זה.\nבדוק בטאב 'היומן שלי', או פנה למנהל."); return; }
+      if (!(ai.dayProjects.includes(String(repProject)) || ai.dayProjects.includes(""))) {
+        alert("בתאריך זה אתה משובץ לפרויקט אחר.\nבחר את הפרויקט שאליו שובצת."); return;
+      }
+    }
+    const mine = (r) => String(r.workerId)===String(loggedWorker.id) || r.workerName===loggedWorker.name;
+    const dup = [...reports, ...pendingReports].some(r => !r._paymentRecord && mine(r) && r.date === manDate);
+    if (dup && !window.confirm(`כבר קיים דיווח שלך בתאריך ${manDate}.\nלשלוח דיווח נוסף בכל זאת?`)) return;
+
+    const proj = projects.find(p => String(p.id) === String(repProject));
+    const rec = { _shift:true, manual:true, pendingApproval:true,
+      workerId: loggedWorker.id, workerName: loggedWorker.name,
+      projectId: repProject, projectName: proj?.name||"", date: manDate,
+      clockIn: new Date(`${manDate}T${manIn}:00`).getTime(),
+      clockOut: new Date(`${manDate}T${manOut}:00`).getTime(),
+      hours: manHours, note: manNote,
+      fuel: repFuel, fuelAmt: repFuel ? Number(loggedWorker.fuelAmount||50) : 0, id: Date.now() };
+    try {
+      const saved = await dbInsert("reports", rec);
+      setPendingReports(prev => [...prev, saved]);
+    } catch(e) {
+      if (!isNetErr(e)) { alert("שגיאה בשליחה: " + e.message); return; }
+      const tmpId = "tmp_" + rec.id;
+      qSet([...qGet(), { kind:"insert", tmpId, data: rec }]);
+      alert("אין קליטה כרגע 📶\nהדיווח נשמר במכשיר ויישלח למנהל אוטומטית כשתחזור הקליטה.");
+    }
+    setManSent(true);
+  };
+  const resetManual = () => { setManOpen(false); setManSent(false); setManDate(""); setManIn("07:00"); setManOut("16:00"); setManNote(""); setRepProject(""); setRepFuel(false); };
 
   const clockOut = async () => {
     if (!myOpenShift) return;
@@ -2112,6 +2165,64 @@ async function shareImg() {
                   🛑 יציאה — סיום יום עבודה
                 </button>
               </div>
+            ) : manOpen ? (
+              manSent ? (
+                <div style={{ textAlign:"center" }}>
+                  <div style={{ fontSize:46, marginBottom:10 }}>📨</div>
+                  <h3 style={{ margin:"0 0 6px", fontWeight:800, fontSize:19 }}>נשלח למנהל לאישור</h3>
+                  <p style={{ margin:"0 0 14px", color:"#777", fontSize:14 }}>{manDate} · <span dir="ltr">{manIn}–{manOut}</span> · {manHours} שעות</p>
+                  <button onClick={resetManual} style={{ ...btnD, marginTop:4 }}>סגור</button>
+                </div>
+              ) : (
+                <>
+                  <h3 style={{ margin:"0 0 4px", fontWeight:800, fontSize:16, textAlign:"center" }}>✍️ דיווח שעות ידני</h3>
+                  <p style={{ margin:"0 0 14px", fontSize:12, color:"#B26A00", background:"#FFF8E1", borderRadius:8, padding:"6px 10px", textAlign:"center" }}>שכחת להחתים? מלא את השעות — הדיווח יישלח למנהל לאישור</p>
+                  <label style={{ display:"block", marginBottom:12 }}>
+                    <LBL t="📅 תאריך"/>
+                    <input type="date" value={manDate} max={todayStr()} onChange={e=>setManDate(e.target.value)} style={{ ...inp, fontSize:15 }}/>
+                  </label>
+                  <div style={{ display:"flex", gap:10, marginBottom:6 }}>
+                    <label style={{ flex:1 }}>
+                      <LBL t="▶️ שעת כניסה"/>
+                      <input type="time" value={manIn} onChange={e=>setManIn(e.target.value)} style={{ ...inp, fontSize:15 }}/>
+                    </label>
+                    <label style={{ flex:1 }}>
+                      <LBL t="🛑 שעת יציאה"/>
+                      <input type="time" value={manOut} onChange={e=>setManOut(e.target.value)} style={{ ...inp, fontSize:15 }}/>
+                    </label>
+                  </div>
+                  <p style={{ margin:"0 0 12px", fontSize:13, fontWeight:700, color: manHours==null ? "#B71C1C" : "#1A1A2E" }}>
+                    {manHours==null ? "⚠️ שעת היציאה חייבת להיות אחרי שעת הכניסה" : `סה"כ: ${manHours} שעות`}
+                  </p>
+                  {(() => {
+                    const myProjects = projects.filter(p => p.status !== "הושלם" && (p.workers||[]).map(String).includes(String(loggedWorker?.id)));
+                    return (
+                      <label style={{ display:"block", marginBottom:12 }}>
+                        <LBL t="🏗️ באיזה אתר עבדת?"/>
+                        <select value={repProject} onChange={e=>setRepProject(e.target.value)} style={{ ...inp, fontSize:15 }}>
+                          <option value="">— בחר פרויקט —</option>
+                          {myProjects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                        </select>
+                      </label>
+                    );
+                  })()}
+                  <label style={{ display:"block", marginBottom:12 }}>
+                    <LBL t="📝 הערה (אופציונלי)"/>
+                    <textarea value={manNote} onChange={e=>setManNote(e.target.value)} placeholder="למשל: שכחתי להחתים בבוקר" rows={2} style={{ ...inp, resize:"vertical" }}/>
+                  </label>
+                  {loggedWorker?.showFuel!==false && (
+                    <div style={{ marginBottom:14 }}>
+                      <button type="button" onClick={()=>setRepFuel(f=>!f)}
+                        style={{ width:"100%", background:repFuel?"#1A1A2E":"#F0F0EC", color:repFuel?"#E8C547":"#888", border:"none", borderRadius:10, padding:"10px 0", fontWeight:700, fontSize:14, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>
+                        {repFuel ? `✅ כן — ₪${loggedWorker?.fuelAmount||50} דלק` : "לא נסעתי באוטו"}
+                      </button>
+                    </div>
+                  )}
+                  <button onClick={submitManualShift} disabled={!repProject || !manDate || manHours==null}
+                    style={{ ...btnD, width:"100%", fontSize:15, opacity:(repProject && manDate && manHours!=null)?1:0.4 }}>📨 שלח למנהל לאישור</button>
+                  <button onClick={resetManual} style={{ width:"100%", background:"none", border:"none", color:"#888", fontSize:13, marginTop:10, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>ביטול — חזרה לשעון</button>
+                </>
+              )
             ) : repSent ? (
               <div style={{ textAlign:"center" }}>
                 <div style={{ fontSize:46, marginBottom:10 }}>✅</div>
@@ -2143,6 +2254,10 @@ async function shareImg() {
                       <button onClick={clockIn} disabled={!repProject}
                         style={{ width:"100%", background:"#2E7D32", color:"#fff", border:"none", borderRadius:12, padding:"14px 0", fontWeight:800, fontSize:16, cursor:"pointer", fontFamily:"Heebo,sans-serif", opacity:repProject?1:0.4 }}>
                         ▶️ כניסה — התחלת יום עבודה
+                      </button>
+                      <button onClick={()=>{ setRepProject(""); setRepFuel(false); setManDate(""); setManSent(false); setManOpen(true); }}
+                        style={{ width:"100%", background:"none", border:"1.5px dashed #CCC", borderRadius:12, padding:"11px 0", marginTop:12, fontWeight:600, fontSize:14, color:"#555", cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>
+                        ✍️ שכחתי להחתים — דיווח שעות ידני
                       </button>
                     </>
                   ) : (
@@ -2341,6 +2456,8 @@ async function shareImg() {
                         <span style={{ fontWeight:700, fontSize:13 }}>{r.workerName}</span>
                         <span style={{ background:"#F0F0EC", borderRadius:6, padding:"2px 7px", fontSize:11, color:"#555" }}>{r.projectName}</span>
                         <span style={{ fontSize:11, color:"#999" }}>📅 {r.date}</span>
+                        {r._shift && r.clockOut && <span style={{ background:"#E3F2FD", color:"#1565C0", borderRadius:6, padding:"2px 7px", fontSize:11, fontWeight:600 }}>✍️ <span dir="ltr">{new Date(r.clockIn).toLocaleTimeString("he-IL",{hour:"2-digit",minute:"2-digit"})}–{new Date(r.clockOut).toLocaleTimeString("he-IL",{hour:"2-digit",minute:"2-digit"})}</span> · {r.hours} שעות</span>}
+                        {r.fuel && <span style={{ background:"#FFF8E1", color:"#B26A00", borderRadius:6, padding:"2px 7px", fontSize:11, fontWeight:600 }}>⛽ דלק</span>}
                       </div>
                       {r.note && <p style={{ margin:0, fontSize:12, color:"#666" }}>{r.note}</p>}
                     </div>
@@ -2364,6 +2481,7 @@ async function shareImg() {
                     <span style={{ fontSize:12, color:"#999" }}>📅 {r.date}</span>
                     {r.dayType==="half" && <span style={{ background:"#FFF8E1", color:"#B26A00", borderRadius:6, padding:"2px 7px", fontSize:11, fontWeight:600 }}>חצי יום</span>}
                     {r._shift && <span style={{ background:r.clockOut?"#E3F2FD":"#FCE4EC", color:r.clockOut?"#1565C0":"#B71C1C", borderRadius:6, padding:"2px 7px", fontSize:11, fontWeight:600 }}>⏱️ {r.clockOut ? `${r.hours} שעות` : (Date.now()-r.clockIn > 16*3600000 ? "⚠️ שעון תקוע" : "שעון פתוח")}</span>}
+                    {r.manual && <span style={{ background:"#F3E5F5", color:"#6A1B9A", borderRadius:6, padding:"2px 7px", fontSize:11, fontWeight:600 }}>✍️ ידני</span>}
                     {r._shift && <button onClick={async ()=>{
                       const cur = r.hours != null ? String(r.hours) : "";
                       const inp2 = window.prompt(`כמה שעות עבד ${r.workerName} ב-${r.date}?`, cur);
