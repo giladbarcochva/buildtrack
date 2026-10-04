@@ -65,7 +65,7 @@ const HELP_TOPICS = [
   { icon:"👷", title:"ניהול עובדים וסוגי העסקה", body:"בטאב עובדים מוסיפים עובד עם שם, קוד אישי ותפקיד, ובוחרים סוג העסקה:\n• יומי — שכר קבוע ליום (עם אפשרות חצי יום).\n• שעתי — שכר לשעה + שעון נוכחות.\n• גלובלי — משכורת חודשית קבועה.\nלכל עובד אפשר להגדיר אם יראה כפתור דלק וכמה ₪ דלק ליום.\nחשוב: כדי שעובד יוכל לדווח, חובה לשייך אותו לפרויקט (כפתור 'שייך עובדים' בתוך הפרויקט)." },
   { icon:"🏗️", title:"פרויקטים", body:"בטאב פרויקטים יוצרים פרויקט חדש ונכנסים אליו לניהול מלא: תיאור (מומלץ לכתוב כמויות — למשל '200 מטר גבס'), שלבי ביצוע עם סטטוס ותאריך יעד, הוצאות וחומרים, קבלני משנה, חשבוניות ותוכניות.\nלכל שלב ביצוע אפשר לתת משקל באחוזים (למשל: ניצבים 30%, גבס צד אחד 20%) — סימון שלב כ'הושלם' מעדכן אוטומטית את גרף ההתקדמות של הפרויקט. בלי משקלים — הגרף לפי הסליידר הידני.\nסטטוס 'הושלם' מסתיר את הפרויקט מהעובדים ומרשימות השיבוץ.\nכרטיס 'סה\"כ הוצאות פרויקט' מסכם הוצאות + קבלני משנה.\nבכרטיס '📍 אימות מיקום' אפשר לחייב עובדים שעתיים לפתוח שעון רק בקרבת האתר: עומדים באתר ← 'קבע את המיקום הנוכחי' ← בוחרים רדיוס ומצב (סימון בלבד / חסימה). חל רק על שעון שעתי — יומיות וגלובלי לא מושפעים." },
   { icon:"📄", title:"הצעות מחיר", body:"בטאב הצעות מחיר יוצרים הצעה עם פרטי לקוח וסכום — או מחולקת לסעיפים (גבס, בטון...) כשלכל סעיף מחיר וסימון כולל/בלי חומר; הסה\"כ מחושב אוטומטית.\nכשהלקוח מאשר לוחצים '✓ נסגרה — צור פרויקט' וההצעה הופכת לפרויקט פעיל: הסעיפים נכתבים לתיאור והסכום (לא כולל מע\"מ) נכנס ל'עלות פרויקט' בנתוני הפרויקט. את שלבי קבלת התשלום מגדירים ידנית.\nהצעה שנדחתה נשארת לתיעוד ואפשר להחזירה.\nכפתור '📤 הצג ללקוח' פותח דף הצעה מעוצב עם הלוגו, הסעיפים, סה\"כ לפני מע\"מ וסה\"כ כולל מע\"מ (18%) — אפשר לשתף, להדפיס או לשמור כ-PDF ולשלוח ללקוח." },
-  { icon:"🔨", title:"קבלני משנה", body:"בתוך דף פרויקט, בקטע קבלני משנה, מוסיפים קבלן עם תיאור עבודה, מחיר, ימים מתוכננים וסימון כולל/בלי חומר.\nמגדירים שלבי תשלום (מתי וכמה) ומסמנים ✓ כשמשולם — נשמר תאריך.\nבטאב שכר ← '🔨 קבלנים' רואים את כל הקבלנים מכל הפרויקטים וכמה נשאר לשלם לכל אחד." },
+  { icon:"🔨", title:"קבלני משנה", body:"בתוך דף פרויקט, בקטע קבלני משנה, מוסיפים קבלן עם תיאור עבודה, מחיר, ימים מתוכננים וסימון כולל/בלי חומר.\nמגדירים שלבי תשלום (מתי וכמה). כשהקבלן מסיים שלב — לוחצים על העיגול ומאשרים ⏳, והסכום עובר לתשלום.\nבטאב שכר ← '🔨 קבלנים' ← 'לתשלום' מסמנים ✓ שולם (נשמר תאריך), והתשלום עובר ל'היסטוריה'. ביטול תשלום — מההיסטוריה." },
   { icon:"💵", title:"קבלת תשלומים מהלקוח", body:"בכל פרויקט יש קטע 'שלבי קבלת תשלום': מגדירים שלבים (מקדמה, אחרי שלד, מסירה...) עם סכומים, ומסמנים ✓ כשכסף התקבל.\nשורת הסיכום מציגה סה\"כ / התקבל / נותר — כך רואים בכל רגע כמה הלקוח עוד חייב." },
   { icon:"📅", title:"יומן ושיבוץ עובדים", body:"לוחצים על יום ← '+ הוסף פרויקט' ← בוחרים פרויקט ומסמנים עובדים. אפשר כמה פרויקטים באותו יום.\nעובד שכבר משובץ לפרויקט אחר באותו יום — המערכת מתריעה ומציגה מי שיבץ; מנהל ראשי יכול לאשר בכל זאת, מנהל עבודה חסום.\nהעובד רואה את השיבוצים שלו בטאב 'היומן שלי'." },
   { icon:"💰", title:"שכר עובדים", body:"בטאב שכר: 'לתשלום' מציג כמה מגיע לכל עובד, עם פירוט לפי חודש ולפי פרויקט.\n• 'שולם במלואו' סוגר את החודש, 'שולם חלקית' מזין סכום ומשאיר יתרה.\n• 'היסטוריה' מציגה תשלומים שבוצעו + סה\"כ ימים לפי פרויקט, ומאפשרת עריכה או ביטול.\nשעתי מוצג עם פירוט שעות רגילות/נוספות; גלובלי מופיע עם המשכורת הקבועה בכל חודש פעיל." },
@@ -815,6 +815,7 @@ export default function App() {
   const [partialInput, setPartialInput] = useState({}); // key: workerId_month -> amount string
   const [showPartial, setShowPartial] = useState({}); // key: workerId_month -> bool
   const [payrollView, setPayrollView] = useState("pending");
+  const [subsView,    setSubsView]    = useState("pending"); // קבלנים: לתשלום / היסטוריה
   const [calMonth, setCalMonth] = useState(() => {
     const d = new Date();
     return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
@@ -2863,6 +2864,7 @@ async function shareImg() {
                     else updateProjField(detailProject,{subcontractors:subs});
                   };
                   const scPaid = (sc.payments||[]).filter(p=>p.paid).reduce((s,p)=>s+Number(p.amount||0),0);
+                  const scDue  = (sc.payments||[]).filter(p=>p.due && !p.paid).reduce((s,p)=>s+Number(p.amount||0),0);
                   const scTotal = Number(sc.price||0);
                   const scRemaining = scTotal - scPaid;
                   return (
@@ -2906,9 +2908,9 @@ async function shareImg() {
                       </div>
                       <div style={{ display:"flex", gap:8, marginBottom:8 }}>
                         <input type="number" value={sc.price} placeholder="מחיר ₪" onChange={e=>updSub({price:e.target.value}, true)}
-                          style={{ flex:1, border:"1.5px solid #EEE", borderRadius:8, padding:"7px 10px", fontSize:13, fontFamily:"Heebo,sans-serif", outline:"none", background:"#fff" }}/>
+                          style={{ flex:1, minWidth:0, width:0, border:"1.5px solid #EEE", borderRadius:8, padding:"7px 10px", fontSize:13, fontFamily:"Heebo,sans-serif", outline:"none", background:"#fff" }}/>
                         <input type="number" value={sc.plannedDays} placeholder="ימים מתוכננים" onChange={e=>updSub({plannedDays:e.target.value}, true)}
-                          style={{ flex:1, border:"1.5px solid #EEE", borderRadius:8, padding:"7px 10px", fontSize:13, fontFamily:"Heebo,sans-serif", outline:"none", background:"#fff" }}/>
+                          style={{ flex:1, minWidth:0, width:0, border:"1.5px solid #EEE", borderRadius:8, padding:"7px 10px", fontSize:13, fontFamily:"Heebo,sans-serif", outline:"none", background:"#fff" }}/>
                       </div>
                       <div style={{ display:"flex", gap:6, marginBottom:10 }}>
                         {[{v:true,l:"🧱 כולל חומר"},{v:false,l:"🚫 בלי חומר (אני מביא)"}].map(opt=>(
@@ -2925,6 +2927,7 @@ async function shareImg() {
                         <button onClick={()=>{ const payments=[...(sc.payments||[]),{id:Date.now(),desc:"",amount:"",paid:false}]; updSub({payments}); }}
                           style={{ background:"#EDE9FE", color:"#6D28D9", border:"none", borderRadius:6, padding:"3px 10px", fontSize:11, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700 }}>+ שלב</button>
                       </div>
+                      {(sc.payments||[]).length>0 && <p style={{ margin:"0 0 6px", fontSize:10.5, color:"#999" }}>לחץ על העיגול כשהשלב בוצע ← ⏳ עובר לתשלום בשכר ← קבלנים ← שם מסמנים ✓ שולם</p>}
                       {(sc.payments||[]).map((pm,pi) => {
                         const updPm = (changes, isText=false) => {
                           const payments=(sc.payments||[]).map((x,i)=>i===pi?{...x,...changes}:x);
@@ -2932,15 +2935,22 @@ async function shareImg() {
                         };
                         return (
                           <div key={pm.id} style={{ display:"flex", gap:6, alignItems:"center", marginBottom:6 }}>
-                            <button onClick={()=>{
-                              if (!pm.paid && !window.confirm(`לסמן תשלום של ₪${Number(pm.amount||0).toLocaleString("he-IL")} כשולם?`)) return;
-                              updPm({paid:!pm.paid, paidAt: !pm.paid ? new Date().toLocaleDateString("he-IL") : ""});
+                            <button title={pm.paid ? "שולם" : pm.due ? "אושר — ממתין לתשלום" : "אשר שהשלב בוצע"} onClick={()=>{
+                              if (pm.paid) { alert(`השלב שולם${pm.paidAt ? ` ב-${pm.paidAt}` : ""} ✓\nביטול תשלום — בטאב שכר ← קבלנים ← היסטוריה.`); return; }
+                              if (pm.due) {
+                                if (!window.confirm("לבטל את האישור?\nהשלב יוסר מרשימת 'לתשלום' של הקבלנים.")) return;
+                                updPm({ due:false, dueAt:"" });
+                                return;
+                              }
+                              if (!(Number(pm.amount) > 0)) { alert("הזן סכום לשלב לפני האישור"); return; }
+                              if (!window.confirm(`לאשר ש${sc.name ? `"${sc.name}"` : "הקבלן"} סיים את השלב "${pm.desc||"שלב"}"?\n₪${Number(pm.amount||0).toLocaleString("he-IL")} יעבור לתשלום בטאב שכר ← קבלנים.`)) return;
+                              updPm({ due:true, dueAt: new Date().toLocaleDateString("he-IL") });
                             }}
-                              style={{ width:22, height:22, borderRadius:"50%", border:`2px solid ${pm.paid?"#22C55E":"#CCC"}`, background:pm.paid?"#22C55E":"#fff", cursor:"pointer", flexShrink:0, color:"#fff", fontSize:12, display:"flex", alignItems:"center", justifyContent:"center" }}>{pm.paid?"✓":""}</button>
+                              style={{ width:22, height:22, borderRadius:"50%", border:`2px solid ${pm.paid?"#22C55E":pm.due?"#F59E0B":"#CCC"}`, background:pm.paid?"#22C55E":pm.due?"#FEF3C7":"#fff", cursor:"pointer", flexShrink:0, color:pm.paid?"#fff":"#B45309", fontSize:11, display:"flex", alignItems:"center", justifyContent:"center", padding:0 }}>{pm.paid?"✓":pm.due?"⏳":""}</button>
                             <input value={pm.desc} placeholder="מתי (למשל: אחרי יציקה)" onChange={e=>updPm({desc:e.target.value}, true)}
-                              style={{ flex:2, border:"1.5px solid #EEE", borderRadius:7, padding:"5px 9px", fontSize:12, fontFamily:"Heebo,sans-serif", outline:"none", background:"#fff", textDecoration:pm.paid?"line-through":"none", color:pm.paid?"#AAA":"#333" }}/>
+                              style={{ flex:2, minWidth:0, width:0, border:"1.5px solid #EEE", borderRadius:7, padding:"5px 9px", fontSize:12, fontFamily:"Heebo,sans-serif", outline:"none", background:"#fff", textDecoration:pm.paid?"line-through":"none", color:pm.paid?"#AAA":"#333" }}/>
                             <input type="number" value={pm.amount} placeholder="₪" onChange={e=>updPm({amount:e.target.value}, true)}
-                              style={{ flex:1, border:"1.5px solid #EEE", borderRadius:7, padding:"5px 9px", fontSize:12, fontFamily:"Heebo,sans-serif", outline:"none", background:"#fff", textDecoration:pm.paid?"line-through":"none", color:pm.paid?"#AAA":"#333" }}/>
+                              style={{ flex:1, minWidth:0, width:0, border:"1.5px solid #EEE", borderRadius:7, padding:"5px 9px", fontSize:12, fontFamily:"Heebo,sans-serif", outline:"none", background:"#fff", textDecoration:pm.paid?"line-through":"none", color:pm.paid?"#AAA":"#333" }}/>
                             <button onClick={()=>{ const payments=(sc.payments||[]).filter((_,i)=>i!==pi); updSub({payments}); }}
                               style={{ background:"none", border:"none", cursor:"pointer", color:"#CCC", fontSize:13, padding:0, flexShrink:0 }}>✕</button>
                           </div>
@@ -2952,6 +2962,7 @@ async function shareImg() {
                         <div style={{ display:"flex", justifyContent:"space-between", flexWrap:"wrap", gap:4, paddingTop:8, borderTop:"1px solid #EEE", marginTop:4, fontSize:12 }}>
                           <span style={{ color:"#555" }}>סוכם: <b>₪{fmtNum(scTotal)}</b></span>
                           <span style={{ color:"#2E7D32" }}>שולם: <b>₪{fmtNum(scPaid)}</b></span>
+                          {scDue>0 && <span style={{ color:"#B45309" }}>⏳ לתשלום: <b>₪{fmtNum(scDue)}</b></span>}
                           <span style={{ color:scRemaining>0?"#B71C1C":"#2E7D32" }}>נשאר: <b>₪{fmtNum(scRemaining)}</b></span>
                         </div>
                       )}
@@ -3534,60 +3545,104 @@ async function shareImg() {
             </div>
             )}
 
-            {/* SUBCONTRACTORS VIEW */}
+            {/* SUBCONTRACTORS VIEW — לתשלום / היסטוריה (כמו עובדים) */}
             {payrollView==="subs" && (() => {
-              // אוסף כל הקבלנים מכל הפרויקטים
-              const allSubs = [];
+              const todayHe = () => new Date().toLocaleDateString("he-IL");
+              // סימון / ביטול תשלום לשלבים של קבלן (לפי אינדקס השלב)
+              const setStagesPaid = async (projDbid, scId, idxs, paid) => {
+                const pr = projects.find(p => p._dbid === projDbid);
+                if (!pr) return;
+                const subs = (pr.subcontractors||[]).map(sc => String(sc.id) !== String(scId) ? sc : {
+                  ...sc,
+                  payments: (sc.payments||[]).map((pm, i) => !idxs.includes(i) ? pm
+                    : { ...pm, due:true, dueAt: pm.dueAt || todayHe(), paid, paidAt: paid ? todayHe() : "" })
+                });
+                try { await updateProjField(pr, { subcontractors: subs }); }
+                catch(e) { alert("שגיאה בשמירה: " + e.message); }
+              };
+              const cards = [];
               projects.forEach(pr => {
                 (pr.subcontractors||[]).forEach(sc => {
-                  const paid = (sc.payments||[]).filter(p=>p.paid).reduce((s,p)=>s+Number(p.amount||0),0);
+                  const stages = (sc.payments||[]).map((pm, i) => ({ pm, i }));
+                  const due  = stages.filter(x => x.pm.due && !x.pm.paid && Number(x.pm.amount) > 0);
+                  const paid = stages.filter(x => x.pm.paid);
                   const total = Number(sc.price||0);
-                  allSubs.push({ sc, project: pr, paid, total, remaining: total - paid });
+                  const paidSum = paid.reduce((s,x)=>s+Number(x.pm.amount||0),0);
+                  const dueSum  = due.reduce((s,x)=>s+Number(x.pm.amount||0),0);
+                  const notYet  = Math.max(total - paidSum - dueSum, 0);
+                  cards.push({ sc, project: pr, due, paid, total, paidSum, dueSum, notYet });
                 });
               });
-              const grandSubRemaining = allSubs.reduce((s,x)=>s+Math.max(x.remaining,0),0);
-              const grandSubPaid = allSubs.reduce((s,x)=>s+x.paid,0);
+              const shown = cards.filter(c => subsView==="pending" ? c.due.length>0 : c.paid.length>0);
+              const grandDue  = cards.reduce((s,c)=>s+c.dueSum,0);
+              const grandPaid = cards.reduce((s,c)=>s+c.paidSum,0);
               return (
                 <>
-                  <div style={{ background:"#1A1A2E", borderRadius:14, padding:"12px 18px", marginBottom:14, display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-                    <span style={{ color:"#AAA", fontSize:12 }}>נשאר לשלם לקבלני משנה</span>
-                    <span style={{ color:"#E8C547", fontSize:20, fontWeight:800 }}>₪{fmtNum(grandSubRemaining)}</span>
+                  <div style={{ display:"flex", gap:6, marginBottom:12 }}>
+                    {[{k:"pending",l:`⏳ לתשלום${cards.some(c=>c.due.length) ? ` (${cards.reduce((n,c)=>n+c.due.length,0)})` : ""}`},{k:"history",l:"✅ היסטוריה"}].map(t=>(
+                      <button key={t.k} onClick={()=>setSubsView(t.k)}
+                        style={{ flex:1, background:subsView===t.k?"#6D28D9":"#EDE9FE", color:subsView===t.k?"#fff":"#6D28D9", border:"none", borderRadius:9, padding:"8px 0", fontWeight:700, fontSize:13, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>
+                        {t.l}
+                      </button>
+                    ))}
                   </div>
-                  {allSubs.length===0 && (
-                    <div style={{ background:"#fff", borderRadius:14, padding:44, textAlign:"center", border:"1.5px dashed #DDD", color:"#AAA" }}>
-                      <div style={{ fontSize:34, marginBottom:8 }}>🔨</div>
-                      <p style={{ margin:0 }}>אין קבלני משנה — מוסיפים בתוך דף פרויקט</p>
+                  <div style={{ background:"#1A1A2E", borderRadius:14, padding:"12px 18px", marginBottom:14, display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+                    <span style={{ color:"#AAA", fontSize:12 }}>{subsView==="pending" ? "לתשלום לקבלני משנה (שלבים שאושרו)" : "שולם לקבלני משנה עד כה"}</span>
+                    <span style={{ color:"#E8C547", fontSize:20, fontWeight:800 }}>₪{fmtNum(subsView==="pending" ? grandDue : grandPaid)}</span>
+                  </div>
+                  {shown.length===0 && (
+                    <div style={{ background:"#fff", borderRadius:14, padding:36, textAlign:"center", border:"1.5px dashed #DDD", color:"#AAA" }}>
+                      <div style={{ fontSize:34, marginBottom:8 }}>{subsView==="pending" ? "✅" : "🔨"}</div>
+                      <p style={{ margin:0, fontSize:13 }}>{subsView==="pending"
+                        ? "אין תשלומים ממתינים. כשקבלן מסיים שלב — מאשרים אותו בדף הפרויקט (העיגול ליד השלב) והוא יופיע כאן."
+                        : "עוד לא סומנו תשלומים לקבלנים"}</p>
                     </div>
                   )}
-                  {allSubs.map(({sc, project, paid, total, remaining}, i) => (
-                    <div key={i} style={{ background:"#fff", borderRadius:14, padding:"14px 18px", marginBottom:11, boxShadow:"0 2px 8px rgba(0,0,0,0.07)", borderRight:"4px solid #8B5CF6" }}>
-                      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:8 }}>
-                        <div>
+                  <div className="bt-grid">
+                  {shown.map(({sc, project, due, paid, total, paidSum, dueSum, notYet}, ci) => {
+                    const list = subsView==="pending" ? due : paid;
+                    return (
+                    <div key={ci} style={{ background:"#fff", borderRadius:14, padding:"14px 18px", marginBottom:11, boxShadow:"0 2px 8px rgba(0,0,0,0.07)", borderRight:"4px solid #8B5CF6" }}>
+                      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:8, gap:10 }}>
+                        <div style={{ minWidth:0 }}>
                           <p style={{ margin:0, fontWeight:700, fontSize:15 }}>{sc.name||"ללא שם"}</p>
                           <p style={{ margin:"2px 0 0", fontSize:12, color:"#888" }}>🏗️ {project.name}{sc.work ? ` · ${sc.work}` : ""}</p>
-                          <p style={{ margin:"2px 0 0", fontSize:11, color:"#AAA" }}>{sc.withMaterial ? "🧱 כולל חומר" : "🚫 בלי חומר"}{sc.plannedDays ? ` · ${sc.plannedDays} ימים מתוכננים` : ""}</p>
                         </div>
-                        <div style={{ textAlign:"left" }}>
-                          <p style={{ margin:0, fontSize:16, fontWeight:800, color: remaining>0?"#B71C1C":"#2E7D32" }}>₪{fmtNum(Math.max(remaining,0))}</p>
-                          <p style={{ margin:0, fontSize:11, color:"#AAA" }}>נשאר מתוך ₪{fmtNum(total)}</p>
+                        <div style={{ textAlign:"left", flexShrink:0 }}>
+                          <p style={{ margin:0, fontSize:17, fontWeight:800, color: subsView==="pending" ? "#B71C1C" : "#2E7D32" }}>₪{fmtNum(subsView==="pending" ? dueSum : paidSum)}</p>
+                          {total>0 && <p style={{ margin:0, fontSize:11, color:"#AAA" }}>מתוך חוזה ₪{fmtNum(total)}</p>}
                         </div>
                       </div>
-                      {(sc.payments||[]).length>0 && (
-                        <div style={{ background:"#F9F9F9", borderRadius:9, padding:"8px 11px" }}>
-                          {(sc.payments||[]).map((pm,pi)=>(
-                            <div key={pi} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"3px 0", fontSize:12 }}>
-                              <span style={{ color:pm.paid?"#2E7D32":"#555" }}>{pm.paid?"✅":"⏳"} {pm.desc||"שלב"}{pm.paid && pm.paidAt ? ` (${pm.paidAt})` : ""}</span>
-                              <span style={{ fontWeight:700, color:pm.paid?"#2E7D32":"#333", textDecoration:pm.paid?"line-through":"none" }}>₪{fmtNum(pm.amount||0)}</span>
+                      <div style={{ background:"#F9F9F9", borderRadius:9, padding:"6px 11px" }}>
+                        {list.map(({pm, i}) => (
+                          <div key={i} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"6px 0", fontSize:13, gap:8, borderBottom:"1px solid #F0F0F0" }}>
+                            <div style={{ minWidth:0 }}>
+                              <span style={{ color: subsView==="pending" ? "#B45309" : "#2E7D32", fontWeight:600 }}>{subsView==="pending" ? "⏳" : "✅"} {pm.desc||"שלב"}</span>
+                              <span style={{ display:"block", fontSize:11, color:"#999" }}>{subsView==="pending" ? (pm.dueAt ? `אושר ${pm.dueAt}` : "") : (pm.paidAt ? `שולם ${pm.paidAt}` : "")}</span>
                             </div>
-                          ))}
-                          <div style={{ display:"flex", justifyContent:"space-between", paddingTop:6, borderTop:"1px solid #EEE", marginTop:4, fontSize:12 }}>
-                            <span style={{ color:"#2E7D32" }}>שולם: ₪{fmtNum(paid)}</span>
-                            <span style={{ color:"#888" }}>סימון תשלום — בדף הפרויקט</span>
+                            <div style={{ display:"flex", alignItems:"center", gap:8, flexShrink:0 }}>
+                              <span style={{ fontWeight:700 }}>₪{fmtNum(pm.amount||0)}</span>
+                              {subsView==="pending" ? (
+                                <button onClick={()=>{ if(!window.confirm(`לסמן ₪${Number(pm.amount||0).toLocaleString("he-IL")} ל${sc.name||"קבלן"} כשולם?`)) return; setStagesPaid(project._dbid, sc.id, [i], true); }}
+                                  style={{ background:"#1A1A2E", color:"#E8C547", border:"none", borderRadius:7, padding:"5px 11px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700 }}>✓ שולם</button>
+                              ) : (
+                                <button onClick={()=>{ if(!window.confirm("לבטל את סימון התשלום?\nהשלב יחזור ל'לתשלום'.")) return; setStagesPaid(project._dbid, sc.id, [i], false); }}
+                                  style={{ background:"none", color:"#999", border:"1px solid #DDD", borderRadius:7, padding:"4px 9px", fontSize:11, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>↩ בטל</button>
+                              )}
+                            </div>
                           </div>
-                        </div>
-                      )}
+                        ))}
+                        {subsView==="pending" && due.length>1 && (
+                          <button onClick={()=>{ if(!window.confirm(`לסמן את כל ${due.length} השלבים (₪${dueSum.toLocaleString("he-IL")}) ל${sc.name||"קבלן"} כשולמו?`)) return; setStagesPaid(project._dbid, sc.id, due.map(x=>x.i), true); }}
+                            style={{ width:"100%", background:"#1A1A2E", color:"#E8C547", border:"none", borderRadius:8, padding:"8px 0", marginTop:8, fontSize:13, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700 }}>✓ שולם הכל — ₪{fmtNum(dueSum)}</button>
+                        )}
+                      </div>
+                      {subsView==="pending" && notYet>0 && <p style={{ margin:"8px 0 0", fontSize:11, color:"#999" }}>יתרת חוזה שעוד לא אושרה: ₪{fmtNum(notYet)}</p>}
+                      {subsView==="history" && total>0 && <p style={{ margin:"8px 0 0", fontSize:11, color:"#999" }}>שולם ₪{fmtNum(paidSum)} מתוך ₪{fmtNum(total)}{dueSum>0 ? ` · ממתין לתשלום ₪${fmtNum(dueSum)}` : ""}</p>}
                     </div>
-                  ))}
+                    );
+                  })}
+                  </div>
                 </>
               );
             })()}
