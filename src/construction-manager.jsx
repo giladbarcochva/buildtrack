@@ -138,6 +138,20 @@ const BT_DESKTOP_CSS = `
 }
 `;
 
+// כותרת אזור נפתח בדף פרויקט — לחיצה פותחת/סוגרת, סיכום קצר בצד
+function SecHead({ title, summary, open, onToggle, action, mb }) {
+  return (
+    <div onClick={onToggle} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", gap:8, cursor:"pointer", marginBottom: open ? (mb ?? 13) : 0, userSelect:"none" }}>
+      <div style={{ display:"flex", alignItems:"center", gap:8, minWidth:0, flexWrap:"wrap" }}>
+        <span style={{ fontSize:11, color:"#999", display:"inline-block", transform: open ? "rotate(90deg)" : "rotate(0deg)", transition:"transform .15s" }}>◀</span>
+        <h3 style={{ margin:0, fontSize:15, fontWeight:700 }}>{title}</h3>
+        {summary && <span style={{ fontSize:12, color:"#888" }}>{summary}</span>}
+      </div>
+      {action && <div onClick={e => e.stopPropagation()} style={{ flexShrink:0 }}>{action}</div>}
+    </div>
+  );
+}
+
 // ניווט לאתר — קישור ל-Waze לפי נקודה מדויקת (אם נקבעה) או לפי הכתובת שהוזנה
 function wazeUrl(p) {
   if (!p) return null;
@@ -816,6 +830,9 @@ export default function App() {
   const [showPartial, setShowPartial] = useState({}); // key: workerId_month -> bool
   const [payrollView, setPayrollView] = useState("pending");
   const [subsView,    setSubsView]    = useState("pending"); // קבלנים: לתשלום / היסטוריה
+  const [projOpen,    setProjOpen]    = useState({});        // אזורים פתוחים בדף פרויקט (הוצאות/קבלנים/עובדים/חשבוניות)
+  const togOpen = (k, v) => setProjOpen(o => ({ ...o, [k]: v === undefined ? !o[k] : v }));
+  useEffect(() => { setProjOpen({}); }, [detailId]);
   const [calMonth, setCalMonth] = useState(() => {
     const d = new Date();
     return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
@@ -2651,6 +2668,16 @@ async function shareImg() {
           // ימי עבודה לפי עובד (לצורך תצוגת שכר בפרויקט)
           const daysMap = workerDaysForProject(reports, detailProject.id);
           const workerEntries = Object.entries(daysMap).sort((a,b)=>b[1]-a[1]);
+          // עלות עובדים בפרויקט — אותו חישוב כמו מסך השכר (יומי/שעתי כולל שעות נוספות + דלק). גלובלי לא נכלל, דיווחים לא מאושרים לא נספרים
+          const projRepsOk = reports.filter(r => !r._paymentRecord && !r.pendingApproval && String(r.projectId) === String(detailProject.id));
+          const laborByName = {};
+          workers.forEach(w => {
+            if ((w.payType||"daily") === "global") return;
+            const c = calcWorkerPayroll(w, projRepsOk);
+            const pay = c.months.reduce((s, m) => s + m.pay, 0);
+            if (pay > 0) laborByName[w.name] = pay;
+          });
+          const laborTotal = Object.values(laborByName).reduce((s, v) => s + v, 0);
           return (
             <>
               <button onClick={()=>{ setDetailId(null); setEditProj(null); }} style={{ background:"none", border:"none", fontSize:13, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:600, marginBottom:14, padding:0, color:"#1A1A2E" }}>← חזור לפרויקטים</button>
@@ -2688,15 +2715,14 @@ async function shareImg() {
 
               {/* Worker days in project */}
               <div style={{ background:"#fff", borderRadius:14, padding:"16px 20px", marginBottom:14, boxShadow:"0 2px 8px rgba(0,0,0,0.07)" }}>
-                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12 }}>
-                  <h3 style={{ margin:0, fontSize:15, fontWeight:700 }}>👷 עובדים בפרויקט</h3>
-                  {/* ✅ ימים ייחודיים */}
-                  <span style={{ background:"#F0F4FF", color:"#3B5BDB", borderRadius:8, padding:"4px 12px", fontSize:13, fontWeight:700 }}>📅 {totalDays} ימי עבודה</span>
-                </div>
-                {workerEntries.length===0 ? <p style={{ margin:0, fontSize:13, color:"#AAA" }}>אין דיווחים עדיין</p> :
+                <SecHead title="👷 עובדים בפרויקט" open={!!projOpen.workers} onToggle={()=>togOpen("workers")} mb={12}
+                  summary={`${workerEntries.length} עובדים${laborTotal>0 ? ` · ₪${fmtNum(laborTotal)}` : ""}`}
+                  action={<span onClick={()=>togOpen("workers")} style={{ background:"#F0F4FF", color:"#3B5BDB", borderRadius:8, padding:"4px 12px", fontSize:13, fontWeight:700, cursor:"pointer" }}>📅 {totalDays} ימי עבודה</span>}/>
+                {projOpen.workers && (workerEntries.length===0 ? <p style={{ margin:0, fontSize:13, color:"#AAA" }}>אין דיווחים עדיין</p> :
                   workerEntries.map(([name, days]) => {
                     const w = workers.find(w=>w.name===name);
-                    const rate = Number(w?.dailyRate||0);
+                    const cost = laborByName[name] || 0;
+                    const isGlobal = w?.payType === "global";
                     return (
                       <div key={name} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"9px 12px", background:"#F9F9F9", borderRadius:10, marginBottom:7 }}>
                         <div style={{ display:"flex", alignItems:"center", gap:10 }}>
@@ -2708,12 +2734,13 @@ async function shareImg() {
                         </div>
                         <div style={{ textAlign:"left" }}>
                           <p style={{ margin:0, fontWeight:800, fontSize:15, color:"#3B5BDB" }}>{days} ימים</p>
-                          {rate>0 && <p style={{ margin:0, fontSize:12, color:"#888" }}>₪{fmtNum(days*rate)}</p>}
+                          {isGlobal ? <p style={{ margin:0, fontSize:11, color:"#AAA" }}>גלובלי — לא נכלל בעלות</p>
+                            : cost>0 && <p style={{ margin:0, fontSize:12, color:"#888" }}>₪{fmtNum(cost)}{w?.payType==="hourly" ? " · שעתי" : ""}</p>}
                         </div>
                       </div>
                     );
                   })
-                }
+                )}
               </div>
 
               <div style={{ background:"#fff", borderRadius:14, padding:"16px 20px", marginBottom:14, boxShadow:"0 2px 8px rgba(0,0,0,0.07)" }}>
@@ -2775,13 +2802,13 @@ async function shareImg() {
 
               {/* EXPENSES */}
               <div style={{ background:"#fff", borderRadius:14, padding:"16px 20px", marginBottom:14, boxShadow:"0 2px 8px rgba(0,0,0,0.07)" }}>
-                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:13 }}>
-                  <h3 style={{ margin:0, fontSize:15, fontWeight:700 }}>🧾 הוצאות</h3>
-                  <button onClick={()=>{ const expenses=[...(editProj.expenses||[]),{id:Date.now(),desc:"",amount:"",category:"חומר",date:todayStr()}]; setEditProj(p=>({...p,expenses})); updateProjField(detailProject,{expenses}); }}
-                    style={{ background:"#1A1A2E", color:"#E8C547", border:"none", borderRadius:7, padding:"4px 12px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700 }}>+ הוסף הוצאה</button>
-                </div>
-                {(!editProj.expenses||editProj.expenses.length===0) && <p style={{ margin:0, fontSize:13, color:"#AAA" }}>אין הוצאות רשומות</p>}
-                {(editProj.expenses||[]).map((ex,idx) => {
+                <SecHead title="🧾 הוצאות" open={!!projOpen.exp} onToggle={()=>togOpen("exp")}
+                  summary={(editProj.expenses||[]).length ? `${(editProj.expenses||[]).length} הוצאות · ${projOpen.exp ? "לחץ לסגירה" : "לחץ לפירוט"}` : ""}
+                  action={
+                  <button onClick={()=>{ togOpen("exp", true); const expenses=[...(editProj.expenses||[]),{id:Date.now(),desc:"",amount:"",category:"חומר",date:todayStr()}]; setEditProj(p=>({...p,expenses})); updateProjField(detailProject,{expenses}); }}
+                    style={{ background:"#1A1A2E", color:"#E8C547", border:"none", borderRadius:7, padding:"4px 12px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700 }}>+ הוסף הוצאה</button>}/>
+                {(!editProj.expenses||editProj.expenses.length===0) && <p style={{ margin:"10px 0 0", fontSize:13, color:"#AAA" }}>אין הוצאות רשומות</p>}
+                {projOpen.exp && (editProj.expenses||[]).map((ex,idx) => {
                   const updExp = (changes, isText=false) => {
                     const expenses=(editProj.expenses||[]).map((e,i)=>i===idx?{...e,...changes}:e);
                     setEditProj(p=>({...p,expenses}));
@@ -2795,9 +2822,9 @@ async function shareImg() {
                     <div key={ex.id} style={{ background:"#F9F9F9", borderRadius:12, padding:"11px 13px", marginBottom:8 }}>
                       <div style={{ display:"flex", gap:8, alignItems:"center", marginBottom:7 }}>
                         <input value={ex.desc} placeholder="תיאור ההוצאה" onChange={e=>updExp({desc:e.target.value}, true)}
-                          style={{ flex:2, border:"1.5px solid #EEE", borderRadius:8, padding:"7px 10px", fontSize:13, fontFamily:"Heebo,sans-serif", outline:"none", background:"#fff" }}/>
+                          style={{ flex:2, minWidth:0, width:0, border:"1.5px solid #EEE", borderRadius:8, padding:"7px 10px", fontSize:13, fontFamily:"Heebo,sans-serif", outline:"none", background:"#fff" }}/>
                         <input type="number" value={ex.amount} placeholder="סכום ₪" onChange={e=>updExp({amount:e.target.value}, true)}
-                          style={{ flex:1, border:"1.5px solid #EEE", borderRadius:8, padding:"7px 10px", fontSize:13, fontFamily:"Heebo,sans-serif", outline:"none", background:"#fff" }}/>
+                          style={{ flex:1, minWidth:0, width:0, border:"1.5px solid #EEE", borderRadius:8, padding:"7px 10px", fontSize:13, fontFamily:"Heebo,sans-serif", outline:"none", background:"#fff" }}/>
                         <button onClick={()=>{ const expenses=(editProj.expenses||[]).filter((_,i)=>i!==idx); setEditProj(p=>({...p,expenses})); updateProjField(detailProject,{expenses}); }}
                           style={{ background:"none", border:"none", cursor:"pointer", color:"#CCC", fontSize:14, padding:0, flexShrink:0 }}>✕</button>
                       </div>
@@ -2850,13 +2877,19 @@ async function shareImg() {
               {/* SUBCONTRACTORS */}
               {plan.subs && (
               <div style={{ background:"#fff", borderRadius:14, padding:"16px 20px", marginBottom:14, boxShadow:"0 2px 8px rgba(0,0,0,0.07)" }}>
-                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:13 }}>
-                  <h3 style={{ margin:0, fontSize:15, fontWeight:700 }}>🔨 קבלני משנה</h3>
-                  <button onClick={()=>{ const subs=[...(editProj.subcontractors||[]),{id:Date.now(),name:"",work:"",price:"",withMaterial:true,plannedDays:"",payments:[]}]; setEditProj(p=>({...p,subcontractors:subs})); updateProjField(detailProject,{subcontractors:subs}); }}
-                    style={{ background:"#1A1A2E", color:"#E8C547", border:"none", borderRadius:7, padding:"4px 12px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700 }}>+ הוסף קבלן</button>
-                </div>
-                {(!editProj.subcontractors||editProj.subcontractors.length===0) && <p style={{ margin:0, fontSize:13, color:"#AAA" }}>אין קבלני משנה</p>}
-                {(editProj.subcontractors||[]).map((sc,si) => {
+                {(() => {
+                  const subsArr = editProj.subcontractors||[];
+                  const dueAll = subsArr.reduce((s,sc)=>s+(sc.payments||[]).filter(p=>p.due && !p.paid).reduce((s2,p)=>s2+Number(p.amount||0),0),0);
+                  const totAll = subsArr.reduce((s,sc)=>s+Number(sc.price||0),0);
+                  return (
+                    <SecHead title="🔨 קבלני משנה" open={!!projOpen.subs} onToggle={()=>togOpen("subs")}
+                      summary={subsArr.length ? `${subsArr.length} קבלנים${totAll>0 ? ` · ₪${fmtNum(totAll)}` : ""}${dueAll>0 ? ` · ⏳ לתשלום ₪${fmtNum(dueAll)}` : ""}` : ""}
+                      action={<button onClick={()=>{ togOpen("subs", true); const subs=[...subsArr,{id:Date.now(),name:"",work:"",price:"",withMaterial:true,plannedDays:"",payments:[]}]; setEditProj(p=>({...p,subcontractors:subs})); updateProjField(detailProject,{subcontractors:subs}); }}
+                        style={{ background:"#1A1A2E", color:"#E8C547", border:"none", borderRadius:7, padding:"4px 12px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700 }}>+ הוסף קבלן</button>}/>
+                  );
+                })()}
+                {(!editProj.subcontractors||editProj.subcontractors.length===0) && <p style={{ margin:"10px 0 0", fontSize:13, color:"#AAA" }}>אין קבלני משנה</p>}
+                {projOpen.subs && (editProj.subcontractors||[]).map((sc,si) => {
                   const updSub = (changes, isText=false) => {
                     const subs=(editProj.subcontractors||[]).map((x,i)=>i===si?{...x,...changes}:x);
                     setEditProj(p=>({...p,subcontractors:subs}));
@@ -2978,12 +3011,15 @@ async function shareImg() {
                 const expTotal = (editProj.expenses||[]).reduce((s,e)=>s+Number(e.amount||0),0);
                 const subTotal = (editProj.subcontractors||[]).reduce((s,sc)=>s+Number(sc.price||0),0);
                 const subPaid = (editProj.subcontractors||[]).reduce((s,sc)=>s+(sc.payments||[]).filter(p=>p.paid).reduce((s2,p)=>s2+Number(p.amount||0),0),0);
-                if (expTotal===0 && subTotal===0) return null;
+                if (expTotal===0 && subTotal===0 && laborTotal===0) return null;
                 return (
                   <div style={{ background:"#1A1A2E", borderRadius:14, padding:"14px 20px", marginBottom:14 }}>
                     <p style={{ margin:"0 0 8px", fontSize:13, fontWeight:700, color:"#E8C547" }}>💰 סה"כ הוצאות פרויקט</p>
                     <div style={{ display:"flex", justifyContent:"space-between", fontSize:12, color:"#AAA", marginBottom:3 }}>
                       <span>הוצאות וחומרים</span><span>₪{fmtNum(expTotal)}</span>
+                    </div>
+                    <div style={{ display:"flex", justifyContent:"space-between", fontSize:12, color:"#AAA", marginBottom:3 }}>
+                      <span>👷 עובדים (כולל דלק)</span><span>₪{fmtNum(laborTotal)}</span>
                     </div>
                     <div style={{ display:"flex", justifyContent:"space-between", fontSize:12, color:"#AAA", marginBottom:3 }}>
                       <span>קבלני משנה (סוכם)</span><span>₪{fmtNum(subTotal)}</span>
@@ -2993,7 +3029,7 @@ async function shareImg() {
                     </div>
                     <div style={{ display:"flex", justifyContent:"space-between", paddingTop:8, borderTop:"1px solid rgba(255,255,255,0.15)" }}>
                       <span style={{ color:"#fff", fontWeight:700, fontSize:14 }}>סה"כ</span>
-                      <span style={{ color:"#E8C547", fontWeight:800, fontSize:18 }}>₪{fmtNum(expTotal + subTotal)}</span>
+                      <span style={{ color:"#E8C547", fontWeight:800, fontSize:18 }}>₪{fmtNum(expTotal + subTotal + laborTotal)}</span>
                     </div>
                   </div>
                 );
@@ -3071,7 +3107,13 @@ async function shareImg() {
 
                 return (
               <div style={{ background:"#fff", borderRadius:14, padding:"16px 20px", marginBottom:14, boxShadow:"0 2px 8px rgba(0,0,0,0.07)" }}>
-                <h3 style={{ margin:"0 0 6px", fontSize:15, fontWeight:700 }}>📸 חשבוניות</h3>
+                {(() => {
+                  const invArr = editProj.invoices||[];
+                  const badN = invArr.filter(x => (x.scanStatus==="failed"||x.scanStatus==="quota") && !x.expensed).length;
+                  return <SecHead title="📸 חשבוניות" open={!!projOpen.inv} onToggle={()=>togOpen("inv")} mb={6}
+                    summary={invArr.length ? `${invArr.length} חשבוניות${badN ? ` · ⚠️ ${badN} לא פוענחו` : ""} · ${projOpen.inv ? "לחץ לסגירה" : "לחץ לרשימה"}` : ""}/>;
+                })()}
+                <div style={{ height:8 }}/>
                 <p style={{ margin:"0 0 12px", fontSize:13, color:"#777" }}>
                   {aiLimit > 0
                     ? (aiOn ? `🤖 פענוח אוטומטי פעיל — החשבונית תיקרא ותיכנס להוצאות לפי סוג. נשארו ~${aiLeft} חשבוניות החודש.`
@@ -3113,11 +3155,12 @@ async function shareImg() {
                     setEditProj(p=>({...p, invoices: invs, expenses}));
                     updateProjField(detailProject, { invoices: invs, expenses });
                     setInvoiceAnalyzing(false);
+                    if (failed) togOpen("inv", true); // יש חשבוניות שלא פוענחו — פותחים את הרשימה כדי שיראו
                     if (aiOn && failed) alert(`✓ ${done} פוענחו ונכנסו להוצאות\n⚠️ ${failed} לא פוענחו — מסומנות באדום, הזן ידנית או נסה שוב`);
                   }}/>
                 </label>
 
-                {(editProj.invoices||[]).length>0 && (
+                {projOpen.inv && (editProj.invoices||[]).length>0 && (
                   <div style={{ marginTop:12, display:"flex", flexDirection:"column", gap:8 }}>
                     {(editProj.invoices||[]).map((inv,i) => {
                       const bad = inv.scanStatus === "failed" || inv.scanStatus === "quota";
@@ -3424,9 +3467,12 @@ async function shareImg() {
                 <button onClick={()=>{ setAssignPid(detailProject.id); setAssignM(true); }} style={{ ...btnD, fontSize:13, padding:"7px 14px" }}>שייך עובדים</button>
               </div>
 
-              <h3 style={{ margin:"0 0 10px", fontWeight:700, fontSize:15 }}>📋 דיווחים מהשטח ({pr.length})</h3>
-              {pr.length===0 && <div style={{ background:"#fff", borderRadius:12, padding:24, textAlign:"center", color:"#AAA", border:"1.5px dashed #DDD" }}><p style={{ margin:0 }}>אין דיווחים עדיין</p></div>}
-              {[...pr].reverse().map(r => (
+              <div style={{ background:"#fff", borderRadius:14, padding:"14px 20px", marginBottom:10, boxShadow:"0 2px 8px rgba(0,0,0,0.07)" }}>
+                <SecHead title={`📋 דיווחים מהשטח (${pr.length})`} open={!!projOpen.reps} onToggle={()=>togOpen("reps")} mb={0}
+                  summary={pr.length ? (projOpen.reps ? "לחץ לסגירה" : "לחץ לרשימה") : ""}/>
+              </div>
+              {projOpen.reps && pr.length===0 && <div style={{ background:"#fff", borderRadius:12, padding:24, textAlign:"center", color:"#AAA", border:"1.5px dashed #DDD" }}><p style={{ margin:0 }}>אין דיווחים עדיין</p></div>}
+              {projOpen.reps && [...pr].reverse().map(r => (
                 <div key={r._dbid} style={{ background:"#fff", borderRadius:12, padding:"12px 16px", marginBottom:9, borderRight:"4px solid #E8C547", boxShadow:"0 1px 5px rgba(0,0,0,0.06)", display:"flex", justifyContent:"space-between", alignItems:"flex-start" }}>
                   <div>
                     <div style={{ display:"flex", gap:8, alignItems:"center", marginBottom:3 }}>
