@@ -138,6 +138,127 @@ const BT_DESKTOP_CSS = `
 }
 `;
 
+// ===== צפייה בקבצים בתוך המערכת (חשבוניות, תוכניות, הצעות קבלנים) =====
+// תמונות — מוצגות ישירות. PDF — כל העמודים מצוירים עם pdf.js (באייפון תצוגת PDF רגילה מראה רק עמוד ראשון)
+let _pdfjsP = null;
+function loadPdfJs() {
+  if (window.pdfjsLib) return Promise.resolve(window.pdfjsLib);
+  if (_pdfjsP) return _pdfjsP;
+  const base = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/";
+  _pdfjsP = new Promise((res, rej) => {
+    const sc = document.createElement("script");
+    sc.src = base + "pdf.min.js";
+    sc.onload = () => { try { window.pdfjsLib.GlobalWorkerOptions.workerSrc = base + "pdf.worker.min.js"; res(window.pdfjsLib); } catch (e) { rej(e); } };
+    sc.onerror = () => { _pdfjsP = null; rej(new Error("לא ניתן לטעון את מציג ה-PDF")); };
+    document.head.appendChild(sc);
+  });
+  return _pdfjsP;
+}
+function fileKind(f) {
+  const n = String(f?.name || "").toLowerCase(), u = String(f?.url || "").toLowerCase(), m = String(f?.mime || "").toLowerCase();
+  if (m.includes("pdf") || u.startsWith("data:application/pdf") || /\.pdf($|\?)/.test(n) || /\.pdf($|\?)/.test(u)) return "pdf";
+  if (m.startsWith("image/") || u.startsWith("data:image/") || /\.(jpe?g|png|gif|webp|heic|heif|bmp)($|\?)/.test(n) || /\.(jpe?g|png|gif|webp|heic|heif|bmp)($|\?)/.test(u)) return "image";
+  return "other";
+}
+function PdfPages({ url, zoom }) {
+  const boxRef = useRef(null);
+  const [status, setStatus] = useState("loading"); // loading | ok | error
+  const [err, setErr] = useState("");
+  const [pages, setPages] = useState(0);
+  useEffect(() => {
+    let cancelled = false, doc = null;
+    (async () => {
+      try {
+        const lib = await loadPdfJs();
+        doc = await lib.getDocument({ url }).promise;
+        if (cancelled) return;
+        setPages(doc.numPages);
+        const box = boxRef.current; if (!box) return;
+        box.innerHTML = "";
+        const cssW = Math.min(box.clientWidth || window.innerWidth, 1400);
+        const dpr = Math.min(window.devicePixelRatio || 1, 2) * 2; // רזולוציה כפולה — חד גם בהגדלה
+        for (let i = 1; i <= doc.numPages; i++) {
+          if (cancelled) return;
+          const page = await doc.getPage(i);
+          const v1 = page.getViewport({ scale: 1 });
+          const vp = page.getViewport({ scale: (cssW / v1.width) * dpr });
+          const c = document.createElement("canvas");
+          c.width = vp.width; c.height = vp.height;
+          c.style.cssText = `width:100%;height:auto;display:block;margin:0 auto 10px;background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.3)`;
+          box.appendChild(c);
+          await page.render({ canvasContext: c.getContext("2d"), viewport: vp }).promise;
+          if (i === 1 && !cancelled) setStatus("ok");
+        }
+      } catch (e) { if (!cancelled) { setErr(e?.message || "שגיאה"); setStatus("error"); } }
+    })();
+    return () => { cancelled = true; try { doc && doc.destroy(); } catch (e) {} };
+  }, [url]);
+  return (
+    <>
+      {status === "loading" && <p style={{ color:"#ccc", textAlign:"center", marginTop:40 }}>⏳ טוען את הקובץ...</p>}
+      {status === "error" && (
+        <div style={{ color:"#fff", textAlign:"center", marginTop:40, padding:"0 20px" }}>
+          <p style={{ margin:"0 0 14px" }}>לא הצלחתי להציג את הקובץ כאן ({err}).</p>
+          <a href={url} target="_blank" rel="noreferrer" style={{ color:"#E8C547", fontWeight:700 }}>פתח בלשונית חדשה ↗</a>
+        </div>
+      )}
+      {status === "ok" && pages > 1 && <p style={{ color:"#aaa", fontSize:12, textAlign:"center", margin:"0 0 8px" }}>{pages} עמודים — גלול למטה</p>}
+      <div ref={boxRef} style={{ width: zoom ? "250%" : "100%", maxWidth: zoom ? "none" : 1400, margin: zoom ? 0 : "0 auto" }}/>
+    </>
+  );
+}
+function FileViewer({ file, onClose }) {
+  const [zoom, setZoom] = useState(false);
+  const [src, setSrc] = useState(null);
+  useEffect(() => {
+    if (!file) return;
+    // קובץ ישן ששמור כ-dataUrl — ממירים לכתובת Blob (מהיר יותר, עובד גם בספארי)
+    let made = null;
+    if (String(file.url || "").startsWith("data:")) {
+      try {
+        const [meta, b64] = file.url.split(",");
+        const mime = (meta.match(/data:(.*?);/) || [])[1] || "application/octet-stream";
+        const bin = atob(b64); const bytes = new Uint8Array(bin.length);
+        for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+        made = URL.createObjectURL(new Blob([bytes], { type: mime }));
+        setSrc(made);
+      } catch (e) { setSrc(file.url); }
+    } else setSrc(file.url);
+    setZoom(false);
+    const onKey = (e) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", onKey);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { window.removeEventListener("keydown", onKey); document.body.style.overflow = prevOverflow; if (made) setTimeout(() => URL.revokeObjectURL(made), 1000); };
+  }, [file]);
+  if (!file || !src) return null;
+  const kind = fileKind(file);
+  return (
+    <div style={{ position:"fixed", inset:0, zIndex:10000, background:"#15151F", display:"flex", flexDirection:"column", direction:"rtl", fontFamily:"Heebo,sans-serif" }}>
+      <div style={{ display:"flex", alignItems:"center", gap:8, padding:"10px 14px", paddingTop:"calc(10px + env(safe-area-inset-top))", background:"#1A1A2E", flexShrink:0 }}>
+        <span style={{ color:"#fff", fontSize:14, fontWeight:700, flex:1, minWidth:0, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{file.name || "קובץ"}</span>
+        {kind !== "other" && <button onClick={() => setZoom(z => !z)} style={{ background:"rgba(255,255,255,0.12)", color:"#fff", border:"none", borderRadius:8, padding:"7px 11px", fontSize:13, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>{zoom ? "🔍−" : "🔍+"}</button>}
+        <a href={src} download={file.name || true} target="_blank" rel="noreferrer" style={{ background:"rgba(255,255,255,0.12)", color:"#fff", borderRadius:8, padding:"7px 11px", fontSize:13, textDecoration:"none" }}>⬇ הורדה</a>
+        <button onClick={onClose} style={{ background:"#E8C547", color:"#1A1A2E", border:"none", borderRadius:8, padding:"7px 14px", fontSize:15, fontWeight:800, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>✕</button>
+      </div>
+      <div style={{ flex:1, overflow:"auto", WebkitOverflowScrolling:"touch", padding:12 }}>
+        {kind === "image" && (
+          <img src={src} alt={file.name || ""} onClick={() => setZoom(z => !z)}
+            style={zoom ? { width:"250%", maxWidth:"none", display:"block", cursor:"zoom-out" }
+                        : { maxWidth:"100%", maxHeight:"100%", display:"block", margin:"0 auto", objectFit:"contain", cursor:"zoom-in" }}/>
+        )}
+        {kind === "pdf" && <PdfPages url={src} zoom={zoom}/>}
+        {kind === "other" && (
+          <div style={{ color:"#fff", textAlign:"center", marginTop:40 }}>
+            <p style={{ margin:"0 0 14px" }}>לא ניתן להציג את סוג הקובץ הזה בתוך המערכת.</p>
+            <a href={src} target="_blank" rel="noreferrer" style={{ color:"#E8C547", fontWeight:700 }}>פתח בלשונית חדשה ↗</a>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // כותרת אזור נפתח בדף פרויקט — לחיצה פותחת/סוגרת, סיכום קצר בצד
 function SecHead({ title, summary, open, onToggle, action, mb }) {
   return (
@@ -832,7 +953,9 @@ export default function App() {
   const [subsView,    setSubsView]    = useState("pending"); // קבלנים: לתשלום / היסטוריה
   const [projOpen,    setProjOpen]    = useState({});        // אזורים פתוחים בדף פרויקט (הוצאות/קבלנים/עובדים/חשבוניות)
   const togOpen = (k, v) => setProjOpen(o => ({ ...o, [k]: v === undefined ? !o[k] : v }));
-  useEffect(() => { setProjOpen({}); }, [detailId]);
+  const [viewFile,    setViewFile]    = useState(null);     // קובץ פתוח במציג (חשבונית / תוכנית / הצעת קבלן)
+  const [descFull,    setDescFull]    = useState(false);    // תיאור פרויקט במסך מלא
+  useEffect(() => { setProjOpen({}); setDescFull(false); }, [detailId]);
   const [calMonth, setCalMonth] = useState(() => {
     const d = new Date();
     return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
@@ -1483,7 +1606,8 @@ export default function App() {
   // פתיחת קובץ dataURL — ספארי חוסם data: ב-target blank, לכן ממירים ל-Blob
   const openPlan = (plan) => {
     // תוכניות חדשות — קישור ישיר ל-Storage
-    if (plan.url) { window.open(plan.url, "_blank"); return; }
+    if (plan.url) { setViewFile({ url: plan.url, name: plan.name }); return; }
+    if (plan.dataUrl) { setViewFile({ url: plan.dataUrl, name: plan.name }); return; }
     // תוכניות ישנות — dataUrl בבסיס הנתונים
     try {
       const [meta, b64] = plan.dataUrl.split(",");
@@ -2914,7 +3038,7 @@ async function shareImg() {
                       <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:8 }}>
                         {sc.quoteFile ? (
                           <>
-                            <button onClick={()=>window.open(sc.quoteFile.url, "_blank")}
+                            <button onClick={()=>setViewFile({ url: sc.quoteFile.url, name: sc.quoteFile.name })}
                               style={{ background:"none", border:"none", cursor:"pointer", fontSize:12, color:"#6D28D9", fontWeight:600, fontFamily:"Heebo,sans-serif", padding:0 }}>
                               📎 {sc.quoteFile.name}
                             </button>
@@ -3166,7 +3290,7 @@ async function shareImg() {
                       const bad = inv.scanStatus === "failed" || inv.scanStatus === "quota";
                       return (
                       <div key={i} style={{ background: bad ? "#FDECEC" : "#F5F5F0", border: bad ? "1.5px solid #E53935" : "1.5px solid transparent", borderRadius:10, padding:"8px 12px", display:"flex", alignItems:"center", gap:8, flexWrap:"wrap" }}>
-                        <button onClick={()=>window.open(inv.url, "_blank")} style={{ background:"none", border:"none", cursor:"pointer", fontSize:13, color: bad ? "#B71C1C" : "#1565C0", fontWeight:600, fontFamily:"Heebo,sans-serif", padding:0, maxWidth:"55%", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
+                        <button onClick={()=>setViewFile({ url: inv.url, name: inv.name })} style={{ background:"none", border:"none", cursor:"pointer", fontSize:13, color: bad ? "#B71C1C" : "#1565C0", fontWeight:600, fontFamily:"Heebo,sans-serif", padding:0, maxWidth:"55%", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
                           🧾 {inv.name}
                         </button>
                         <span style={{ fontSize:11, color:"#AAA" }}>{inv.date}</span>
@@ -3244,14 +3368,35 @@ async function shareImg() {
                 )}
               </div>
 
-              {/* PROJECT DESCRIPTION */}
+              {/* PROJECT DESCRIPTION — תצוגה מקוצרת, לחיצה פותחת מסך מלא לקריאה ועריכה */}
               <div style={{ background:"#fff", borderRadius:14, padding:"16px 20px", marginBottom:14, boxShadow:"0 2px 8px rgba(0,0,0,0.07)" }}>
-                <h3 style={{ margin:"0 0 10px", fontSize:15, fontWeight:700 }}>📋 תיאור הפרויקט</h3>
-                <textarea value={editProj.description||""} placeholder="לדוגמה: 200 מטר גבס · שלד בטון 150 מ״ר · פרגולה 40 מ״ר"
-                  onChange={e=>{ setEditProj(p=>({...p, description: e.target.value})); updateProjFieldDebounced(detailProject, { description: e.target.value }); }}
-                  rows={3}
-                  style={{ width:"100%", border:"1.5px solid #EEE", borderRadius:10, padding:"10px 12px", fontSize:14, fontFamily:"Heebo,sans-serif", outline:"none", background:"#FDFDFB", boxSizing:"border-box", resize:"vertical" }}/>
+                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:10 }}>
+                  <h3 style={{ margin:0, fontSize:15, fontWeight:700 }}>📋 תיאור הפרויקט</h3>
+                  <button onClick={()=>setDescFull(true)} style={{ background:"#1A1A2E", color:"#E8C547", border:"none", borderRadius:7, padding:"4px 12px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700 }}>⤢ פתח</button>
+                </div>
+                <div onClick={()=>setDescFull(true)}
+                  style={{ border:"1.5px solid #EEE", borderRadius:10, padding:"10px 12px", fontSize:14, lineHeight:1.6, background:"#FDFDFB", cursor:"pointer", whiteSpace:"pre-wrap", wordBreak:"break-word",
+                           color: editProj.description ? "#333" : "#AAA", display:"-webkit-box", WebkitLineClamp:4, WebkitBoxOrient:"vertical", overflow:"hidden" }}>
+                  {editProj.description || "לחץ להוספת תיאור — לדוגמה: 200 מטר גבס · שלד בטון 150 מ״ר · פרגולה 40 מ״ר"}
+                </div>
               </div>
+
+              {descFull && (
+                <div style={{ position:"fixed", inset:0, zIndex:9999, background:"#F5F5F0", display:"flex", flexDirection:"column", direction:"rtl" }}>
+                  <div style={{ display:"flex", alignItems:"center", gap:10, padding:"12px 16px", paddingTop:"calc(12px + env(safe-area-inset-top))", background:"#1A1A2E", flexShrink:0 }}>
+                    <div style={{ flex:1, minWidth:0 }}>
+                      <p style={{ margin:0, color:"#E8C547", fontWeight:800, fontSize:16 }}>📋 תיאור הפרויקט</p>
+                      <p style={{ margin:0, color:"#AAA", fontSize:12, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{detailProject.name} · נשמר אוטומטית</p>
+                    </div>
+                    <button onClick={()=>setDescFull(false)} style={{ background:"#E8C547", color:"#1A1A2E", border:"none", borderRadius:9, padding:"8px 16px", fontSize:14, fontWeight:800, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>✓ סגור</button>
+                  </div>
+                  <div style={{ flex:1, padding:14, display:"flex", minHeight:0 }}>
+                    <textarea autoFocus value={editProj.description||""} placeholder="לדוגמה: 200 מטר גבס · שלד בטון 150 מ״ר · פרגולה 40 מ״ר"
+                      onChange={e=>{ setEditProj(p=>({...p, description: e.target.value})); updateProjFieldDebounced(detailProject, { description: e.target.value }); }}
+                      style={{ flex:1, width:"100%", border:"1.5px solid #DDD", borderRadius:12, padding:"14px 16px", fontSize:16, lineHeight:1.8, fontFamily:"Heebo,sans-serif", outline:"none", background:"#fff", boxSizing:"border-box", resize:"none" }}/>
+                  </div>
+                </div>
+              )}
 
               {/* SITE ADDRESS + WAZE */}
               <div style={{ background:"#fff", borderRadius:14, padding:"16px 20px", marginBottom:14, boxShadow:"0 2px 8px rgba(0,0,0,0.07)" }}>
@@ -4439,6 +4584,9 @@ async function shareImg() {
           </div>
         </div>
       )}
+
+      {/* מציג קבצים בתוך המערכת */}
+      {viewFile && <FileViewer file={viewFile} onClose={()=>setViewFile(null)}/>}
 
       {/* MODAL: אישור תנאי שימוש — חד-פעמי לכל קבלן */}
       {!isForeman && termsAccepted === false && (
