@@ -43,8 +43,40 @@
       })();
     </script>
   </head>
-  <body>
-    <div id="root"></div>
+  <body style="margin:0;background:#1A1A2E">
+    <!-- מסך טעינה: אם האפליקציה לא עולה — רואים "טוען" (ולא דף לבן), ואחרי זמן מה כפתור לתיקון -->
+    <div id="root"><div id="bt-boot" style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:Heebo,Arial,sans-serif;color:#E8C547;direction:rtl;text-align:center;padding:24px;box-sizing:border-box">
+      <div style="font-size:18px;font-weight:700">טוען...</div>
+      <div id="bt-boot-msg" style="color:#ccc;font-size:13px;margin-top:14px;max-width:320px"></div>
+    </div></div>
+    <script>
+      // אם יש שגיאה לפני שהאפליקציה עלתה, או שהטעינה נתקעת — מציגים הודעה וכפתור תיקון במקום דף ריק
+      (function () {
+        function fixBtn() {
+          return '<div style="margin-top:16px"><button onclick="btHardReload()" style="background:#E8C547;color:#1A1A2E;border:none;border-radius:10px;padding:10px 18px;font-size:15px;font-weight:700">🔄 נקה ורענן</button></div>';
+        }
+        window.btHardReload = function () {
+          var done = function () { location.reload(); };
+          try {
+            var ps = [];
+            if (window.caches && caches.keys) ps.push(caches.keys().then(function (k) { return Promise.all(k.map(function (n) { return caches.delete(n); })); }));
+            if (navigator.serviceWorker && navigator.serviceWorker.getRegistrations) ps.push(navigator.serviceWorker.getRegistrations().then(function (r) { return Promise.all(r.map(function (x) { return x.unregister(); })); }));
+            Promise.all(ps).then(done, done);
+            setTimeout(done, 3000);
+          } catch (e) { done(); }
+        };
+        function show(msg) {
+          var el = document.getElementById("bt-boot-msg");
+          if (el) el.innerHTML = msg + fixBtn();
+        }
+        window.addEventListener("error", function (e) {
+          if (document.getElementById("bt-boot")) show("שגיאה בטעינה: " + String((e && (e.message || (e.target && e.target.src))) || "").slice(0, 160));
+        }, true);
+        setTimeout(function () {
+          if (document.getElementById("bt-boot")) show("הטעינה לוקחת יותר מדי זמן. בדוק את החיבור לאינטרנט, או לחץ:");
+        }, 12000);
+      })();
+    </script>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
