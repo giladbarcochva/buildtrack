@@ -1269,7 +1269,12 @@ export default function App() {
   const togOpen = (k, v) => setProjOpen(o => ({ ...o, [k]: v === undefined ? !o[k] : v }));
   const [viewFile,    setViewFile]    = useState(null);     // קובץ פתוח במציג (חשבונית / תוכנית / הצעת קבלן)
   const [descFull,    setDescFull]    = useState(false);    // תיאור פרויקט במסך מלא
-  useEffect(() => { setProjOpen({}); setDescFull(false); }, [detailId]);
+  // הוספה מהירה מבחוץ — בלי לפתוח את הרשימות
+  const EMPTY_QEXP = { desc:"", amount:"", category:"חומר" };
+  const EMPTY_QSUB = { name:"", work:"", price:"", single:true };
+  const [qExp, setQExp] = useState(EMPTY_QEXP);
+  const [qSub, setQSub] = useState(EMPTY_QSUB);
+  useEffect(() => { setProjOpen({}); setDescFull(false); setQExp(EMPTY_QEXP); setQSub(EMPTY_QSUB); }, [detailId]);
   const [calMonth, setCalMonth] = useState(() => {
     const d = new Date();
     return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
@@ -3686,11 +3691,28 @@ async function shareImg() {
               {/* EXPENSES */}
               <div style={{ background:"#fff", borderRadius:14, padding:"16px 20px", marginBottom:14, boxShadow:"0 2px 8px rgba(0,0,0,0.07)" }}>
                 <SecHead title="🧾 הוצאות" open={!!projOpen.exp} onToggle={()=>togOpen("exp")}
-                  summary={(editProj.expenses||[]).length ? `${(editProj.expenses||[]).length} הוצאות · ${projOpen.exp ? "לחץ לסגירה" : "לחץ לפירוט"}` : ""}
-                  action={
-                  <button onClick={()=>{ togOpen("exp", true); const expenses=[...(editProj.expenses||[]),{id:Date.now(),desc:"",amount:"",category:"חומר",date:todayStr()}]; setEditProj(p=>({...p,expenses})); updateProjField(detailProject,{expenses}); }}
-                    style={{ background:"#1A1A2E", color:"#E8C547", border:"none", borderRadius:7, padding:"4px 12px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700 }}>+ הוסף הוצאה</button>}/>
-                {(!editProj.expenses||editProj.expenses.length===0) && <p style={{ margin:"10px 0 0", fontSize:13, color:"#AAA" }}>אין הוצאות רשומות</p>}
+                  summary={(editProj.expenses||[]).length ? `${(editProj.expenses||[]).length} הוצאות · ${projOpen.exp ? "לחץ לסגירה" : "לחץ לפירוט"}` : ""}/>
+                {/* הוספה מהירה — בלי לפתוח את הרשימה */}
+                <div style={{ background:"#FFF8E1", borderRadius:12, padding:"10px 12px", marginTop:10, marginBottom:projOpen.exp ? 10 : 0 }}>
+                  <div style={{ display:"flex", gap:7, marginBottom:7 }}>
+                    <input value={qExp.desc} placeholder="על מה? (למשל: בלוקים)" onChange={e=>setQExp(q=>({...q, desc:e.target.value}))}
+                      style={{ flex:2, minWidth:0, width:0, border:"1.5px solid #EEE", borderRadius:8, padding:"7px 10px", fontSize:13, fontFamily:"Heebo,sans-serif", outline:"none", background:"#fff" }}/>
+                    <input type="number" inputMode="decimal" value={qExp.amount} placeholder="סכום ₪" onChange={e=>setQExp(q=>({...q, amount:e.target.value}))}
+                      style={{ flex:1, minWidth:0, width:0, border:"1.5px solid #EEE", borderRadius:8, padding:"7px 10px", fontSize:13, fontFamily:"Heebo,sans-serif", outline:"none", background:"#fff" }}/>
+                  </div>
+                  <div style={{ display:"flex", gap:7 }}>
+                    <select value={qExp.category} onChange={e=>setQExp(q=>({...q, category:e.target.value}))}
+                      style={{ flex:1, minWidth:0, border:`1.5px solid ${catOf(qExp.category).color}55`, borderRadius:8, padding:"6px 8px", fontSize:12.5, fontFamily:"Heebo,sans-serif", outline:"none", background:"#fff", color:catOf(qExp.category).color, fontWeight:700 }}>
+                      {EXPENSE_CATS.map(cat => <option key={cat.k} value={cat.k}>{cat.icon} {cat.k}</option>)}
+                    </select>
+                    <button onClick={()=>{
+                      if (!(Number(qExp.amount) > 0)) { alert("הזן סכום"); return; }
+                      const expenses=[...(editProj.expenses||[]),{ id:Date.now(), desc:qExp.desc.trim(), amount:qExp.amount, category:qExp.category, date:todayStr() }];
+                      setEditProj(p=>({...p,expenses})); updateProjField(detailProject,{expenses});
+                      setQExp(q=>({ ...EMPTY_QEXP, category:q.category }));
+                    }} style={{ background:"#1A1A2E", color:"#E8C547", border:"none", borderRadius:8, padding:"7px 16px", fontSize:13, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700, flexShrink:0 }}>+ הוסף הוצאה</button>
+                  </div>
+                </div>
                 {projOpen.exp && (editProj.expenses||[]).map((ex,idx) => {
                   const updExp = (changes, isText=false) => {
                     const expenses=(editProj.expenses||[]).map((e,i)=>i===idx?{...e,...changes}:e);
@@ -3766,12 +3788,39 @@ async function shareImg() {
                   const totAll = subsArr.reduce((s,sc)=>s+Number(sc.price||0),0);
                   return (
                     <SecHead title="🔨 קבלני משנה" open={!!projOpen.subs} onToggle={()=>togOpen("subs")}
-                      summary={subsArr.length ? `${subsArr.length} קבלנים${totAll>0 ? ` · ₪${fmtNum(totAll)}` : ""}${dueAll>0 ? ` · ⏳ לתשלום ₪${fmtNum(dueAll)}` : ""}` : ""}
-                      action={<button onClick={()=>{ togOpen("subs", true); const subs=[...subsArr,{id:Date.now(),name:"",work:"",price:"",withMaterial:true,plannedDays:"",payments:[]}]; setEditProj(p=>({...p,subcontractors:subs})); updateProjField(detailProject,{subcontractors:subs}); }}
-                        style={{ background:"#1A1A2E", color:"#E8C547", border:"none", borderRadius:7, padding:"4px 12px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700 }}>+ הוסף קבלן</button>}/>
+                      summary={subsArr.length ? `${subsArr.length} קבלנים${totAll>0 ? ` · ₪${fmtNum(totAll)}` : ""}${dueAll>0 ? ` · ⏳ לתשלום ₪${fmtNum(dueAll)}` : ""}` : ""}/>
                   );
                 })()}
-                {(!editProj.subcontractors||editProj.subcontractors.length===0) && <p style={{ margin:"10px 0 0", fontSize:13, color:"#AAA" }}>אין קבלני משנה</p>}
+                {/* הוספת קבלן מהירה — בלי לפתוח את הרשימה */}
+                <div style={{ background:"#F5F3FF", borderRadius:12, padding:"10px 12px", marginTop:10, marginBottom:projOpen.subs ? 10 : 0 }}>
+                  <div style={{ display:"flex", gap:7, marginBottom:7 }}>
+                    <input value={qSub.name} placeholder="שם הקבלן" onChange={e=>setQSub(q=>({...q, name:e.target.value}))}
+                      style={{ flex:1, minWidth:0, width:0, border:"1.5px solid #EEE", borderRadius:8, padding:"7px 10px", fontSize:13, fontFamily:"Heebo,sans-serif", outline:"none", background:"#fff", fontWeight:700 }}/>
+                    <input type="number" inputMode="decimal" value={qSub.price} placeholder="מחיר ₪" onChange={e=>setQSub(q=>({...q, price:e.target.value}))}
+                      style={{ flex:1, minWidth:0, width:0, border:"1.5px solid #EEE", borderRadius:8, padding:"7px 10px", fontSize:13, fontFamily:"Heebo,sans-serif", outline:"none", background:"#fff" }}/>
+                  </div>
+                  <input value={qSub.work} placeholder="מה הוא עושה? (למשל: אינסטלציה)" onChange={e=>setQSub(q=>({...q, work:e.target.value}))}
+                    style={{ width:"100%", boxSizing:"border-box", border:"1.5px solid #EEE", borderRadius:8, padding:"7px 10px", fontSize:13, fontFamily:"Heebo,sans-serif", outline:"none", background:"#fff", marginBottom:7 }}/>
+                  <div style={{ display:"flex", gap:7, alignItems:"center" }}>
+                    <div style={{ display:"flex", flex:1, background:"#EDE9FE", borderRadius:8, padding:2, gap:2 }}>
+                      {[{v:true,l:"💳 תשלום אחד"},{v:false,l:"🪜 בשלבים"}].map(o => (
+                        <button key={String(o.v)} onClick={()=>setQSub(q=>({...q, single:o.v}))}
+                          style={{ flex:1, background:qSub.single===o.v?"#6D28D9":"transparent", color:qSub.single===o.v?"#fff":"#6D28D9", border:"none", borderRadius:7, padding:"6px 0", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700 }}>{o.l}</button>
+                      ))}
+                    </div>
+                    <button onClick={()=>{
+                      if (!qSub.name.trim()) { alert("הזן שם קבלן"); return; }
+                      const price = qSub.price;
+                      const sc = { id:Date.now(), name:qSub.name.trim(), work:qSub.work.trim(), price, withMaterial:true, plannedDays:"",
+                        singlePay: qSub.single,
+                        payments: qSub.single ? [{ id:Date.now()+1, desc:"תשלום מלא", amount:price, paid:false }] : [] };
+                      const subs=[...(editProj.subcontractors||[]), sc];
+                      setEditProj(p=>({...p,subcontractors:subs})); updateProjField(detailProject,{subcontractors:subs});
+                      setQSub(EMPTY_QSUB);
+                      if (!qSub.single) togOpen("subs", true); // בשלבים — פותחים כדי להגדיר את השלבים
+                    }} style={{ background:"#1A1A2E", color:"#E8C547", border:"none", borderRadius:8, padding:"7px 14px", fontSize:13, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700, flexShrink:0 }}>+ הוסף קבלן</button>
+                  </div>
+                </div>
                 {projOpen.subs && (editProj.subcontractors||[]).map((sc,si) => {
                   const updSub = (changes, isText=false) => {
                     const subs=(editProj.subcontractors||[]).map((x,i)=>i===si?{...x,...changes}:x);
@@ -3823,7 +3872,13 @@ async function shareImg() {
                         )}
                       </div>
                       <div style={{ display:"flex", gap:8, marginBottom:8 }}>
-                        <input type="number" value={sc.price} placeholder="מחיר ₪" onChange={e=>updSub({price:e.target.value}, true)}
+                        <input type="number" value={sc.price} placeholder="מחיר ₪" onChange={e=>{
+                            const v = e.target.value;
+                            // תשלום אחד — הסכום הולך אחרי המחיר (כל עוד לא אושר/שולם)
+                            if (sc.singlePay && (sc.payments||[]).length===1 && !sc.payments[0].due && !sc.payments[0].paid)
+                              updSub({ price:v, payments:[{ ...sc.payments[0], amount:v }] }, true);
+                            else updSub({price:v}, true);
+                          }}
                           style={{ flex:1, minWidth:0, width:0, border:"1.5px solid #EEE", borderRadius:8, padding:"7px 10px", fontSize:13, fontFamily:"Heebo,sans-serif", outline:"none", background:"#fff" }}/>
                         <input type="number" value={sc.plannedDays} placeholder="ימים מתוכננים" onChange={e=>updSub({plannedDays:e.target.value}, true)}
                           style={{ flex:1, minWidth:0, width:0, border:"1.5px solid #EEE", borderRadius:8, padding:"7px 10px", fontSize:13, fontFamily:"Heebo,sans-serif", outline:"none", background:"#fff" }}/>
@@ -3838,10 +3893,16 @@ async function shareImg() {
                       </div>
 
                       {/* payment stages */}
-                      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:6 }}>
-                        <span style={{ fontSize:12, fontWeight:700, color:"#555" }}>💳 שלבי תשלום</span>
-                        <button onClick={()=>{ const payments=[...(sc.payments||[]),{id:Date.now(),desc:"",amount:"",paid:false}]; updSub({payments}); }}
-                          style={{ background:"#EDE9FE", color:"#6D28D9", border:"none", borderRadius:6, padding:"3px 10px", fontSize:11, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700 }}>+ שלב</button>
+                      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:6, gap:6 }}>
+                        <span style={{ fontSize:12, fontWeight:700, color:"#555" }}>{sc.singlePay ? "💳 תשלום אחד" : "💳 שלבי תשלום"}</span>
+                        <div style={{ display:"flex", gap:5 }}>
+                          {!sc.singlePay && (sc.payments||[]).length===0 && (
+                            <button onClick={()=>updSub({ singlePay:true, payments:[{ id:Date.now(), desc:"תשלום מלא", amount:sc.price||"", paid:false }] })}
+                              style={{ background:"#F0F0EC", color:"#555", border:"none", borderRadius:6, padding:"3px 10px", fontSize:11, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700 }}>תשלום אחד</button>
+                          )}
+                          <button onClick={()=>{ const payments=[...(sc.payments||[]),{id:Date.now(),desc:"",amount:"",paid:false}]; updSub({ payments, singlePay:false }); }}
+                            style={{ background:"#EDE9FE", color:"#6D28D9", border:"none", borderRadius:6, padding:"3px 10px", fontSize:11, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700 }}>{sc.singlePay ? "פצל לשלבים" : "+ שלב"}</button>
+                        </div>
                       </div>
                       {(sc.payments||[]).length>0 && <p style={{ margin:"0 0 6px", fontSize:10.5, color:"#999" }}>לחץ על העיגול כשהשלב בוצע ← ⏳ עובר לתשלום בשכר ← קבלנים ← שם מסמנים ✓ שולם</p>}
                       {(sc.payments||[]).map((pm,pi) => {
