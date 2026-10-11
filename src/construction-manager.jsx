@@ -259,6 +259,61 @@ function FileViewer({ file, onClose }) {
   );
 }
 
+// ===== הצעת מחיר → PDF (בדפדפן: html2canvas + jsPDF מ-CDN) — מצורף למייל ללקוח =====
+function loadScriptOnce(src, globalName) {
+  if (window[globalName]) return Promise.resolve(window[globalName]);
+  return new Promise((res, rej) => {
+    const sc = document.createElement("script"); sc.src = src;
+    sc.onload = () => res(window[globalName]); sc.onerror = () => rej(new Error("טעינת רכיב PDF נכשלה"));
+    document.head.appendChild(sc);
+  });
+}
+async function quotePdfBase64(q, org, logo) {
+  const h2c = await loadScriptOnce("https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js", "html2canvas");
+  await loadScriptOnce("https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js", "jspdf");
+  const e = (x) => String(x ?? "").replace(/[&<>"]/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" }[c]));
+  const nis = (n) => "₪" + Math.round(n).toLocaleString("he-IL");
+  const total = quoteTotal(q);
+  const rows = (q.items||[]).map(it => `<tr><td style="padding:12px 8px;border-bottom:1px solid #EEE">${e(it.desc||"סעיף")}</td>
+    <td style="padding:12px 8px;border-bottom:1px solid #EEE;color:#888;font-size:14px">${it.withMaterial!==false?"כולל חומר":"ללא חומר"}</td>
+    <td style="padding:12px 8px;border-bottom:1px solid #EEE;font-weight:700;text-align:left">${nis(Number(it.amount||0))}</td></tr>`).join("");
+  const box = document.createElement("div");
+  box.style.cssText = "position:fixed;left:-10000px;top:0;width:794px;background:#fff;direction:rtl;font-family:Heebo,Arial,sans-serif;color:#1A1A2E;padding:48px 52px;box-sizing:border-box;font-size:16px";
+  box.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:4px solid #E8C547;padding-bottom:18px;margin-bottom:26px">
+      <div style="font-size:28px;font-weight:800">${e(org?.name)}</div>${logo ? `<img src="${logo}" style="height:80px;object-fit:contain"/>` : ""}</div>
+    <div style="font-size:26px;font-weight:800;margin-bottom:6px">הצעת מחיר — ${e(q.title)}</div>
+    <div style="color:#777;font-size:15px;margin-bottom:22px">לכבוד: ${e(q.clientName)} · תאריך: ${e(q.date||todayStr())}</div>
+    ${q.desc ? `<div style="background:#F7F7F4;border-radius:10px;padding:14px 16px;line-height:1.7;margin-bottom:20px;white-space:pre-wrap">${e(q.desc)}</div>` : ""}
+    ${rows ? `<table style="width:100%;border-collapse:collapse;margin-bottom:16px"><tr>
+      <th style="text-align:right;color:#888;font-size:13px;padding:8px;border-bottom:2px solid #EEE">תיאור העבודה</th>
+      <th style="text-align:right;color:#888;font-size:13px;padding:8px;border-bottom:2px solid #EEE">חומר</th>
+      <th style="text-align:left;color:#888;font-size:13px;padding:8px;border-bottom:2px solid #EEE">מחיר</th></tr>${rows}</table>` : ""}
+    <div style="display:flex;justify-content:space-between;padding:8px 4px;color:#555"><span>סה"כ לא כולל מע"מ</span><span>${nis(total)}</span></div>
+    <div style="display:flex;justify-content:space-between;padding:8px 4px;color:#555;border-bottom:1px solid #EEE"><span>מע"מ (${Math.round(VAT_RATE*100)}%)</span><span>${nis(total*VAT_RATE)}</span></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;background:#1A1A2E;color:#fff;border-radius:12px;padding:16px 20px;margin-top:12px">
+      <span style="font-weight:700;font-size:18px">סה"כ כולל מע"מ</span><span style="color:#E8C547;font-size:28px;font-weight:800">${nis(total*(1+VAT_RATE))}</span></div>
+    <div style="color:#888;font-size:13px;margin-top:16px">* תוקף ההצעה: 30 יום.</div>
+    <div style="text-align:center;color:#AAA;font-size:12px;margin-top:40px">הופק באמצעות BuildTrack</div>`;
+  document.body.appendChild(box);
+  try {
+    await Promise.all([...box.querySelectorAll("img")].map(im => im.complete ? 0 : new Promise(r => { im.onload = im.onerror = r; })));
+    const canvas = await h2c(box, { scale: 2, backgroundColor: "#ffffff", useCORS: true });
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({ unit: "mm", format: "a4", compress: true });
+    const pw = 210, ph = 297;
+    const pageHpx = Math.floor(canvas.width * ph / pw);
+    for (let y = 0, i = 0; y < canvas.height; y += pageHpx, i++) {
+      const slice = document.createElement("canvas");
+      slice.width = canvas.width; slice.height = Math.min(pageHpx, canvas.height - y);
+      slice.getContext("2d").drawImage(canvas, 0, y, canvas.width, slice.height, 0, 0, canvas.width, slice.height);
+      if (i) pdf.addPage();
+      pdf.addImage(slice.toDataURL("image/jpeg", 0.92), "JPEG", 0, 0, pw, slice.height * pw / canvas.width);
+    }
+    return pdf.output("datauristring").split(",")[1];
+  } finally { box.remove(); }
+}
+
 // ===== פתיחת גיבוי מוצפן (.enc) — אותו פורמט כמו פונקציית daily-backup =====
 // "BTBK" | גרסה 1 | salt(16) | iv(12) | AES-256-GCM(gzip(JSON)), מפתח PBKDF2-SHA256 210,000 סבבים מקוד המנהל
 async function decryptBackup(buf, password) {
@@ -1080,6 +1135,9 @@ export default function App() {
   const [reports,   setReports]   = useState([]);
   const [adminCode, setAdminCode] = useState("1234");
   const [adminConfigDbid, setAdminConfigDbid] = useState(null);
+  const [cfgData,  setCfgData]  = useState({});   // שורת ההגדרות של העסק (קוד מנהל, מייל העסק)
+  const [bizEmailInput, setBizEmailInput] = useState("");
+  const [quoteSending, setQuoteSending] = useState(null);
   const [loading,   setLoading]   = useState(true);
   const [org, setOrg] = useState(null);            // הארגון הנוכחי
   const [orgError, setOrgError] = useState("");    // שגיאת טעינת ארגון
@@ -1287,8 +1345,12 @@ export default function App() {
       const merged = normalReports.map(r => pendU[r._dbid] ? { ...r, ...pendU[r._dbid], _dbid: r._dbid } : r);
       setReports([...merged, ...pendQ]);
       setPendingReports(pendingReps);
-      const configRow = w.find(x => x._isConfig && x._adminCode);
-      if (configRow) { setAdminCode(configRow._adminCode); setAdminConfigDbid(configRow._dbid); }
+      const configRow = w.find(x => x._isConfig && x._adminCode) || w.find(x => x._isConfig);
+      if (configRow) {
+        if (configRow._adminCode) setAdminCode(configRow._adminCode);
+        setAdminConfigDbid(configRow._dbid);
+        const { _dbid, ...cd } = configRow; setCfgData(cd); setBizEmailInput(cd._email || "");
+      }
     } catch(e) { console.error(e); }
     setLoading(false);
   }, []);
@@ -2035,15 +2097,51 @@ async function shareImg() {
   const saveAdminCode = async () => {
     if (!newAdminCode.trim()) return;
     const newCode = newAdminCode.trim();
+    const next = { ...cfgData, _isConfig: true, _adminCode: newCode };
     if (adminConfigDbid) {
-      await dbUpdate("workers", adminConfigDbid, { _isConfig: true, _adminCode: newCode });
+      await dbUpdate("workers", adminConfigDbid, next);
     } else {
-      const saved = await dbInsert("workers", { _isConfig: true, _adminCode: newCode });
+      const saved = await dbInsert("workers", next);
       setAdminConfigDbid(saved._dbid);
     }
+    setCfgData(next);
     setAdminCode(newCode);
     setNAC("");
     alert("✅ קוד מנהל עודכן!");
+  };
+
+  const saveBizEmail = async () => {
+    const em = bizEmailInput.trim();
+    if (em && !/^[^\s@<>"']+@[^\s@<>"']+\.[a-z]{2,}$/i.test(em)) { alert("כתובת המייל לא תקינה"); return; }
+    const next = { ...cfgData, _isConfig: true, _email: em };
+    try {
+      if (adminConfigDbid) await dbUpdate("workers", adminConfigDbid, next);
+      else { const saved = await dbInsert("workers", next); setAdminConfigDbid(saved._dbid); }
+      setCfgData(next);
+      alert(em ? "✅ מייל העסק נשמר" : "מייל העסק הוסר");
+    } catch (e) { alert("שגיאה בשמירה: " + e.message); }
+  };
+
+  const sendQuoteEmail = async (q) => {
+    if (!q.clientEmail) { alert("אין מייל ללקוח — ערוך את ההצעה והוסף מייל"); return; }
+    if (!cfgData._email) { alert("קודם הגדר את מייל העסק בטאב ⚙️ הגדרות — לשם יגיעו תשובות הלקוחות ועותק מכל הצעה."); return; }
+    if (!window.confirm(`לשלוח את ההצעה "${q.title||""}" ל-${q.clientEmail}?\n\nהמייל יישלח בשם "${org?.name||""}", ותשובות הלקוח יגיעו ל-${cfgData._email}.`)) return;
+    setQuoteSending(q._dbid);
+    try {
+      let pdf = null;
+      try { pdf = await quotePdfBase64(q, org, org?.logo || (org?.slug==="gne" ? LOGO_URL : "")); }
+      catch (e) { if (!window.confirm("לא הצלחתי ליצור קובץ PDF. לשלוח את ההצעה בלי קובץ מצורף? (ההצעה מופיעה בגוף המייל)")) { setQuoteSending(null); return; } }
+      const r = await fetch(`${SUPABASE_URL}/functions/v1/send-quote`, { method:"POST", headers: hdrs(),
+        body: JSON.stringify({ quoteDbid: q._dbid, pdf, pdfName: `הצעת מחיר - ${String(q.title||"").slice(0,50)}.pdf` }) });
+      const res = await r.json().catch(() => ({}));
+      if (!r.ok || !res.ok) throw new Error(res.error || ("שגיאה " + r.status));
+      const { _dbid, ...data } = q;
+      const updated = { ...data, emailedAt: new Date().toLocaleString("he-IL", { dateStyle:"short", timeStyle:"short" }), emailedTo: res.to, status: q.status === "נדחתה" ? "נשלחה" : (q.status || "נשלחה") };
+      await dbUpdate("projects", q._dbid, updated);
+      setQuotes(prev => prev.map(x => x._dbid === q._dbid ? { ...updated, _dbid: q._dbid } : x));
+      alert(`✅ ההצעה נשלחה ל-${res.to}\nעותק נשלח אליך ל-${cfgData._email}`);
+    } catch (e) { alert("השליחה נכשלה: " + e.message); }
+    setQuoteSending(null);
   };
 
   const inp = { width:"100%", border:"1.5px solid #DDD", borderRadius:10, padding:"10px 14px", fontSize:15, fontFamily:"Heebo,sans-serif", boxSizing:"border-box", background:"#fff", outline:"none" };
@@ -4506,6 +4604,7 @@ async function shareImg() {
                       👤 {q.clientName||"ללא שם"}{q.clientPhone ? ` · 📞 ${q.clientPhone}` : ""} · 📅 {q.date}
                     </p>
                     {q.desc && <p style={{ margin:"4px 0 0", fontSize:12, color:"#666" }}>{q.desc}</p>}
+                    {q.emailedAt && <p style={{ margin:"4px 0 0", fontSize:11, color:"#1565C0", fontWeight:600 }}>📧 נשלח במייל ל-<span dir="ltr">{q.emailedTo}</span> · {q.emailedAt}</p>}
                     {(q.items||[]).length>0 && (
                       <div style={{ marginTop:7, background:"#F9F9F9", borderRadius:8, padding:"7px 10px" }}>
                         {(q.items||[]).map((it,ii)=>(
@@ -4530,6 +4629,11 @@ async function shareImg() {
                   <button onClick={()=>convertQuote(q)}
                     style={{ background:"#2E7D32", color:"#fff", border:"none", borderRadius:8, padding:"6px 13px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700 }}>
                     ✓ נסגרה — צור פרויקט
+                  </button>
+                  <button onClick={()=>{ if (!q.clientEmail) { setEditQuote({...q}); setQuoteM(true); setTimeout(()=>alert("הוסף את מייל הלקוח ושמור, ואז לחץ שוב על 📧 שלח במייל"), 50); return; } sendQuoteEmail(q); }}
+                    disabled={quoteSending===q._dbid}
+                    style={{ background:"#1565C0", color:"#fff", border:"none", borderRadius:8, padding:"6px 13px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700, opacity: quoteSending===q._dbid ? 0.6 : 1 }}>
+                    {quoteSending===q._dbid ? "⏳ שולח..." : (q.emailedAt ? "📧 שלח שוב" : "📧 שלח במייל")}
                   </button>
                   {q.clientPhone && (
                     <a href={`https://wa.me/972${String(q.clientPhone).replace(/[^0-9]/g,"").replace(/^0/,"")}`} target="_blank" rel="noreferrer"
@@ -4671,6 +4775,16 @@ async function shareImg() {
               <input value={newAdminCode} onChange={e=>setNAC(e.target.value)} placeholder="קוד חדש" style={{ ...inp, marginBottom:10 }}/>
               <button onClick={saveAdminCode} style={{ ...btnD, width:"100%" }}>שמור קוד חדש</button>
             </div>
+            <div style={{ background:"#fff", borderRadius:14, padding:22, boxShadow:"0 2px 8px rgba(0,0,0,0.07)", maxWidth:360, marginTop:14 }}>
+              <h3 style={{ margin:"0 0 6px", fontWeight:700, fontSize:15 }}>📧 מייל העסק</h3>
+              <p style={{ margin:"0 0 12px", color:"#777", fontSize:13, lineHeight:1.6 }}>
+                הצעות מחיר יישלחו ללקוחות בשם <b>{org?.name}</b> מהכתובת <span dir="ltr" style={{ fontWeight:700 }}>{org?.slug}@buildtrackil.com</span>.
+                תשובות הלקוחות ועותק מכל הצעה יגיעו למייל הזה.
+              </p>
+              <input type="email" dir="ltr" value={bizEmailInput} onChange={e=>setBizEmailInput(e.target.value)} placeholder="name@gmail.com" style={{ ...inp, marginBottom:10, textAlign:"left" }}/>
+              <button onClick={saveBizEmail} style={{ ...btnD, width:"100%" }}>שמור מייל</button>
+              {cfgData._email && <p style={{ margin:"8px 0 0", fontSize:12, color:"#2E7D32" }}>✓ שמור: <span dir="ltr">{cfgData._email}</span></p>}
+            </div>
           </>
         )}
       </main>
@@ -4711,11 +4825,12 @@ async function shareImg() {
               { key:"title", label:"שם העבודה / הפרויקט", ph:"גבס וצבע — דירה ברעננה" },
               { key:"clientName", label:"שם הלקוח", ph:"ישראל ישראלי" },
               { key:"clientPhone", label:"טלפון (אופציונלי)", ph:"050-1234567" },
+              { key:"clientEmail", label:"מייל הלקוח (לשליחת ההצעה במייל)", ph:"client@gmail.com", type:"email", ltr:true },
             ].map(f=>(
               <label key={f.key} style={{ display:"block", marginBottom:11 }}>
                 <LBL t={f.label}/>
-                <input type={f.type||"text"} value={editQuote[f.key]||""} placeholder={f.ph}
-                  onChange={e=>setEditQuote({...editQuote,[f.key]:e.target.value})} style={inp}/>
+                <input type={f.type||"text"} dir={f.ltr?"ltr":undefined} value={editQuote[f.key]||""} placeholder={f.ph}
+                  onChange={e=>setEditQuote({...editQuote,[f.key]:e.target.value})} style={f.ltr ? { ...inp, textAlign:"left" } : inp}/>
               </label>
             ))}
             {/* סעיפי ההצעה */}
