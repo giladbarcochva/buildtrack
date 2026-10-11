@@ -48,6 +48,36 @@ const ORG_SLUG = (() => {
   return "";
 })();
 let CURRENT_ORG = null;
+
+// ===== איפוס קוד מנהל: קישור מהמייל (/slug?reset=...) — נקרא פעם אחת ומוסר מהכתובת =====
+const RESET_TOKEN = (() => {
+  try {
+    const u = new URL(window.location.href);
+    const t = u.searchParams.get("reset");
+    if (t) { u.searchParams.delete("reset"); window.history.replaceState(null, "", u.pathname + u.search + u.hash); }
+    return t || "";
+  } catch(e) { return ""; }
+})();
+// כללי קוד מנהל — זהים לבדיקה בשרת (reset-code)
+function weakCodeMsg(code, current = "", slug = "") {
+  const c = String(code || "").trim();
+  if (c.length < 6) return "הקוד חייב להיות באורך 6 תווים לפחות";
+  if (/^(.)\1+$/.test(c)) return "קוד של תו אחד שחוזר על עצמו קל מדי לניחוש";
+  if ("01234567890".includes(c) || "09876543210".includes(c)) return "קוד של מספרים עוקבים קל מדי לניחוש";
+  if (current && c === String(current)) return "הקוד החדש חייב להיות שונה מהקוד הנוכחי";
+  if (slug && c.toLowerCase().includes(String(slug).toLowerCase())) return "הקוד לא יכול להכיל את שם הכניסה של העסק";
+  return "";
+}
+async function resetCodeApi(body) {
+  const r = await fetch(`${SUPABASE_URL}/functions/v1/reset-code`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "apikey": SUPABASE_KEY, "Authorization": "Bearer " + SUPABASE_KEY },
+    body: JSON.stringify({ slug: ORG_SLUG, ...body })
+  });
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok || !data.ok) throw new Error(data.error || data.message || `שגיאה (${r.status})`);
+  return data;
+}
 const TERMS_VERSION = "1.0"; // העלאת המספר תחייב אישור מחדש מכל הקבלנים
 
 // ===== מסלולי מנוי =====
@@ -1136,6 +1166,9 @@ export default function App() {
   const [adminCode, setAdminCode] = useState("1234");
   const [adminConfigDbid, setAdminConfigDbid] = useState(null);
   const [cfgData,  setCfgData]  = useState({});   // שורת ההגדרות של העסק (קוד מנהל, מייל העסק)
+  const [cfgLoaded, setCfgLoaded] = useState(false); // נטען מהשרת — רק אז מחליטים אם להציג מסך אבטחה
+  const [sec, setSec] = useState({ email:"", code:"", code2:"", saving:false, err:"" });       // מסך אבטחה חד-פעמי
+  const [rst, setRst] = useState({ code:"", code2:"", busy:false, err:"", done:false });      // מסך קוד חדש מהקישור
   const [bizEmailInput, setBizEmailInput] = useState("");
   const [quoteSending, setQuoteSending] = useState(null);
   const [loading,   setLoading]   = useState(true);
@@ -1349,8 +1382,9 @@ export default function App() {
       if (configRow) {
         if (configRow._adminCode) setAdminCode(configRow._adminCode);
         setAdminConfigDbid(configRow._dbid);
-        const { _dbid, ...cd } = configRow; setCfgData(cd); setBizEmailInput(cd._email || "");
+        const { _dbid, _resetHash, _resetExp, ...cd } = configRow; setCfgData(cd); setBizEmailInput(cd._email || "");
       }
+      setCfgLoaded(true);
     } catch(e) { console.error(e); }
     setLoading(false);
   }, []);
@@ -1371,6 +1405,7 @@ export default function App() {
         CURRENT_ORG = o;
         setOrg(o);
         applyOrgIcons(o);
+        if (RESET_TOKEN) setScreen("mReset");
         if (AUTH_TOKEN) {
           loadAll().catch(() => { setAuthToken(null); setLoading(false); });
         } else {
@@ -1463,6 +1498,7 @@ export default function App() {
   const managerLogin = async () => {
     try {
       await loginAny("manager");
+      setCfgLoaded(false); // מחכים לטעינה של המנהל לפני שמחליטים על מסך האבטחה
       rememberOrg(); setCodeInput(""); setCodeError(false); setScreen("mgr");
       loadAll(true);
     } catch(e) { setCodeError(true); }
@@ -2094,16 +2130,66 @@ async function shareImg() {
     } catch(e) { alert("שגיאה בשמירת האישור: " + e.message); }
   };
 
-  const saveAdminCode = async () => {
-    if (!newAdminCode.trim()) return;
-    const newCode = newAdminCode.trim();
-    const next = { ...cfgData, _isConfig: true, _adminCode: newCode };
+  // שמירת שורת ההגדרות עם בדיקה שהשמירה באמת הצליחה
+  const saveCfgChecked = async (next) => {
     if (adminConfigDbid) {
-      await dbUpdate("workers", adminConfigDbid, next);
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/workers?id=eq.${adminConfigDbid}`, {
+        method: "PATCH", headers: { ...hdrs(), "Prefer": "return=representation" }, body: JSON.stringify({ data: next }) });
+      const rows = r.ok ? await r.json() : [];
+      if (!rows.length) throw new Error(r.ok ? "אין הרשאה" : `שגיאה ${r.status}`);
     } else {
       const saved = await dbInsert("workers", next);
       setAdminConfigDbid(saved._dbid);
     }
+  };
+
+  // מסך אבטחה חד-פעמי: מייל העסק + קוד מנהל חדש
+  const saveSecurity = async () => {
+    const em = sec.email.trim(), c = sec.code.trim();
+    if (!/^[^\s@<>"']+@[^\s@<>"']+\.[a-z]{2,}$/i.test(em)) { setSec(s => ({ ...s, err:"כתובת המייל לא תקינה" })); return; }
+    const bad = weakCodeMsg(c, adminCode, ORG_SLUG);
+    if (bad) { setSec(s => ({ ...s, err:bad })); return; }
+    if (c !== sec.code2.trim()) { setSec(s => ({ ...s, err:"שני הקודים לא זהים" })); return; }
+    setSec(s => ({ ...s, saving:true, err:"" }));
+    const next = { ...cfgData, _isConfig: true, _email: em, _adminCode: c };
+    try {
+      await saveCfgChecked(next);
+      setCfgData(next); setAdminCode(c); setBizEmailInput(em);
+      setSec({ email:"", code:"", code2:"", saving:false, err:"" });
+      alert("✅ נשמר!\nמעכשיו נכנסים עם הקוד החדש.\nאם תשכח אותו — \"שכחתי קוד\" במסך הכניסה ישלח קישור ל-" + em);
+    } catch(e) {
+      setSec(s => ({ ...s, saving:false, err:"השמירה נכשלה: " + e.message + (navigator.onLine ? "" : " (אין קליטה)") }));
+    }
+  };
+
+  // "שכחתי קוד" — שליחת קישור למייל העסק
+  const forgotCode = async () => {
+    if (!window.confirm("לשלוח קישור לאיפוס קוד המנהל למייל העסק?")) return;
+    try {
+      const res = await resetCodeApi({ action:"request" });
+      alert(`📧 נשלח קישור איפוס ל-${res.to}\nהקישור תקף ל-30 דקות. אם לא הגיע — בדוק גם בספאם.`);
+    } catch(e) { alert(e.message); }
+  };
+
+  // קביעת קוד חדש מהקישור שבמייל
+  const submitReset = async () => {
+    const c = rst.code.trim();
+    const bad = weakCodeMsg(c, "", ORG_SLUG);
+    if (bad) { setRst(s => ({ ...s, err:bad })); return; }
+    if (c !== rst.code2.trim()) { setRst(s => ({ ...s, err:"שני הקודים לא זהים" })); return; }
+    setRst(s => ({ ...s, busy:true, err:"" }));
+    try {
+      await resetCodeApi({ action:"reset", token: RESET_TOKEN, code: c });
+      setRst({ code:"", code2:"", busy:false, err:"", done:true });
+    } catch(e) { setRst(s => ({ ...s, busy:false, err:e.message })); }
+  };
+
+  const saveAdminCode = async () => {
+    if (!newAdminCode.trim()) return;
+    const newCode = newAdminCode.trim();
+    { const bad = weakCodeMsg(newCode, adminCode, ORG_SLUG); if (bad) { alert(bad); return; } }
+    const next = { ...cfgData, _isConfig: true, _adminCode: newCode };
+    try { await saveCfgChecked(next); } catch(e) { alert("השמירה נכשלה: " + e.message); return; }
     setCfgData(next);
     setAdminCode(newCode);
     setNAC("");
@@ -2112,13 +2198,14 @@ async function shareImg() {
 
   const saveBizEmail = async () => {
     const em = bizEmailInput.trim();
+    if (!em && cfgData._email) { alert("אי אפשר להסיר את מייל העסק — הוא משמש לאיפוס הקוד. אפשר להחליף אותו בכתובת אחרת."); setBizEmailInput(cfgData._email); return; }
     if (em && !/^[^\s@<>"']+@[^\s@<>"']+\.[a-z]{2,}$/i.test(em)) { alert("כתובת המייל לא תקינה"); return; }
     const next = { ...cfgData, _isConfig: true, _email: em };
     try {
-      if (adminConfigDbid) await dbUpdate("workers", adminConfigDbid, next);
-      else { const saved = await dbInsert("workers", next); setAdminConfigDbid(saved._dbid); }
+      if (!em) return;
+      await saveCfgChecked(next);
       setCfgData(next);
-      alert(em ? "✅ מייל העסק נשמר" : "מייל העסק הוסר");
+      alert("✅ מייל העסק נשמר");
     } catch (e) { alert("שגיאה בשמירה: " + e.message); }
   };
 
@@ -2524,6 +2611,31 @@ async function shareImg() {
         <input value={codeInput} onChange={e=>{setCodeInput(e.target.value);setCodeError(false);}} onKeyDown={e=>e.key==="Enter"&&managerLogin()} placeholder="קוד מנהל" type="password" style={{ ...inp, fontSize:22, letterSpacing:6, textAlign:"center", marginBottom:8 }}/>
         {codeError && <p style={{ color:"#E53935", fontSize:13, margin:"0 0 8px", textAlign:"center" }}>קוד שגוי, נסה שוב</p>}
         <button onClick={managerLogin} style={{ ...btnD, width:"100%", marginTop:4, fontSize:15 }}>כניסה</button>
+        <button onClick={forgotCode} style={{ background:"none", border:"none", cursor:"pointer", fontSize:13, color:"#1565C0", fontFamily:"Heebo,sans-serif", width:"100%", marginTop:12, textDecoration:"underline" }}>שכחתי קוד</button>
+      </div>
+    </div>
+  );
+
+  if (screen === "mReset") return (
+    <div style={{ ...base, background:"#1A1A2E", display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
+      <GFont/>
+      <div style={{ background:"#fff", borderRadius:20, padding:30, width:"100%", maxWidth:340, direction:"rtl" }}>
+        <LogoBig/>
+        {rst.done ? (<>
+          <h2 style={{ margin:"14px 0 6px", fontWeight:800, fontSize:20, textAlign:"center" }}>✅ הקוד שונה</h2>
+          <p style={{ margin:"0 0 18px", color:"#777", fontSize:14, textAlign:"center" }}>מעכשיו נכנסים עם הקוד החדש.</p>
+          <button onClick={()=>{ setScreen("mLogin"); setCodeInput(""); setCodeError(false); }} style={{ ...btnD, width:"100%", fontSize:15 }}>לכניסת מנהל</button>
+        </>) : (<>
+          <h2 style={{ margin:"14px 0 4px", fontWeight:800, fontSize:20, textAlign:"center" }}>🔐 קוד מנהל חדש</h2>
+          <p style={{ margin:"0 0 16px", color:"#777", fontSize:13, textAlign:"center" }}>לפחות 6 תווים. אפשר אותיות ומספרים.</p>
+          <input value={rst.code} onChange={e=>setRst(s=>({ ...s, code:e.target.value, err:"" }))} placeholder="קוד חדש" type="password" autoComplete="new-password"
+            style={{ ...inp, fontSize:18, letterSpacing:4, textAlign:"center", marginBottom:8 }}/>
+          <input value={rst.code2} onChange={e=>setRst(s=>({ ...s, code2:e.target.value, err:"" }))} onKeyDown={e=>e.key==="Enter"&&submitReset()} placeholder="שוב את הקוד החדש" type="password" autoComplete="new-password"
+            style={{ ...inp, fontSize:18, letterSpacing:4, textAlign:"center", marginBottom:8 }}/>
+          {rst.err && <p style={{ color:"#E53935", fontSize:13, margin:"0 0 8px", textAlign:"center", whiteSpace:"pre-line" }}>{rst.err}</p>}
+          <button disabled={rst.busy} onClick={submitReset} style={{ ...btnD, width:"100%", marginTop:4, fontSize:15, opacity:rst.busy?0.6:1 }}>{rst.busy ? "שומר..." : "שמור קוד חדש"}</button>
+          <button onClick={()=>setScreen("home")} style={{ background:"none", border:"none", cursor:"pointer", fontSize:13, color:"#888", fontFamily:"Heebo,sans-serif", width:"100%", marginTop:12 }}>ביטול</button>
+        </>)}
       </div>
     </div>
   );
@@ -4917,6 +5029,31 @@ async function shareImg() {
               <p style={{ margin:0 }}><b>9. דין.</b> על תנאים אלה יחול הדין הישראלי.</p>
             </div>
             <button onClick={acceptTerms} style={{ ...btnD, width:"100%", fontSize:15 }}>✓ קראתי ואני מאשר/ת את תנאי השימוש</button>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: אבטחת החשבון — חד-פעמי למנהל שעוד לא הגדיר מייל עסק */}
+      {!isForeman && screen === "mgr" && cfgLoaded && termsAccepted !== false && !cfgData._email && (
+        <div style={{ ...OVL, zIndex:1000 }}>
+          <div style={{ ...MOD, maxWidth:420 }}>
+            <h3 style={{ margin:"0 0 4px", fontWeight:800, fontSize:18 }}>🔐 אבטחת החשבון</h3>
+            <p style={{ margin:"0 0 16px", color:"#777", fontSize:13, lineHeight:1.6 }}>פעם אחת בלבד: הגדר מייל לעסק ובחר קוד מנהל חדש. אם תשכח את הקוד — נשלח לך קישור איפוס למייל הזה.</p>
+            <label style={{ display:"block", marginBottom:12 }}>
+              <LBL t="📧 מייל העסק"/>
+              <input value={sec.email} onChange={e=>setSec(s=>({ ...s, email:e.target.value, err:"" }))} type="email" dir="ltr" placeholder="name@gmail.com" autoComplete="email" style={{ ...inp, textAlign:"left" }}/>
+              <span style={{ fontSize:11.5, color:"#999", display:"block", marginTop:4 }}>לשם יגיעו גם תשובות לקוחות ועותק מכל הצעת מחיר</span>
+            </label>
+            <label style={{ display:"block", marginBottom:10 }}>
+              <LBL t="🔑 קוד מנהל חדש (לפחות 6 תווים)"/>
+              <input value={sec.code} onChange={e=>setSec(s=>({ ...s, code:e.target.value, err:"" }))} type="password" autoComplete="new-password" style={{ ...inp, letterSpacing:4, fontSize:17 }}/>
+            </label>
+            <label style={{ display:"block", marginBottom:10 }}>
+              <LBL t="שוב את הקוד החדש"/>
+              <input value={sec.code2} onChange={e=>setSec(s=>({ ...s, code2:e.target.value, err:"" }))} onKeyDown={e=>e.key==="Enter"&&saveSecurity()} type="password" autoComplete="new-password" style={{ ...inp, letterSpacing:4, fontSize:17 }}/>
+            </label>
+            {sec.err && <p style={{ color:"#E53935", fontSize:13, margin:"0 0 10px" }}>{sec.err}</p>}
+            <button disabled={sec.saving} onClick={saveSecurity} style={{ ...btnD, width:"100%", fontSize:15, opacity:sec.saving?0.6:1 }}>{sec.saving ? "שומר..." : "שמור והמשך"}</button>
           </div>
         </div>
       )}
