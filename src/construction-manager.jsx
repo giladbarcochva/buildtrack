@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 
 const SUPABASE_URL = "https://rkjcrhywhoixdkqlfnko.supabase.co";
+// הכתובת הרשמית של האפליקציה — לקישורים שנשלחים לקבלנים (גם אם הניהול נפתח מכתובת אחרת)
+const PUBLIC_APP_URL = "https://app.buildtrackil.com";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJramNyaHl3aG9peGRrcWxmbmtvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwMzA2NzQsImV4cCI6MjA5NDYwNjY3NH0.yKZzdMCNOyWJClmip03QY617HX2IB-xKPKGUZtKT_Z0";
 // ===== אימות מאובטח (JWT) =====
 let AUTH_TOKEN = null;
@@ -2522,7 +2524,7 @@ async function shareImg() {
                 body: JSON.stringify({ data: { _isConfig:true, _adminCode: saNewOrg.adminCode, id: Date.now() }, org_id: created.id }) });
               setSaOrgs((await orgGetAll()).filter(o=>o.slug!=="_config"));
               setSaNewOrg({ slug:"", name:"", adminCode:"" });
-              const link = `${window.location.origin}/${created.slug}`;
+              const link = `${PUBLIC_APP_URL}/${created.slug}`;
               const text = `שלום! מצורף קישור למערכת ניהול האתרים של ${created.name}:\n${link}\n\nפתח את הקישור בטלפון ← לחץ שיתוף ← "הוספה למסך הבית" — וזהו, יש לך אפליקציה 📱`;
               if (navigator.share) {
                 try { await navigator.share({ title: created.name, text }); } catch(e) {}
@@ -2591,7 +2593,7 @@ async function shareImg() {
               <button onClick={()=>window.open(`/${o.slug}`, "_blank")}
                 style={{ background:"#F0F0EC", color:"#555", border:"none", borderRadius:7, padding:"5px 11px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>🔗 פתח</button>
               <button onClick={async ()=>{
-                const link = `${window.location.origin}/${o.slug}`;
+                const link = `${PUBLIC_APP_URL}/${o.slug}`;
                 const text = `שלום! מצורף קישור למערכת ניהול האתרים של ${o.name}:\n${link}\n\nפתח את הקישור בטלפון ← לחץ שיתוף ← "הוספה למסך הבית" — וזהו, יש לך אפליקציה 📱`;
                 if (navigator.share) {
                   try { await navigator.share({ title: o.name, text }); } catch(e) {}
