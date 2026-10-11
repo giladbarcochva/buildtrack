@@ -1775,6 +1775,11 @@ export default function App() {
     setWorkers(prev => prev.filter(x => x._dbid!==w._dbid));
   };
   const delProject = async (p) => {
+    const nRep = reports.filter(r => String(r.projectId) === String(p.id)).length;
+    const nExp = (p.expenses||[]).length, nInv = (p.invoices||[]).length;
+    const extra = [nRep && `${nRep} דיווחי עבודה`, nExp && `${nExp} הוצאות`, nInv && `${nInv} חשבוניות`].filter(Boolean).join(", ");
+    if (!window.confirm(`🗑 למחוק את הפרויקט "${p.name}"?${extra ? `\n\nבפרויקט יש: ${extra}.` : ""}`)) return;
+    if (!window.confirm(`⚠️ אישור סופי — מחיקת "${p.name}" היא בלתי הפיכה.\n\nלמחוק?`)) return;
     await dbDelete("projects", p._dbid);
     setProjects(prev => prev.filter(x => x._dbid!==p._dbid));
     setDetailId(null);
@@ -1974,15 +1979,33 @@ export default function App() {
   };
 
   // ====== הצעות מחיר ======
+  // לקוחות שמורים — נאספים אוטומטית מכל הצעות המחיר והפרויקטים (הפרטים העדכניים ביותר לכל שם)
+  const savedClients = (() => {
+    const map = {};
+    [...projects, ...quotes]
+      .filter(x => String(x.clientName||"").trim())
+      .sort((a,b) => String(a.date||a.quoteClosedAt||"").localeCompare(String(b.date||b.quoteClosedAt||"")) || (Number(a.id)||0) - (Number(b.id)||0))
+      .forEach(x => {
+        const name = String(x.clientName).trim(), key = name.toLowerCase();
+        const prev = map[key] || { key, name, phone:"", email:"", last:"" };
+        map[key] = { key, name,
+          phone: String(x.clientPhone||"").trim() || prev.phone,
+          email: String(x.clientEmail||"").trim() || prev.email,
+          last: x.date || prev.last };
+      });
+    return Object.values(map).sort((a,b) => String(b.last).localeCompare(String(a.last)));
+  })();
+
   const saveQuote = async () => {
     if (!editQuote.title.trim()) { alert("יש למלא שם פרויקט/עבודה"); return; }
+    const eq = { ...editQuote, clientName: String(editQuote.clientName||"").trim(), clientPhone: String(editQuote.clientPhone||"").trim(), clientEmail: String(editQuote.clientEmail||"").trim() };
     try {
-      if (editQuote._dbid) {
-        const { _dbid, ...data } = editQuote;
+      if (eq._dbid) {
+        const { _dbid, ...data } = eq;
         await dbUpdate("projects", _dbid, data);
-        setQuotes(prev => prev.map(q => q._dbid===_dbid ? editQuote : q));
+        setQuotes(prev => prev.map(q => q._dbid===_dbid ? eq : q));
       } else {
-        const q = { ...editQuote, _quote:true, status:"נשלחה", id: Date.now(), date: todayStr() };
+        const q = { ...eq, _quote:true, status:"נשלחה", id: Date.now(), date: todayStr() };
         const saved = await dbInsert("projects", q);
         setQuotes(prev => [...prev, saved]);
       }
@@ -3157,7 +3180,7 @@ async function shareImg() {
                       <span style={{ background:sc.bg, color:sc.text, borderRadius:20, padding:"3px 10px", fontSize:11, fontWeight:600, display:"flex", alignItems:"center", gap:4 }}>
                         <span style={{ width:5, height:5, borderRadius:"50%", background:sc.dot, display:"inline-block" }}/>{p.status}
                       </span>
-                      {!isForeman && <button onClick={()=>delProject(p)} style={{ background:"none", border:"none", cursor:"pointer", color:"#CCC", fontSize:14 }}>✕</button>}
+                      {!isForeman && <button onClick={e=>{ e.stopPropagation(); delProject(p); }} title="מחיקת פרויקט" style={{ background:"none", border:"none", cursor:"pointer", color:"#CCC", fontSize:14 }}>✕</button>}
                     </div>
                   </div>
                   <div style={{ marginBottom:9 }}>
@@ -3237,9 +3260,15 @@ async function shareImg() {
                     <span style={{ fontSize:12, color:"#AAA" }}>אחוז ביצוע</span>
                     <span style={{ fontSize:12, fontWeight:700, color:"#E8C547" }}>{projProgress(editProj)}%{(editProj.phases||[]).some(ph=>Number(ph.weight)>0) ? " (לפי שלבים)" : ""}</span>
                   </div>
-                  <input type="range" min="0" max="100" value={editProj.progress||0}
-                    onChange={e=>{ const v=Number(e.target.value); setEditProj(p=>({...p,progress:v})); updateProjField(detailProject,{progress:v}); }}
-                    style={{ width:"100%", accentColor:"#E8C547", cursor:"pointer" }}/>
+                  {(editProj.phases||[]).some(ph=>Number(ph.weight)>0) ? (
+                    <div style={{ background:"#EEE", borderRadius:99, height:6, marginTop:8 }}>
+                      <div style={{ height:"100%", width:`${projProgress(editProj)}%`, background:"#E8C547", borderRadius:99 }}/>
+                    </div>
+                  ) : (
+                    <input type="range" min="0" max="100" step="5" value={Number(editProj.progress)||0}
+                      onChange={e=>{ const v=Number(e.target.value); updateProjFieldDebounced(detailProject,{progress:v}); }}
+                      style={{ width:"100%", accentColor:"#E8C547", cursor:"pointer" }}/>
+                  )}
                 </div>
               </div>
 
@@ -4943,6 +4972,27 @@ async function shareImg() {
                 <LBL t={f.label}/>
                 <input type={f.type||"text"} dir={f.ltr?"ltr":undefined} value={editQuote[f.key]||""} placeholder={f.ph}
                   onChange={e=>setEditQuote({...editQuote,[f.key]:e.target.value})} style={f.ltr ? { ...inp, textAlign:"left" } : inp}/>
+                {f.key==="clientName" && (() => {
+                  const typed = String(editQuote.clientName||"").trim().toLowerCase();
+                  const exact = savedClients.find(c => c.key === typed);
+                  // לקוח שנבחר והפרטים כבר תואמים — אין צורך בהצעות
+                  if (exact && (exact.phone||"") === (editQuote.clientPhone||"") && (exact.email||"") === (editQuote.clientEmail||"")) return null;
+                  const list = typed ? savedClients.filter(c => c.key.includes(typed)) : savedClients;
+                  if (!list.length) return null;
+                  return (
+                    <div style={{ marginTop:6 }}>
+                      <span style={{ fontSize:11.5, color:"#888" }}>{typed ? "👥 לקוח קיים?" : "👥 לקוחות קודמים — לחץ למילוי הפרטים:"}</span>
+                      <div style={{ display:"flex", flexWrap:"wrap", gap:6, marginTop:4 }}>
+                        {list.slice(0, 8).map(c => (
+                          <button type="button" key={c.key} onClick={e=>{ e.preventDefault(); setEditQuote(prev => ({ ...prev, clientName:c.name, clientPhone:c.phone||prev.clientPhone||"", clientEmail:c.email||prev.clientEmail||"" })); }}
+                            style={{ background:"#F0F4FF", color:"#3B5BDB", border:"1px solid #D6E0FF", borderRadius:16, padding:"4px 11px", fontSize:12.5, cursor:"pointer", fontFamily:"Heebo,sans-serif", textAlign:"right" }}>
+                            👤 {c.name}{c.phone ? <span style={{ color:"#8895C8" }}> · {c.phone}</span> : null}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })()}
               </label>
             ))}
             {/* סעיפי ההצעה */}
