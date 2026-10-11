@@ -400,10 +400,11 @@ function backupSheets(bk) {
   sheets["שלבי תשלום לקוח"] = projects.flatMap(p => (p.clientPayments||[]).map(x => ({ "פרויקט":p.name, "שלב":x.desc||"", "סכום":Number(x.amount)||0, "התקבל":x.received?"כן":"", "תאריך קבלה":x.receivedAt||"" })));
   sheets["עובדים"] = workers.map(w => ({ "שם":w.name, "תפקיד":w.role, "סוג שכר":w.payType==="hourly"?"שעתי":w.payType==="global"?"גלובלי":"יומי",
     "תעריף יומי":w.dailyRate, "תעריף שעתי":w.hourlyRate, "משכורת חודשית":w.monthlySalary, "טלפון":w.phone, "מנהל עבודה":w.isForeman?"כן":"" }));
-  sheets["דיווחים"] = reps.filter(r => !r._paymentRecord).sort((a,b)=>String(a.date).localeCompare(String(b.date))).map(r => ({ "תאריך":r.date, "עובד":r.workerName, "פרויקט":r.projectName||projName(r.projectId),
+  sheets["דיווחים"] = reps.filter(r => !r._paymentRecord && !r._summary).sort((a,b)=>String(a.date).localeCompare(String(b.date))).map(r => ({ "תאריך":r.date, "עובד":r.workerName, "פרויקט":r.projectName||projName(r.projectId),
     "ימים":r._shift?"":(r.days ?? 1), "שעות":r.hours ?? "", "כניסה":t(r.clockIn), "יציאה":t(r.clockOut), "דלק":r.fuel?(r.fuelAmt||50):"", "הערה":r.note||"",
     "מצב":r.pendingApproval?"ממתין לאישור":"", "ידני":r.manual?"כן":"" }));
   sheets["תשלומי שכר"] = reps.filter(r => r._paymentRecord).map(r => ({ "עובד":wName(r.workerId)||r.workerName||r.workerId, "חודש":r.month, "שולם":r.paid?"כן":"לא", "סכום":r.paidAmt||r.amount, "חלקי":r.partial?"כן":"", "תאריך":r.paidAt||"" }));
+  sheets["סיכומי יום"] = reps.filter(r => r._summary).sort((a,b)=>String(a.date).localeCompare(String(b.date))).map(r => ({ "תאריך":r.date, "פרויקט":r.projectName||projName(r.projectId), "כותב":r.author||"", "סיכום":r.text||"" }));
   sheets["יומן"] = D("calendar").sort((a,b)=>String(a.date).localeCompare(String(b.date))).map(c => {
     const as = c.assignments?.length ? c.assignments : (c.workers?.length ? [{ projectId:"", workers:c.workers }] : []);
     return { "תאריך":c.date, "שיבוצים":as.map(a => `${projName(a.projectId)||"ללא פרויקט"}: ${(a.workers||[]).map(wName).filter(Boolean).join(", ")}`).join(" | "), "משימות":c.tasks||"" };
@@ -484,7 +485,7 @@ function BackupOpener({ onOpenFile, onRestored }) {
   const counts = bk?.kind === "data" ? (() => {
     const T = bk.tables || {}; const d = (t) => (T[t]||[]).map(r => r.data||{});
     return [["פרויקטים", d("projects").filter(p=>!p._quote).length], ["הצעות מחיר", d("projects").filter(p=>p._quote).length],
-            ["עובדים", d("workers").filter(w=>!w._isConfig && !w._termsRecord).length], ["דיווחים", d("reports").filter(r=>!r._paymentRecord).length],
+            ["עובדים", d("workers").filter(w=>!w._isConfig && !w._termsRecord).length], ["דיווחים", d("reports").filter(r=>!r._paymentRecord && !r._summary).length],
             ["ימי יומן", d("calendar").length], ["פריטי ציוד", d("equipment").length]];
   })() : [];
   const btn = { border:"none", borderRadius:9, padding:"9px 12px", fontSize:13, fontWeight:700, cursor:"pointer", fontFamily:"Heebo,sans-serif" };
@@ -1054,6 +1055,19 @@ const todayStr = () => {
 };
 const fmtNum   = n => Number(n||0).toLocaleString("he-IL");
 
+// ===== התראות + סיכומים: עזרים לתאריכים =====
+const isoOf = (d) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+const addDaysIso = (iso, n) => { const d = new Date(iso + "T12:00:00"); d.setDate(d.getDate() + n); return isoOf(d); };
+const weekStartIso = (iso) => { const d = new Date(iso + "T12:00:00"); d.setDate(d.getDate() - d.getDay()); return isoOf(d); }; // יום ראשון
+const HE_DAYS = ["ראשון","שני","שלישי","רביעי","חמישי","שישי","שבת"];
+const HE_MONTHS = ["ינואר","פברואר","מרץ","אפריל","מאי","יוני","יולי","אוגוסט","ספטמבר","אוקטובר","נובמבר","דצמבר"];
+const fmtIsoShort = (iso) => { const [y,m,d] = String(iso||"").split("-"); return d && m ? `${Number(d)}.${Number(m)}` : String(iso||""); };
+const monthLabel = (ym) => { const [y,m] = String(ym).split("-"); return `${HE_MONTHS[Number(m)-1]||m} ${y}`; };
+// שעון שנשכח פתוח: יותר מ-12 שעות, או שנפתח ביום קודם
+const STUCK_HOURS = 12;
+const isStuckShift = (r, now = Date.now()) =>
+  !!(r && r._shift && !r.clockOut && r.clockIn && (now - Number(r.clockIn) > STUCK_HOURS*3600000 || isoOf(new Date(Number(r.clockIn))) !== isoOf(new Date(now))));
+
 // ✅ ימים ייחודיים בפרויקט (לפי תאריך, לא לפי עובד)
 function uniqueWorkDaysForProject(reports, projectId) {
   const dates = new Set(
@@ -1234,6 +1248,14 @@ export default function App() {
   const [showPartial, setShowPartial] = useState({}); // key: workerId_month -> bool
   const [payrollView, setPayrollView] = useState("pending");
   const [subsView,    setSubsView]    = useState("pending"); // קבלנים: לתשלום / היסטוריה
+  // התראות + סיכומים
+  const [bellOpen,  setBellOpen]  = useState(false);
+  const [summaries, setSummaries] = useState([]);          // סיכומי יום (נשמרים בטבלת reports עם _summary)
+  const [sumView,   setSumView]   = useState("day");       // day | week | month | history
+  const [sumDate,   setSumDate]   = useState(todayStr());
+  const [sumWeek,   setSumWeek]   = useState(weekStartIso(todayStr()));
+  const [sumMonth,  setSumMonth]  = useState(todayStr().slice(0,7));
+  const [sumM,      setSumM]      = useState(null);        // מודל כתיבת סיכום
   const [projOpen,    setProjOpen]    = useState({});        // אזורים פתוחים בדף פרויקט (הוצאות/קבלנים/עובדים/חשבוניות)
   const togOpen = (k, v) => setProjOpen(o => ({ ...o, [k]: v === undefined ? !o[k] : v }));
   const [viewFile,    setViewFile]    = useState(null);     // קובץ פתוח במציג (חשבונית / תוכנית / הצעת קבלן)
@@ -1369,8 +1391,9 @@ export default function App() {
       setPaidMonths(paidMap);
       setWorkers(realWorkers);
       // Reports: anything without _paymentRecord goes to normal OR pending
-      const normalReports = r.filter(x => !x._paymentRecord && x.pendingApproval !== true);
-      const pendingReps = r.filter(x => !x._paymentRecord && x.pendingApproval === true);
+      setSummaries(r.filter(x => x._summary));
+      const normalReports = r.filter(x => !x._paymentRecord && !x._summary && x.pendingApproval !== true);
+      const pendingReps = r.filter(x => !x._paymentRecord && !x._summary && x.pendingApproval === true);
       const qAll = qGet();
       const pendQ = qAll.filter(o => o.kind === "insert").map(o => ({ ...o.data, _dbid: o.tmpId, _pending: true }));
       // עדכונים שממתינים בתור (למשל יציאה מהשעון בלי קליטה) — מציגים אותם כבר עכשיו
@@ -1754,6 +1777,42 @@ export default function App() {
     await dbUpdate("projects", proj._dbid, updated);
     setProjects(prev => prev.map(p => p._dbid===proj._dbid ? updated : p));
     if (editProj && editProj._dbid===proj._dbid) setEditProj(updated);
+  };
+
+  // ====== סיכומי יום ======
+  const sumAuthor = () => isForeman ? (loggedForeman?.name || "מנהל עבודה") : "מנהל";
+  const openSummary = (projectId = "", date = todayStr()) => {
+    // אם כבר כתבת סיכום לפרויקט הזה באותו יום — פותחים אותו לעריכה
+    const mine = summaries.find(s => String(s.projectId) === String(projectId) && s.date === date && s.author === sumAuthor());
+    setSumM(mine ? { ...mine } : { projectId: projectId ? String(projectId) : "", date, text:"" });
+  };
+  const saveSummary = async () => {
+    const s = sumM;
+    if (!s.projectId) { alert("בחר פרויקט"); return; }
+    if (!String(s.text||"").trim()) { alert("כתוב מה קרה היום"); return; }
+    if (s.date > todayStr()) { alert("אי אפשר לכתוב סיכום לתאריך עתידי"); return; }
+    const proj = projects.find(p => String(p.id) === String(s.projectId));
+    const rec = { ...s, _summary:true, projectName: proj?.name || s.projectName || "", text: String(s.text).trim(),
+      author: s.author || sumAuthor(), updatedAt: Date.now(), id: s.id || Date.now() };
+    try {
+      if (s._dbid) {
+        const { _dbid, ...data } = rec;
+        const r = await fetch(`${SUPABASE_URL}/rest/v1/reports?id=eq.${_dbid}`, { method:"PATCH", headers:{ ...hdrs(), "Prefer":"return=representation" }, body: JSON.stringify({ data }) });
+        const rows = r.ok ? await r.json() : [];
+        if (!rows.length) throw new Error(`שגיאה ${r.status}`);
+        setSummaries(prev => prev.map(x => x._dbid === _dbid ? rec : x));
+      } else {
+        const saved = await dbInsert("reports", rec);
+        setSummaries(prev => [...prev, saved]);
+      }
+      setSumM(null);
+    } catch(e) { alert("השמירה נכשלה: " + e.message + (navigator.onLine ? "" : " (אין קליטה)")); }
+  };
+  const delSummary = async (s) => {
+    if (!window.confirm(`למחוק את הסיכום של ${s.projectName} מ-${fmtIsoShort(s.date)}?`)) return;
+    await dbDelete("reports", s._dbid);
+    setSummaries(prev => prev.filter(x => x._dbid !== s._dbid));
+    setSumM(null);
   };
 
   const toggleAssign = async (wid) => {
@@ -2991,6 +3050,7 @@ async function shareImg() {
   const allTabs = [
     { key:"reports",  label:"דיווחים",  emoji:"📋" },
     { key:"projects", label:"פרויקטים", emoji:"🏗️" },
+    { key:"summaries",label:"סיכומים",  emoji:"📝" },
     { key:"quotes",   label:"הצעות מחיר", emoji:"📄" },
     { key:"workers",  label:"עובדים",   emoji:"👷" },
     { key:"payroll",  label:"שכר",      emoji:"💰" },
@@ -3000,9 +3060,30 @@ async function shareImg() {
     { key:"help",     label:"עזרה",     emoji:"❓" },
     { key:"settings", label:"הגדרות",   emoji:"⚙️" },
   ];
-  const foremanTabs = ["reports","projects","workers","calendar","help"];
+  const foremanTabs = ["reports","projects","summaries","workers","calendar","help"];
   const tabs = (isForeman ? allTabs.filter(t => foremanTabs.includes(t.key)) : allTabs)
     .filter(t => t.key !== "foremen" || plan.foremen);
+
+  // ====== התראות (מחושבות מהנתונים — נעלמות לבד כשמטפלים בהן) ======
+  const goTab = (k, extra) => { setMgTab(k); setDetailId(null); setBellOpen(false); if (extra) extra(); try { window.scrollTo(0,0); } catch(e) {} };
+  const alerts = [];
+  if (visiblePending.length) alerts.push({ key:"pending", icon:"⏳", color:"#B26A00", bg:"#FFF8E1",
+    title: visiblePending.length === 1 ? "דיווח עבר אחד ממתין לאישור" : `${visiblePending.length} דיווחי עבר ממתינים לאישור`,
+    detail: [...new Set(visiblePending.map(r => r.workerName))].slice(0,4).join(", "),
+    go: () => goTab("reports") });
+  visibleReports.filter(r => isStuckShift(r)).forEach(r => alerts.push({ key:"stuck"+r._dbid, icon:"⏱️", color:"#B71C1C", bg:"#FCE4EC",
+    title: `שעון פתוח — ${r.workerName}`,
+    detail: `${r.projectName||""} · נפתח ${fmtIsoShort(isoOf(new Date(Number(r.clockIn))))} ב-${new Date(Number(r.clockIn)).toLocaleTimeString("he-IL",{hour:"2-digit",minute:"2-digit"})} · לחץ ✏️ שעות כדי לסגור`,
+    go: () => goTab("reports") }));
+  if (!isForeman && plan.subs) projects.forEach(pr => (pr.subcontractors||[]).forEach(sc => {
+    const due = (sc.payments||[]).filter(pm => pm.due && !pm.paid && Number(pm.amount) > 0);
+    if (!due.length) return;
+    const sum = due.reduce((s,pm) => s + Number(pm.amount||0), 0);
+    alerts.push({ key:"sub"+pr._dbid+"_"+sc.id, icon:"💰", color:"#6D28D9", bg:"#EDE9FE",
+      title: `לשלם לקבלן ${sc.name||"משנה"} — ₪${fmtNum(sum)}`,
+      detail: `${pr.name} · ${due.map(pm => pm.desc||"שלב").join(", ")}${due[0].dueAt ? ` · אושר ${due[0].dueAt}` : ""}`,
+      go: () => goTab("payroll", () => { setPayrollView("subs"); setSubsView("pending"); }) });
+  }));
 
   return (
     <div style={{ ...base, background:"#F5F5F0" }}>
@@ -3010,6 +3091,11 @@ async function shareImg() {
       <header className="bt-head" style={{ background:"#1A1A2E", padding:"0 18px", display:"flex", alignItems:"center", justifyContent:"space-between", height:60 }}>
         <LogoSmall/>
         <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+          <button onClick={()=>setBellOpen(o=>!o)} title="התראות" aria-label="התראות"
+            style={{ position:"relative", background: bellOpen ? "rgba(232,197,71,0.2)" : "rgba(255,255,255,0.08)", border:"none", borderRadius:8, width:36, height:32, cursor:"pointer", fontSize:17, lineHeight:1, padding:0 }}>
+            🔔
+            {alerts.length > 0 && <span style={{ position:"absolute", top:-5, left:-5, background:"#E53935", color:"#fff", borderRadius:10, minWidth:18, height:18, fontSize:11, fontWeight:800, display:"flex", alignItems:"center", justifyContent:"center", padding:"0 4px", fontFamily:"Heebo,sans-serif", boxShadow:"0 0 0 2px #1A1A2E" }}>{alerts.length > 99 ? "99+" : alerts.length}</span>}
+          </button>
           {canInstall && <button onClick={doInstall} title="התקנת האפליקציה במחשב / בטלפון" style={{ background:"#E8C547", color:"#1A1A2E", border:"none", borderRadius:8, padding:"5px 12px", fontSize:13, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700 }}>⬇ התקן אפליקציה</button>}
           {isForeman && <>
             <span style={{ color:"#E8C547", fontSize:13, fontWeight:700 }}>🦺 {loggedForeman?.name}</span>
@@ -3021,6 +3107,34 @@ async function shareImg() {
           <button onClick={()=>{ setLoggedForeman(null); setMgTab("reports"); setDetailId(null); setScreen("home"); }} style={{ background:"rgba(255,255,255,0.1)", color:"#ccc", border:"none", borderRadius:8, padding:"5px 12px", fontSize:13, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>יציאה</button>
         </div>
       </header>
+
+      {/* חלונית התראות */}
+      {bellOpen && (
+        <div onClick={()=>setBellOpen(false)} style={{ position:"fixed", inset:0, zIndex:900, background:"rgba(0,0,0,0.25)" }}>
+          <div onClick={e=>e.stopPropagation()} style={{ position:"absolute", top:64, left:10, right:10, marginInline:"auto", maxWidth:420, background:"#fff", borderRadius:16, boxShadow:"0 12px 40px rgba(0,0,0,0.25)", direction:"rtl", maxHeight:"75vh", overflowY:"auto", padding:"14px 14px 10px" }}>
+            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:10 }}>
+              <h3 style={{ margin:0, fontSize:16, fontWeight:800 }}>🔔 התראות</h3>
+              <button onClick={()=>setBellOpen(false)} style={{ background:"none", border:"none", fontSize:18, color:"#999", cursor:"pointer" }}>✕</button>
+            </div>
+            {alerts.length === 0 ? (
+              <div style={{ textAlign:"center", padding:"22px 0", color:"#999" }}>
+                <div style={{ fontSize:30, marginBottom:6 }}>✅</div>
+                <p style={{ margin:0, fontSize:14 }}>אין התראות — הכול מטופל</p>
+              </div>
+            ) : alerts.map(a => (
+              <button key={a.key} onClick={a.go} style={{ display:"flex", gap:10, alignItems:"flex-start", width:"100%", textAlign:"right", background:a.bg, border:"none", borderRadius:12, padding:"10px 12px", marginBottom:7, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>
+                <span style={{ fontSize:18, lineHeight:1.2 }}>{a.icon}</span>
+                <span style={{ flex:1, minWidth:0 }}>
+                  <span style={{ display:"block", fontSize:13.5, fontWeight:700, color:a.color }}>{a.title}</span>
+                  {a.detail && <span style={{ display:"block", fontSize:12, color:"#666", marginTop:2, lineHeight:1.5 }}>{a.detail}</span>}
+                </span>
+                <span style={{ color:"#BBB", fontSize:14, alignSelf:"center" }}>‹</span>
+              </button>
+            ))}
+            {!isForeman && <p style={{ margin:"6px 2px 0", fontSize:11.5, color:"#999" }}>{cfgData._email && cfgData._alertsEmail !== false ? `📧 סיכום ההתראות נשלח כל בוקר ל-${cfgData._email}` : "📧 מייל התראות בוקר כבוי — אפשר להפעיל בהגדרות"}</p>}
+          </div>
+        </div>
+      )}
 
       <div className="bt-tabs" style={{ background:"#fff", borderBottom:"1.5px solid #EEE", display:"flex", justifyContent:"flex-start", overflowX:"auto", WebkitOverflowScrolling:"touch" }}>
         {tabs.map(t => (
@@ -3041,25 +3155,11 @@ async function shareImg() {
                 <p style={{ margin:"3px 0 0", color:"#777", fontSize:13 }}>{visibleReports.length} דיווחים סה"כ</p>
               </div>
               <div style={{ display:"flex", gap:8 }}>
-                {!isForeman && <button onClick={async ()=>{
+                {!isForeman && visiblePending.length > 0 && <button onClick={async ()=>{
                   try {
-                    // Get ALL rows from reports table
-                    const res = await fetch(`https://rkjcrhywhoixdkqlfnko.supabase.co/rest/v1/reports?select=*&order=id.asc`, { headers: hdrs() });
-                    const rows = await res.json();
-                    let count = 0;
-                    for (const row of rows) {
-                      if (row.data && row.data.pendingApproval === true) {
-                        const newData = { ...row.data, pendingApproval: false };
-                        await fetch(`https://rkjcrhywhoixdkqlfnko.supabase.co/rest/v1/reports?id=eq.${row.id}`, {
-                          method: "PATCH",
-                          headers: { "Content-Type": "application/json", "apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJramNyaHl3aG9peGRrcWxmbmtvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwMzA2NzQsImV4cCI6MjA5NDYwNjY3NH0.yKZzdMCNOyWJClmip03QY617HX2IB-xKPKGUZtKT_Z0", "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJramNyaHl3aG9peGRrcWxmbmtvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwMzA2NzQsImV4cCI6MjA5NDYwNjY3NH0.yKZzdMCNOyWJClmip03QY617HX2IB-xKPKGUZtKT_Z0" },
-                          body: JSON.stringify({ data: newData })
-                        });
-                        count++;
-                      }
-                    }
-                    await loadAll();
-                    alert(`✅ אושרו ${count} דיווחים`);
+                    const list = [...visiblePending];
+                    for (const rep of list) await approveReport(rep);
+                    alert(`✅ אושרו ${list.length} דיווחים`);
                   } catch(e) {
                     alert("שגיאה: " + e.message);
                   }
@@ -3105,7 +3205,7 @@ async function shareImg() {
                     <span style={{ background:"#F0F0EC", borderRadius:6, padding:"2px 8px", fontSize:12, color:"#555" }}>{r.projectName}</span>
                     <span style={{ fontSize:12, color:"#999" }}>📅 {r.date}</span>
                     {r.dayType==="half" && <span style={{ background:"#FFF8E1", color:"#B26A00", borderRadius:6, padding:"2px 7px", fontSize:11, fontWeight:600 }}>חצי יום</span>}
-                    {r._shift && <span style={{ background:r.clockOut?"#E3F2FD":"#FCE4EC", color:r.clockOut?"#1565C0":"#B71C1C", borderRadius:6, padding:"2px 7px", fontSize:11, fontWeight:600 }}>⏱️ {r.clockOut ? `${r.hours} שעות` : (Date.now()-r.clockIn > 16*3600000 ? "⚠️ שעון תקוע" : "שעון פתוח")}</span>}
+                    {r._shift && <span style={{ background:r.clockOut?"#E3F2FD":"#FCE4EC", color:r.clockOut?"#1565C0":"#B71C1C", borderRadius:6, padding:"2px 7px", fontSize:11, fontWeight:600 }}>⏱️ {r.clockOut ? `${r.hours} שעות` : (isStuckShift(r) ? "⚠️ שעון נשכח פתוח" : "שעון פתוח")}</span>}
                     {r.manual && <span style={{ background:"#F3E5F5", color:"#6A1B9A", borderRadius:6, padding:"2px 7px", fontSize:11, fontWeight:600 }}>✍️ ידני</span>}
                     {r._shift && <button onClick={async ()=>{
                       const cur = r.hours != null ? String(r.hours) : "";
@@ -3135,6 +3235,151 @@ async function shareImg() {
             </div>
           </>
         )}
+
+        {/* SUMMARIES — סיכומי יום / שבוע / חודש / היסטוריה */}
+        {mgTab==="summaries" && (() => {
+          const today = todayStr();
+          const visSums = summaries.filter(s => canSeeProject(s.projectId));
+          const pName = (pid, fb) => projects.find(p => String(p.id) === String(pid))?.name || fb || "פרויקט";
+          const canEditSum = (s) => !isForeman || s.author === sumAuthor();
+          const block = (from, to) => {
+            const by = {};
+            const ensure = (pid, name) => (by[pid] = by[pid] || { pid, name: pName(pid, name), days:0, hours:0, workers:new Set(), exp:0, sums:[] });
+            visibleReports.filter(r => r.date >= from && r.date <= to && r.projectId).forEach(r => {
+              const b = ensure(String(r.projectId), r.projectName);
+              b.days += r.dayType === "half" ? 0.5 : 1;
+              if (r._shift && r.hours) b.hours += Number(r.hours) || 0;
+              if (r.workerName) b.workers.add(r.workerName);
+            });
+            if (!isForeman) visibleProjects.forEach(p => (p.expenses||[]).forEach(e => { if (e.date && e.date >= from && e.date <= to) ensure(String(p.id), p.name).exp += Number(e.amount) || 0; }));
+            visSums.filter(s => s.date >= from && s.date <= to).forEach(s => ensure(String(s.projectId), s.projectName).sums.push(s));
+            return Object.values(by).map(b => ({ ...b, sums: b.sums.sort((a,c) => String(a.date).localeCompare(String(c.date))) }))
+              .sort((a,b) => b.sums.length - a.sums.length || b.days - a.days);
+          };
+          const chip = (bg, color, txt) => <span style={{ background:bg, color, borderRadius:8, padding:"3px 9px", fontSize:12, fontWeight:600 }}>{txt}</span>;
+          const sumRow = (s, showDate) => (
+            <div key={s._dbid||s.id} style={{ background:"#F9F9F7", borderRadius:10, padding:"9px 12px", marginTop:7 }}>
+              <div style={{ display:"flex", justifyContent:"space-between", gap:8, alignItems:"center", marginBottom:3 }}>
+                <span style={{ fontSize:11.5, color:"#888" }}>{showDate ? `יום ${HE_DAYS[new Date(s.date+"T12:00:00").getDay()]} ${fmtIsoShort(s.date)} · ` : ""}✍️ {s.author||"מנהל"}</span>
+                {canEditSum(s) && <button onClick={()=>setSumM({ ...s })} style={{ background:"none", border:"none", color:"#3B5BDB", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif", padding:0 }}>✏️ ערוך</button>}
+              </div>
+              <div style={{ fontSize:13.5, lineHeight:1.65, whiteSpace:"pre-wrap", color:"#333" }}>{s.text}</div>
+            </div>
+          );
+          const shareText = (title, blocks) => [`📝 ${title} — ${org?.name||""}`, ...blocks.map(b =>
+            [`\n🏗️ ${b.name}${b.days ? ` · ${b.days} ימי עבודה` : ""}${b.exp ? ` · הוצאות ₪${fmtNum(b.exp)}` : ""}`,
+             ...b.sums.map(s => `• ${fmtIsoShort(s.date)}: ${s.text}`)].join("\n"))].join("\n");
+          const share = async (txt) => {
+            try { if (navigator.share) { await navigator.share({ text: txt }); return; } } catch(e) { return; }
+            try { await navigator.clipboard.writeText(txt); alert("✅ הסיכום הועתק — אפשר להדביק בוואטסאפ"); } catch(e) { window.prompt("העתק את הסיכום:", txt); }
+          };
+          const periodView = (title, from, to, onPrev, onNext, nextDisabled) => {
+            const blocks = block(from, to);
+            const totDays = blocks.reduce((s,b)=>s+b.days,0), totExp = blocks.reduce((s,b)=>s+b.exp,0), totSums = blocks.reduce((s,b)=>s+b.sums.length,0);
+            return (<>
+              <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", background:"#fff", borderRadius:12, padding:"8px 10px", marginBottom:12, boxShadow:"0 1px 5px rgba(0,0,0,0.06)" }}>
+                <button onClick={onPrev} style={{ ...btnG, padding:"6px 12px" }}>→</button>
+                <span style={{ fontWeight:800, fontSize:15 }}>{title}</span>
+                <button onClick={onNext} disabled={nextDisabled} style={{ ...btnG, padding:"6px 12px", opacity: nextDisabled ? 0.35 : 1 }}>←</button>
+              </div>
+              <div style={{ background:"#1A1A2E", borderRadius:14, padding:"12px 16px", marginBottom:12, display:"flex", gap:16, flexWrap:"wrap", color:"#fff", fontSize:13 }}>
+                <span>📝 <b style={{ color:"#E8C547" }}>{totSums}</b> סיכומי יום</span>
+                <span>👷 <b style={{ color:"#E8C547" }}>{totDays}</b> ימי עבודה</span>
+                {!isForeman && <span>🧾 <b style={{ color:"#E8C547" }}>₪{fmtNum(totExp)}</b> הוצאות</span>}
+                {blocks.length > 0 && <button onClick={()=>share(shareText(title, blocks))} style={{ marginInlineStart:"auto", background:"#E8C547", color:"#1A1A2E", border:"none", borderRadius:8, padding:"3px 10px", fontSize:12, fontWeight:700, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>📤 שתף</button>}
+              </div>
+              {blocks.length === 0 && <div style={{ background:"#fff", borderRadius:14, padding:36, textAlign:"center", border:"1.5px dashed #DDD", color:"#AAA" }}>אין פעילות בתקופה הזו</div>}
+              {blocks.map(b => (
+                <div key={b.pid} style={{ background:"#fff", borderRadius:14, padding:"13px 16px", marginBottom:10, boxShadow:"0 1px 5px rgba(0,0,0,0.06)", borderRight:"4px solid #E8C547" }}>
+                  <div style={{ fontWeight:800, fontSize:15, marginBottom:6 }}>🏗️ {b.name}</div>
+                  <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
+                    {b.days > 0 && chip("#F0F4FF", "#3B5BDB", `👷 ${b.days} ימי עבודה · ${b.workers.size === 1 ? "עובד אחד" : `${b.workers.size} עובדים`}`)}
+                    {b.hours > 0 && chip("#E3F2FD", "#1565C0", `⏱️ ${Math.round(b.hours*10)/10} שעות`)}
+                    {b.exp > 0 && chip("#FFF8E1", "#B26A00", `🧾 ₪${fmtNum(b.exp)}`)}
+                  </div>
+                  {b.sums.length ? b.sums.map(s => sumRow(s, true)) : <p style={{ margin:"8px 0 0", fontSize:12, color:"#AAA" }}>לא נכתבו סיכומי יום לפרויקט בתקופה הזו</p>}
+                </div>
+              ))}
+            </>);
+          };
+
+          return (<>
+            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:14, gap:8 }}>
+              <div>
+                <h1 style={{ margin:0, fontSize:20, fontWeight:800 }}>📝 סיכומים</h1>
+                <p style={{ margin:"3px 0 0", color:"#777", fontSize:13 }}>מה קרה ומה הספקנו בכל פרויקט</p>
+              </div>
+              <button onClick={()=>openSummary("", today)} style={{ ...btnY, padding:"8px 14px", fontSize:13 }}>+ סיכום יום</button>
+            </div>
+            <div style={{ display:"flex", background:"#F0F0EC", borderRadius:12, padding:3, marginBottom:14, gap:3 }}>
+              {[{k:"day",l:"היום"},{k:"week",l:"שבועי"},{k:"month",l:"חודשי"},{k:"history",l:"📚 היסטוריה"}].map(t=>(
+                <button key={t.k} onClick={()=>setSumView(t.k)} style={{ flex:1, background:sumView===t.k?"#1A1A2E":"transparent", color:sumView===t.k?"#E8C547":"#888", border:"none", borderRadius:10, padding:"8px 0", fontWeight:700, fontSize:13, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>{t.l}</button>
+              ))}
+            </div>
+
+            {sumView==="day" && (() => {
+              const d = sumDate;
+              const dayReps = visibleReports.filter(r => r.date === d);
+              const ids = new Set([
+                ...visibleProjects.filter(p => p.status !== "הושלם").map(p => String(p.id)),
+                ...visSums.filter(s => s.date === d).map(s => String(s.projectId)),
+                ...dayReps.map(r => String(r.projectId)).filter(Boolean),
+              ]);
+              const list = [...ids].map(pid => ({ pid, sums: visSums.filter(s => s.date === d && String(s.projectId) === pid), reps: dayReps.filter(r => String(r.projectId) === pid) }))
+                .filter(x => projects.some(p => String(p.id) === x.pid) || x.sums.length)
+                .sort((a,b) => (b.reps.length - a.reps.length) || (b.sums.length - a.sums.length));
+              return (<>
+                <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", background:"#fff", borderRadius:12, padding:"8px 10px", marginBottom:12, boxShadow:"0 1px 5px rgba(0,0,0,0.06)", gap:6 }}>
+                  <button onClick={()=>setSumDate(addDaysIso(d,-1))} style={{ ...btnG, padding:"6px 12px" }}>→</button>
+                  <span style={{ fontWeight:800, fontSize:15, textAlign:"center" }}>{d===today ? "היום · " : ""}יום {HE_DAYS[new Date(d+"T12:00:00").getDay()]} {fmtIsoShort(d)}</span>
+                  <button onClick={()=>setSumDate(addDaysIso(d,1))} disabled={d>=today} style={{ ...btnG, padding:"6px 12px", opacity:d>=today?0.35:1 }}>←</button>
+                </div>
+                {list.length === 0 && <div style={{ background:"#fff", borderRadius:14, padding:36, textAlign:"center", border:"1.5px dashed #DDD", color:"#AAA" }}>אין פרויקטים פעילים</div>}
+                {list.map(x => (
+                  <div key={x.pid} style={{ background:"#fff", borderRadius:14, padding:"13px 16px", marginBottom:10, boxShadow:"0 1px 5px rgba(0,0,0,0.06)", borderRight:`4px solid ${x.sums.length ? "#22C55E" : "#DDD"}` }}>
+                    <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", gap:8 }}>
+                      <span style={{ fontWeight:800, fontSize:15 }}>🏗️ {pName(x.pid, x.sums[0]?.projectName)}</span>
+                      <button onClick={()=>openSummary(x.pid, d)} style={{ background:x.sums.some(s=>s.author===sumAuthor()) ? "#F0F0EC" : "#1A1A2E", color:x.sums.some(s=>s.author===sumAuthor()) ? "#555" : "#E8C547", border:"none", borderRadius:8, padding:"5px 11px", fontSize:12, fontWeight:700, cursor:"pointer", fontFamily:"Heebo,sans-serif", flexShrink:0 }}>
+                        {x.sums.some(s=>s.author===sumAuthor()) ? "✏️ ערוך" : "✍️ כתוב סיכום"}
+                      </button>
+                    </div>
+                    {x.reps.length > 0 && <p style={{ margin:"5px 0 0", fontSize:12, color:"#3B5BDB" }}>👷 דיווחו: {[...new Set(x.reps.map(r=>r.workerName))].join(", ")}</p>}
+                    {x.sums.length ? x.sums.map(s => sumRow(s, false)) : <p style={{ margin:"6px 0 0", fontSize:12, color:"#AAA" }}>עוד לא נכתב סיכום ליום הזה</p>}
+                  </div>
+                ))}
+              </>);
+            })()}
+
+            {sumView==="week" && periodView(
+              `שבוע ${fmtIsoShort(sumWeek)}–${fmtIsoShort(addDaysIso(sumWeek,6))}`, sumWeek, addDaysIso(sumWeek,6),
+              ()=>setSumWeek(addDaysIso(sumWeek,-7)), ()=>setSumWeek(addDaysIso(sumWeek,7)), sumWeek >= weekStartIso(today))}
+
+            {sumView==="month" && (() => {
+              const [y,m] = sumMonth.split("-").map(Number);
+              const last = new Date(y, m, 0).getDate();
+              const shift = (n) => { const dd = new Date(y, m-1+n, 1); setSumMonth(`${dd.getFullYear()}-${String(dd.getMonth()+1).padStart(2,"0")}`); };
+              return periodView(monthLabel(sumMonth), `${sumMonth}-01`, `${sumMonth}-${String(last).padStart(2,"0")}`, ()=>shift(-1), ()=>shift(1), sumMonth >= today.slice(0,7));
+            })()}
+
+            {sumView==="history" && (() => {
+              const cur = today.slice(0,7);
+              const months = {};
+              visSums.forEach(s => { const k = String(s.date).slice(0,7); if (k < cur) (months[k] = months[k] || { sums:0, days:0 }).sums++; });
+              visibleReports.forEach(r => { const k = String(r.date||"").slice(0,7); if (k && k < cur) (months[k] = months[k] || { sums:0, days:0 }).days += r.dayType==="half" ? 0.5 : 1; });
+              const keys = Object.keys(months).sort().reverse();
+              return (<>
+                <p style={{ margin:"0 0 10px", fontSize:12.5, color:"#888" }}>כל חודש שהסתיים נכנס לכאן אוטומטית. לחץ על חודש לסיכום המלא.</p>
+                {keys.length === 0 && <div style={{ background:"#fff", borderRadius:14, padding:36, textAlign:"center", border:"1.5px dashed #DDD", color:"#AAA" }}>עוד אין חודשים בהיסטוריה</div>}
+                {keys.map(k => (
+                  <button key={k} onClick={()=>{ setSumMonth(k); setSumView("month"); }} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", width:"100%", background:"#fff", border:"none", borderRadius:12, padding:"13px 16px", marginBottom:8, boxShadow:"0 1px 5px rgba(0,0,0,0.06)", cursor:"pointer", fontFamily:"Heebo,sans-serif", textAlign:"right" }}>
+                    <span style={{ fontWeight:800, fontSize:15 }}>📆 {monthLabel(k)}</span>
+                    <span style={{ fontSize:12, color:"#777" }}>📝 {months[k].sums} סיכומים · 👷 {months[k].days} ימי עבודה ‹</span>
+                  </button>
+                ))}
+              </>);
+            })()}
+          </>);
+        })()}
 
         {/* PROJECTS LIST */}
         {mgTab==="projects" && !detailProject && (
@@ -3271,6 +3516,27 @@ async function shareImg() {
                   )}
                 </div>
               </div>
+
+              {/* סיכומי יום של הפרויקט */}
+              {(() => {
+                const ps = summaries.filter(s => String(s.projectId) === String(detailProject.id)).sort((a,b) => String(b.date).localeCompare(String(a.date)) || (b.updatedAt||0) - (a.updatedAt||0));
+                return (
+                  <div style={{ background:"#fff", borderRadius:14, padding:"16px 20px", marginBottom:14, boxShadow:"0 2px 8px rgba(0,0,0,0.07)" }}>
+                    <SecHead title="📝 סיכומי יום" open={!!projOpen.summaries} onToggle={()=>togOpen("summaries")} mb={10}
+                      summary={ps.length ? `${ps.length} סיכומים · אחרון ${fmtIsoShort(ps[0].date)}` : "עוד לא נכתבו סיכומים"}
+                      action={<button onClick={e=>{ e.stopPropagation(); openSummary(detailProject.id, todayStr()); }} style={{ background:"#1A1A2E", color:"#E8C547", border:"none", borderRadius:7, padding:"4px 12px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700 }}>+ סיכום היום</button>}/>
+                    {projOpen.summaries && ps.slice(0, 30).map(s => (
+                      <div key={s._dbid||s.id} style={{ background:"#F9F9F7", borderRadius:10, padding:"9px 12px", marginBottom:7 }}>
+                        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:3 }}>
+                          <span style={{ fontSize:11.5, color:"#888" }}>יום {HE_DAYS[new Date(s.date+"T12:00:00").getDay()]} {fmtIsoShort(s.date)} · ✍️ {s.author||"מנהל"}</span>
+                          {(!isForeman || s.author === sumAuthor()) && <button onClick={()=>setSumM({ ...s })} style={{ background:"none", border:"none", color:"#3B5BDB", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif", padding:0 }}>✏️ ערוך</button>}
+                        </div>
+                        <div style={{ fontSize:13.5, lineHeight:1.65, whiteSpace:"pre-wrap", color:"#333" }}>{s.text}</div>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
 
               {/* Worker days in project */}
               <div style={{ background:"#fff", borderRadius:14, padding:"16px 20px", marginBottom:14, boxShadow:"0 2px 8px rgba(0,0,0,0.07)" }}>
@@ -4925,6 +5191,16 @@ async function shareImg() {
               <input type="email" dir="ltr" value={bizEmailInput} onChange={e=>setBizEmailInput(e.target.value)} placeholder="name@gmail.com" style={{ ...inp, marginBottom:10, textAlign:"left" }}/>
               <button onClick={saveBizEmail} style={{ ...btnD, width:"100%" }}>שמור מייל</button>
               {cfgData._email && <p style={{ margin:"8px 0 0", fontSize:12, color:"#2E7D32" }}>✓ שמור: <span dir="ltr">{cfgData._email}</span></p>}
+              {cfgData._email && (
+                <label style={{ display:"flex", alignItems:"flex-start", gap:9, marginTop:14, paddingTop:12, borderTop:"1px solid #F0F0EC", cursor:"pointer" }}>
+                  <input type="checkbox" checked={cfgData._alertsEmail !== false} style={{ width:18, height:18, marginTop:2, accentColor:"#1A1A2E" }}
+                    onChange={async e => {
+                      const next = { ...cfgData, _isConfig:true, _alertsEmail: e.target.checked };
+                      try { await saveCfgChecked(next); setCfgData(next); } catch(err) { alert("השמירה נכשלה: " + err.message); }
+                    }}/>
+                  <span style={{ fontSize:13, lineHeight:1.55 }}><b>🔔 מייל התראות כל בוקר</b><br/><span style={{ color:"#888", fontSize:12 }}>דיווחי עבר לאישור, שעונים שנשכחו פתוחים ותשלומים לקבלנים. נשלח רק כשיש משהו לטפל בו.</span></span>
+                </label>
+              )}
             </div>
           </>
         )}
@@ -4953,6 +5229,39 @@ async function shareImg() {
               );
             })}
             <button onClick={()=>setAssignM(false)} style={{ ...btnD, width:"100%", marginTop:10 }}>סגור</button>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: סיכום יום */}
+      {sumM && (
+        <div onClick={()=>setSumM(null)} style={OVL}>
+          <div onClick={e=>e.stopPropagation()} style={MOD}>
+            <h3 style={{ margin:"0 0 14px", fontWeight:800, fontSize:17 }}>{sumM._dbid ? "✏️ עריכת סיכום יום" : "📝 סיכום יום"}</h3>
+            <label style={{ display:"block", marginBottom:11 }}>
+              <LBL t="פרויקט"/>
+              <select value={sumM.projectId||""} onChange={e=>setSumM(s=>({ ...s, projectId:e.target.value }))} style={inp}>
+                <option value="">— בחר פרויקט —</option>
+                {[...visibleProjects].sort((a,b)=>(a.status==="הושלם")-(b.status==="הושלם")).map(p => <option key={p.id} value={String(p.id)}>{p.name}{p.status==="הושלם" ? " (הושלם)" : ""}</option>)}
+              </select>
+            </label>
+            <label style={{ display:"block", marginBottom:11 }}>
+              <LBL t="תאריך"/>
+              <input type="date" value={sumM.date} max={todayStr()} onChange={e=>setSumM(s=>({ ...s, date:e.target.value }))} style={inp}/>
+            </label>
+            <label style={{ display:"block", marginBottom:11 }}>
+              <LBL t="מה קרה היום? מה הספקנו?"/>
+              <textarea value={sumM.text||""} onChange={e=>setSumM(s=>({ ...s, text:e.target.value }))} rows={7}
+                placeholder={"לדוגמה:\n• סיימנו יציקת תקרה בקומה 2\n• הגיע משלוח בלוקים\n• מחר: התחלת טיח בחדרים"}
+                style={{ ...inp, resize:"vertical", lineHeight:1.6, minHeight:150 }}/>
+            </label>
+            <div style={{ display:"flex", gap:10, marginTop:6 }}>
+              <button onClick={saveSummary} style={{ ...btnD, flex:1 }}>שמור</button>
+              <button onClick={()=>setSumM(null)} style={{ ...btnG, flex:1 }}>ביטול</button>
+            </div>
+            {sumM._dbid && (!isForeman || sumM.author === sumAuthor()) && (
+              <button onClick={()=>delSummary(sumM)} style={{ background:"none", border:"none", color:"#C62828", fontSize:13, cursor:"pointer", fontFamily:"Heebo,sans-serif", width:"100%", marginTop:12 }}>🗑 מחק סיכום</button>
+            )}
           </div>
         </div>
       )}
