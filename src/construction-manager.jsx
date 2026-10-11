@@ -380,7 +380,7 @@ function backupSheets(bk) {
   const projects = projAll.filter(p => !p._quote), quotes = projAll.filter(p => p._quote);
   const projName = (id) => (projAll.find(p => String(p.id) === String(id)) || {}).name || "";
   const wk = D("workers");
-  const workers = wk.filter(w => !w._isConfig && !w._termsRecord);
+  const workers = wk.filter(w => !w._isConfig && !w._termsRecord && !w._secret);
   const wName = (id) => (workers.find(w => String(w.id) === String(id)) || {}).name || "";
   const reps = D("reports");
   const t = (ms) => ms ? new Date(ms).toLocaleString("he-IL") : "";
@@ -485,7 +485,7 @@ function BackupOpener({ onOpenFile, onRestored }) {
   const counts = bk?.kind === "data" ? (() => {
     const T = bk.tables || {}; const d = (t) => (T[t]||[]).map(r => r.data||{});
     return [["פרויקטים", d("projects").filter(p=>!p._quote).length], ["הצעות מחיר", d("projects").filter(p=>p._quote).length],
-            ["עובדים", d("workers").filter(w=>!w._isConfig && !w._termsRecord).length], ["דיווחים", d("reports").filter(r=>!r._paymentRecord && !r._summary).length],
+            ["עובדים", d("workers").filter(w=>!w._isConfig && !w._termsRecord && !w._secret).length], ["דיווחים", d("reports").filter(r=>!r._paymentRecord && !r._summary).length],
             ["ימי יומן", d("calendar").length], ["פריטי ציוד", d("equipment").length]];
   })() : [];
   const btn = { border:"none", borderRadius:9, padding:"9px 12px", fontSize:13, fontWeight:700, cursor:"pointer", fontFamily:"Heebo,sans-serif" };
@@ -1055,6 +1055,10 @@ const todayStr = () => {
 };
 const fmtNum   = n => Number(n||0).toLocaleString("he-IL");
 
+// ===== קודי כניסה של עובדים: נשמרים בשורות נפרדות (_secret) שרק המנהל יכול לקרוא =====
+const stripCodes = (w) => { const { code, foremanCode, ...rest } = w || {}; return rest; };
+const tokenRole = () => { try { return JSON.parse(atob((AUTH_TOKEN||"").split(".")[1].replace(/-/g,"+").replace(/_/g,"/")) || "{}").app_role || ""; } catch(e) { return ""; } };
+
 // ===== התראות + סיכומים: עזרים לתאריכים =====
 const isoOf = (d) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
 const addDaysIso = (iso, n) => { const d = new Date(iso + "T12:00:00"); d.setDate(d.getDate() + n); return isoOf(d); };
@@ -1249,6 +1253,9 @@ export default function App() {
   const [payrollView, setPayrollView] = useState("pending");
   const [subsView,    setSubsView]    = useState("pending"); // קבלנים: לתשלום / היסטוריה
   // התראות + סיכומים
+  const secretsRef = useRef({});            // workerId → שורת הקודים הנעולה
+  const persistWorkerRef = useRef(null);
+  const migratingRef = useRef(false);    // persistWorker (מוגדרת בהמשך) — לשימוש מתוך loadAll
   const [bellOpen,  setBellOpen]  = useState(false);
   const [summaries, setSummaries] = useState([]);          // סיכומי יום (נשמרים בטבלת reports עם _summary)
   const [sumView,   setSumView]   = useState("day");       // day | week | month | history
@@ -1376,7 +1383,25 @@ export default function App() {
       setProjects(p.filter(x => !x._quote));
       const termsRec = w.find(x => x._termsRecord);
       setTermsAccepted(!!termsRec && termsRec.termsVersion === TERMS_VERSION);
-      const realWorkers = w.filter(x => !x._isConfig && !x._termsRecord);
+      // קודי הכניסה — רק המנהל מקבל את השורות האלה מהשרת; ממזגים אותם לעובדים לתצוגה ולעריכה
+      const secMap = {};
+      w.filter(x => x._secret).forEach(x => { secMap[String(x.workerId)] = x; });
+      secretsRef.current = secMap;
+      const isMgr = tokenRole() === "manager";
+      const rawWorkers = w.filter(x => !x._isConfig && !x._termsRecord && !x._secret);
+      const realWorkers = rawWorkers.map(x => {
+        const s = secMap[String(x.id)];
+        if (isMgr) return { ...x, code: s?.code ?? x.code ?? "", foremanCode: s?.foremanCode ?? x.foremanCode ?? "" };
+        return stripCodes(x);
+      });
+      // מעבר אוטומטי: עובד שהקוד שלו עדיין שמור בשורה הגלויה → מעבירים לשורה הנעולה
+      if (isMgr) {
+        const legacy = realWorkers.filter((x, i) => rawWorkers[i].code != null || rawWorkers[i].foremanCode != null);
+        if (legacy.length && !migratingRef.current) {
+          migratingRef.current = true;
+          (async () => { for (const x of legacy) { try { await persistWorkerRef.current(x); } catch(e) {} } migratingRef.current = false; })();
+        }
+      }
       // load payment records - keep only latest per key
       const payRecs = r.filter(x => x._paymentRecord);
       const paidMap = {};
@@ -1753,6 +1778,34 @@ export default function App() {
     setNewProject(emptyProj); setNewPM(false);
   };
 
+  // שמירת עובד: הפרטים בשורה הגלויה, הקודים בשורה נעולה נפרדת (רק מנהל כותב קודים)
+  const upsertSecret = async (workerId, code, foremanCode) => {
+    const key = String(workerId);
+    const cur = secretsRef.current[key];
+    const vals = { code: String(code ?? ""), foremanCode: String(foremanCode ?? "") };
+    if (cur && cur.code === vals.code && cur.foremanCode === vals.foremanCode) return;
+    if (cur?._dbid) {
+      const data = { ...stripCodes(cur), _secret:true, workerId, ...vals }; delete data._dbid;
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/workers?id=eq.${cur._dbid}`, { method:"PATCH", headers:{ ...hdrs(), "Prefer":"return=representation" }, body: JSON.stringify({ data }) });
+      const rows = r.ok ? await r.json() : [];
+      if (!rows.length) throw new Error("שמירת הקוד נכשלה");
+      secretsRef.current[key] = { ...data, _dbid: cur._dbid };
+    } else {
+      const saved = await dbInsert("workers", { _secret:true, workerId, ...vals, id: Date.now() + Math.floor(Math.random()*1000) });
+      secretsRef.current[key] = saved;
+    }
+  };
+  const persistWorker = async (w) => {
+    const { _dbid, ...rest } = w;
+    const row = stripCodes(rest);
+    let dbid = _dbid;
+    if (dbid) await dbUpdate("workers", dbid, row);
+    else { const saved = await dbInsert("workers", row); dbid = saved._dbid; }
+    if (tokenRole() === "manager") await upsertSecret(w.id, w.code, w.foremanCode);
+    return { ...w, _dbid: dbid };
+  };
+  persistWorkerRef.current = persistWorker;
+
   const addWorker = async () => {
     if (!newWorker.name || !newWorker.code) return;
     if (workers.length >= plan.maxWorkers) {
@@ -1760,14 +1813,15 @@ export default function App() {
       return;
     }
     const w = { ...newWorker, id: Date.now() };
-    const saved = await dbInsert("workers", w);
+    let saved;
+    try { saved = await persistWorker(w); } catch(e) { alert("שגיאה בשמירה: " + e.message); return; }
     setWorkers(prev => [...prev, saved]);
     setNewWorker({ name:"", code:"", role:"", dailyRate:"", payType:"daily", hourlyRate:"", monthlySalary:"", showFuel:true, fuelAmount:50 }); setNewWM(false);
   };
 
   const saveEditWorker = async () => {
     if (!editWorker.name || !editWorker.code) return;
-    await dbUpdate("workers", editWorker._dbid, editWorker);
+    try { await persistWorker(editWorker); } catch(e) { alert("שגיאה בשמירה: " + e.message); return; }
     setWorkers(prev => prev.map(w => w._dbid===editWorker._dbid ? editWorker : w));
     setEditWM(false); setEditWorker(null);
   };
@@ -1830,7 +1884,10 @@ export default function App() {
     setReports(prev => prev.filter(r => r._dbid!==rep._dbid));
   };
   const delWorker = async (w) => {
+    if (!window.confirm(`🗑 למחוק את העובד ${w.name}?\n\nהדיווחים שלו נשארים, אבל הוא לא יוכל להתחבר יותר.`)) return;
     await dbDelete("workers", w._dbid);
+    const sec = secretsRef.current[String(w.id)];
+    if (sec?._dbid) { try { await dbDelete("workers", sec._dbid); } catch(e) {} delete secretsRef.current[String(w.id)]; }
     setWorkers(prev => prev.filter(x => x._dbid!==w._dbid));
   };
   const delProject = async (p) => {
@@ -1983,14 +2040,13 @@ export default function App() {
     if (debounceRef.current[key]) clearTimeout(debounceRef.current[key]);
     debounceRef.current[key] = setTimeout(async () => {
       const cur = { ...w, ...changes };
-      const { _dbid, ...data } = cur;
-      await dbUpdate("workers", w._dbid, data);
+      try { await persistWorker(cur); } catch(e) { alert("שגיאה בשמירה: " + e.message); }
     }, 800);
   };
 
   const updateWorkerFields = async (w, changes) => {
     const updated = { ...w, ...changes };
-    await dbUpdate("workers", w._dbid, updated);
+    await persistWorker(updated);
     setWorkers(prev => prev.map(x => x._dbid===w._dbid ? updated : x));
     if (loggedForeman && loggedForeman._dbid === w._dbid) setLoggedForeman(updated);
   };
@@ -2030,7 +2086,7 @@ export default function App() {
         foremanProjects: [],
         id: Date.now()
       };
-      const saved = await dbInsert("workers", w);
+      const saved = await persistWorker(w);
       setWorkers(prev => [...prev, saved]);
       setNewForeman({ name:"", role:"", dailyRate:"", code:"", foremanCode:"" });
       setNewForemanM(false);
@@ -4361,7 +4417,7 @@ async function shareImg() {
                       {!isForeman && <button onClick={()=>delWorker(w)} style={{ background:"none", border:"none", cursor:"pointer", color:"#CCC", fontSize:14 }}>✕</button>}
                     </div>
                     <div style={{ background:"#F5F5F0", borderRadius:8, padding:"6px 11px", fontSize:12, marginBottom:6, display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-                      <span><span style={{ color:"#888" }}>קוד: </span><span style={{ fontWeight:700, letterSpacing:2 }}>{w.code||"—"}</span></span>
+                      {!isForeman && <span><span style={{ color:"#888" }}>קוד: </span><span style={{ fontWeight:700, letterSpacing:2 }}>{w.code||"—"}</span></span>}
                       {!isForeman && <button onClick={()=>{ setEditWorker({...w}); setEditWM(true); }} style={{ background:"#1A1A2E", color:"#E8C547", border:"none", borderRadius:6, padding:"2px 9px", fontSize:11, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700 }}>ערוך</button>}
                     </div>
                     {w.payType==="hourly" ? <p style={{ margin:"0 0 4px", fontSize:12, color:"#555" }}>⏱️ ₪{fmtNum(w.hourlyRate)} לשעה</p>
