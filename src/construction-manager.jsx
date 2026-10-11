@@ -259,6 +259,198 @@ function FileViewer({ file, onClose }) {
   );
 }
 
+// ===== פתיחת גיבוי מוצפן (.enc) — אותו פורמט כמו פונקציית daily-backup =====
+// "BTBK" | גרסה 1 | salt(16) | iv(12) | AES-256-GCM(gzip(JSON)), מפתח PBKDF2-SHA256 210,000 סבבים מקוד המנהל
+async function decryptBackup(buf, password) {
+  const b = new Uint8Array(buf);
+  if (b.length < 40 || String.fromCharCode(b[0], b[1], b[2], b[3]) !== "BTBK") throw new Error("זה לא קובץ גיבוי של BuildTrack");
+  if (b[4] !== 1) throw new Error("גרסת גיבוי לא מוכרת");
+  const salt = b.slice(5, 21), iv = b.slice(21, 33), ct = b.slice(33);
+  const base = await crypto.subtle.importKey("raw", new TextEncoder().encode(password), "PBKDF2", false, ["deriveKey"]);
+  const key = await crypto.subtle.deriveKey({ name:"PBKDF2", salt, iterations:210000, hash:"SHA-256" }, base, { name:"AES-GCM", length:256 }, false, ["decrypt"]);
+  let plain;
+  try { plain = await crypto.subtle.decrypt({ name:"AES-GCM", iv }, key, ct); }
+  catch (e) { throw new Error("קוד שגוי (או שהקובץ פגום)"); }
+  const stream = new Blob([plain]).stream().pipeThrough(new DecompressionStream("gzip"));
+  return JSON.parse(await new Response(stream).text());
+}
+let _xlsxP = null;
+function loadXlsx() {
+  if (window.XLSX) return Promise.resolve(window.XLSX);
+  if (_xlsxP) return _xlsxP;
+  _xlsxP = new Promise((res, rej) => {
+    const sc = document.createElement("script");
+    sc.src = "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";
+    sc.onload = () => res(window.XLSX);
+    sc.onerror = () => { _xlsxP = null; rej(new Error("לא ניתן לטעון את רכיב ה-Excel")); };
+    document.head.appendChild(sc);
+  });
+  return _xlsxP;
+}
+// הגיבוי → גיליונות קריאים
+function backupSheets(bk) {
+  const T = bk.tables || {};
+  const D = (t) => (T[t] || []).map(r => r.data || {});
+  const projAll = D("projects");
+  const projects = projAll.filter(p => !p._quote), quotes = projAll.filter(p => p._quote);
+  const projName = (id) => (projAll.find(p => String(p.id) === String(id)) || {}).name || "";
+  const wk = D("workers");
+  const workers = wk.filter(w => !w._isConfig && !w._termsRecord);
+  const wName = (id) => (workers.find(w => String(w.id) === String(id)) || {}).name || "";
+  const reps = D("reports");
+  const t = (ms) => ms ? new Date(ms).toLocaleString("he-IL") : "";
+  const sheets = {};
+  sheets["פרויקטים"] = projects.map(p => ({ "שם":p.name, "סטטוס":p.status, "התחלה":p.startDate, "סיום":p.endDate, "עלות פרויקט":p.totalCost, "עלות חומר":p.materialCost,
+    "ימים מתוכננים":p.plannedDays, "כתובת":p.siteAddress, "עובדים משויכים":(p.workers||[]).map(wName).filter(Boolean).join(", "), "תיאור":p.description }));
+  sheets["הוצאות"] = projects.flatMap(p => (p.expenses||[]).map(e => ({ "פרויקט":p.name, "תאריך":e.date, "ספק / תיאור":e.desc, "סוג":e.category, "סכום לפני מע\"מ":Number(e.amount)||0, "מחשבונית":e.fromInvoice||"" })));
+  sheets["קבלני משנה"] = projects.flatMap(p => (p.subcontractors||[]).flatMap(sc => {
+    const base = { "פרויקט":p.name, "קבלן":sc.name, "עבודה":sc.work, "מחיר שסוכם":Number(sc.price)||0 };
+    const pm = sc.payments||[];
+    return pm.length ? pm.map(x => ({ ...base, "שלב":x.desc, "סכום":Number(x.amount)||0, "מצב":x.paid?"שולם":x.due?"אושר לתשלום":"טרם", "תאריך אישור":x.dueAt||"", "תאריך תשלום":x.paidAt||"" })) : [base];
+  }));
+  sheets["חשבוניות וקבצים"] = projects.flatMap(p => [
+    ...(p.invoices||[]).map(f => ({ "פרויקט":p.name, "סוג":"חשבונית", "שם":f.name, "תאריך":f.date, "קישור":f.url||"" })),
+    ...(p.architecturalPlans||[]).map(f => ({ "פרויקט":p.name, "סוג":"תוכנית", "שם":f.name, "תאריך":f.date||"", "קישור":f.url||(f.dataUrl?"(שמור בתוך הגיבוי)":"") })),
+  ]);
+  sheets["שלבי תשלום לקוח"] = projects.flatMap(p => (p.clientPayments||[]).map(x => ({ "פרויקט":p.name, "שלב":x.desc||"", "סכום":Number(x.amount)||0, "התקבל":x.received?"כן":"", "תאריך קבלה":x.receivedAt||"" })));
+  sheets["עובדים"] = workers.map(w => ({ "שם":w.name, "תפקיד":w.role, "סוג שכר":w.payType==="hourly"?"שעתי":w.payType==="global"?"גלובלי":"יומי",
+    "תעריף יומי":w.dailyRate, "תעריף שעתי":w.hourlyRate, "משכורת חודשית":w.monthlySalary, "טלפון":w.phone, "מנהל עבודה":w.isForeman?"כן":"" }));
+  sheets["דיווחים"] = reps.filter(r => !r._paymentRecord).sort((a,b)=>String(a.date).localeCompare(String(b.date))).map(r => ({ "תאריך":r.date, "עובד":r.workerName, "פרויקט":r.projectName||projName(r.projectId),
+    "ימים":r._shift?"":(r.days ?? 1), "שעות":r.hours ?? "", "כניסה":t(r.clockIn), "יציאה":t(r.clockOut), "דלק":r.fuel?(r.fuelAmt||50):"", "הערה":r.note||"",
+    "מצב":r.pendingApproval?"ממתין לאישור":"", "ידני":r.manual?"כן":"" }));
+  sheets["תשלומי שכר"] = reps.filter(r => r._paymentRecord).map(r => ({ "עובד":wName(r.workerId)||r.workerName||r.workerId, "חודש":r.month, "שולם":r.paid?"כן":"לא", "סכום":r.paidAmt||r.amount, "חלקי":r.partial?"כן":"", "תאריך":r.paidAt||"" }));
+  sheets["יומן"] = D("calendar").sort((a,b)=>String(a.date).localeCompare(String(b.date))).map(c => {
+    const as = c.assignments?.length ? c.assignments : (c.workers?.length ? [{ projectId:"", workers:c.workers }] : []);
+    return { "תאריך":c.date, "שיבוצים":as.map(a => `${projName(a.projectId)||"ללא פרויקט"}: ${(a.workers||[]).map(wName).filter(Boolean).join(", ")}`).join(" | "), "משימות":c.tasks||"" };
+  });
+  sheets["ציוד"] = D("equipment").map(e => ({ "פריט":e.name, "כמות":e.qty, "נקנה":e.done?"כן":"" }));
+  sheets["הצעות מחיר"] = quotes.map(q => ({ "תאריך":q.date, "כותרת":q.title, "לקוח":q.clientName, "טלפון":q.clientPhone, "סטטוס":q.status||"נשלחה",
+    "סכום לפני מע\"מ":(q.items||[]).length ? (q.items||[]).reduce((s,i)=>s+Number(i.amount||0),0) : Number(q.amount)||0,
+    "סעיפים":(q.items||[]).map(i => `${i.desc||"סעיף"} ₪${i.amount||0}`).join(" | ") }));
+  return sheets;
+}
+function downloadBlob(blob, name) {
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+}
+function BackupOpener({ onOpenFile, onRestored }) {
+  const [file, setFile] = useState(null);
+  const [pw, setPw] = useState("");
+  const [busy, setBusy] = useState("");
+  const [bk, setBk] = useState(null);
+  const [err, setErr] = useState("");
+  const open = async () => {
+    if (!file || !pw) return;
+    setErr(""); setBk(null); setBusy("פותח...");
+    try { setBk(await decryptBackup(await file.arrayBuffer(), pw.trim())); }
+    catch (e) { setErr(e.message || "שגיאה"); }
+    setBusy("");
+  };
+  const dateStr = bk ? new Date(bk.exportedAt).toLocaleString("he-IL") : "";
+  const baseName = bk ? `${bk.org?.slug || "backup"}-${new Date(bk.exportedAt).toLocaleDateString("en-CA", { timeZone:"Asia/Jerusalem" })}` : "";
+  const toExcel = async () => {
+    setBusy("מכין Excel...");
+    try {
+      const X = await loadXlsx();
+      const wb = X.utils.book_new(); wb.Workbook = { Views: [{ RTL: true }] };
+      Object.entries(backupSheets(bk)).forEach(([name, rows]) => {
+        const ws = rows.length ? X.utils.json_to_sheet(rows) : X.utils.aoa_to_sheet([["אין נתונים"]]);
+        ws["!cols"] = Object.keys(rows[0] || { a:1 }).map(k => ({ wch: Math.min(40, Math.max(10, k.length + 4, ...rows.slice(0,200).map(r => String(r[k] ?? "").length))) }));
+        X.utils.book_append_sheet(wb, ws, name.slice(0, 31));
+      });
+      X.writeFile(wb, `${baseName}.xlsx`);
+    } catch (e) { alert("שגיאה: " + e.message); }
+    setBusy("");
+  };
+  const restore = async () => {
+    const slug = bk.org?.slug;
+    const typed = window.prompt(`⚠️ שחזור "${bk.org?.name}" למצב של ${dateStr}.\n\n• מה שנמחק מאז — יחזור.\n• מה ששונה מאז — יחזור למצב הגיבוי.\n• מה שנוסף אחרי הגיבוי — יישאר.\n\nלאישור הקלד את כתובת הקבלן: ${slug}`);
+    if (typed === null) return;
+    if (typed.trim() !== slug) { alert("הכתובת לא תואמת — השחזור בוטל"); return; }
+    setBusy("משחזר...");
+    try {
+      const H = { ...hdrs(), "Prefer": "resolution=merge-duplicates,return=minimal" };
+      let r = await fetch(`${SUPABASE_URL}/rest/v1/organizations?slug=eq.${encodeURIComponent(slug)}&select=id`, { headers: hdrs() });
+      let ex = await r.json();
+      if (!Array.isArray(ex)) throw new Error("אין הרשאה — היכנס שוב כמנהל ראשי");
+      let orgId = ex[0]?.id;
+      if (!orgId) { // הקבלן נמחק לגמרי — יוצרים אותו מחדש
+        const o = bk.org || {};
+        r = await fetch(`${SUPABASE_URL}/rest/v1/organizations`, { method:"POST", headers:{ ...hdrs(), "Prefer":"return=representation" },
+          body: JSON.stringify({ id:o.id, slug:o.slug, name:o.name, logo:o.logo ?? null, active:o.active !== false, settings:o.settings || {} }) });
+        if (!r.ok) throw new Error("יצירת הקבלן נכשלה: " + await r.text());
+        orgId = (await r.json())[0]?.id;
+      }
+      let n = 0;
+      for (const [t, rows] of Object.entries(bk.tables || {})) {
+        for (let i = 0; i < rows.length; i += 200) {
+          const chunk = rows.slice(i, i + 200).map(x => ({ id:x.id, data:x.data, org_id:orgId }));
+          r = await fetch(`${SUPABASE_URL}/rest/v1/${t}`, { method:"POST", headers:H, body: JSON.stringify(chunk) });
+          if (!r.ok) throw new Error(`${t}: ${await r.text()}`);
+          n += chunk.length;
+          setBusy(`משחזר... ${n}`);
+        }
+      }
+      alert(`✅ השחזור הושלם — ${n} רשומות של "${bk.org?.name}" שוחזרו.`);
+      onRestored && onRestored();
+    } catch (e) { alert("שגיאה בשחזור: " + e.message); }
+    setBusy("");
+  };
+  const counts = bk?.kind === "data" ? (() => {
+    const T = bk.tables || {}; const d = (t) => (T[t]||[]).map(r => r.data||{});
+    return [["פרויקטים", d("projects").filter(p=>!p._quote).length], ["הצעות מחיר", d("projects").filter(p=>p._quote).length],
+            ["עובדים", d("workers").filter(w=>!w._isConfig && !w._termsRecord).length], ["דיווחים", d("reports").filter(r=>!r._paymentRecord).length],
+            ["ימי יומן", d("calendar").length], ["פריטי ציוד", d("equipment").length]];
+  })() : [];
+  const btn = { border:"none", borderRadius:9, padding:"9px 12px", fontSize:13, fontWeight:700, cursor:"pointer", fontFamily:"Heebo,sans-serif" };
+  return (
+    <div style={{ background:"#fff", borderRadius:14, padding:"16px 18px", marginBottom:16, boxShadow:"0 2px 8px rgba(0,0,0,0.07)" }}>
+      <h3 style={{ margin:"0 0 4px", fontSize:15, fontWeight:700 }}>📦 פתיחת גיבוי</h3>
+      <p style={{ margin:"0 0 12px", fontSize:12, color:"#888" }}>קובץ ‎.enc מהמייל היומי + קוד המנהל של אותו קבלן. הקובץ נפתח רק במכשיר שלך.</p>
+      <label style={{ display:"block", background:"#F5F5F0", border:"2px dashed #DDD", borderRadius:10, padding:"12px", textAlign:"center", cursor:"pointer", marginBottom:8, fontSize:13, color:"#555" }}>
+        {file ? `📄 ${file.name}` : "בחר קובץ גיבוי (.enc)"}
+        <input type="file" style={{ display:"none" }} onChange={e => { setFile(e.target.files[0] || null); setBk(null); setErr(""); e.target.value = ""; }}/>
+      </label>
+      <div style={{ display:"flex", gap:8 }}>
+        <input type="password" value={pw} onChange={e => setPw(e.target.value)} onKeyDown={e => e.key === "Enter" && open()} placeholder="קוד המנהל של הקבלן"
+          style={{ flex:1, minWidth:0, border:"1.5px solid #DDD", borderRadius:9, padding:"9px 12px", fontSize:16, fontFamily:"Heebo,sans-serif", outline:"none" }}/>
+        <button onClick={open} disabled={!file || !pw || !!busy} style={{ ...btn, background:"#1A1A2E", color:"#E8C547", opacity:(!file||!pw)?0.4:1 }}>🔓 פתח</button>
+      </div>
+      {busy && <p style={{ margin:"10px 0 0", fontSize:13, color:"#1565C0" }}>⏳ {busy}</p>}
+      {err && <p style={{ margin:"10px 0 0", fontSize:13, color:"#B71C1C", fontWeight:600 }}>⚠️ {err}</p>}
+      {bk?.kind === "data" && (
+        <div style={{ marginTop:12, background:"#F9F9F9", borderRadius:10, padding:"12px 14px" }}>
+          <p style={{ margin:0, fontWeight:800, fontSize:15 }}>{bk.org?.name} <span style={{ fontWeight:400, fontSize:12, color:"#888" }}>({bk.org?.slug})</span></p>
+          <p style={{ margin:"2px 0 10px", fontSize:12, color:"#888" }}>גיבוי מ-{dateStr}</p>
+          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:6, marginBottom:12 }}>
+            {counts.map(([k, v]) => <div key={k} style={{ background:"#fff", borderRadius:8, padding:"6px 8px", textAlign:"center" }}><div style={{ fontWeight:800, fontSize:16 }}>{v}</div><div style={{ fontSize:11, color:"#888" }}>{k}</div></div>)}
+          </div>
+          <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
+            <button onClick={toExcel} disabled={!!busy} style={{ ...btn, background:"#2E7D32", color:"#fff" }}>⬇ הורד Excel</button>
+            <button onClick={() => downloadBlob(new Blob([JSON.stringify(bk, null, 1)], { type:"application/json" }), `${baseName}.json`)} style={{ ...btn, background:"#F0F0EC", color:"#333" }}>⬇ JSON</button>
+            <button onClick={restore} disabled={!!busy} style={{ ...btn, background:"#FCE4EC", color:"#B71C1C", marginRight:"auto" }}>♻️ שחזר למערכת</button>
+          </div>
+        </div>
+      )}
+      {bk?.kind === "files" && (
+        <div style={{ marginTop:12, background:"#F9F9F9", borderRadius:10, padding:"12px 14px" }}>
+          <p style={{ margin:"0 0 8px", fontWeight:800, fontSize:14 }}>{bk.org?.name} — {(bk.files||[]).length} קבצים <span style={{ fontWeight:400, fontSize:12, color:"#888" }}>({dateStr})</span></p>
+          {(bk.files||[]).map((f, i) => {
+            const blob = () => { const bin = atob(f.b64); const u = new Uint8Array(bin.length); for (let j = 0; j < bin.length; j++) u[j] = bin.charCodeAt(j); return new Blob([u], { type: f.mime || "" }); };
+            return (
+              <div key={i} style={{ display:"flex", alignItems:"center", gap:8, padding:"6px 0", borderBottom:"1px solid #EEE", fontSize:13 }}>
+                <span style={{ flex:1, minWidth:0, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{f.kind} · {f.project} · <b>{f.name}</b></span>
+                <button onClick={() => onOpenFile({ url: URL.createObjectURL(blob()), name: f.name, mime: f.mime })} style={{ ...btn, padding:"5px 9px", background:"#E3F2FD", color:"#1565C0" }}>👁 פתח</button>
+                <button onClick={() => downloadBlob(blob(), f.name)} style={{ ...btn, padding:"5px 9px", background:"#F0F0EC", color:"#333" }}>⬇</button>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // כותרת אזור נפתח בדף פרויקט — לחיצה פותחת/סוגרת, סיכום קצר בצד
 function SecHead({ title, summary, open, onToggle, action, mb }) {
   return (
@@ -1970,6 +2162,7 @@ async function shareImg() {
   if (superAdmin) return (
     <div style={{ ...base, background:"#F5F5F0", minHeight:"100vh", direction:"rtl" }}>
       <GFont/>
+      {viewFile && <FileViewer file={viewFile} onClose={()=>setViewFile(null)}/>}
       <header style={{ background:"#1A1A2E", padding:"14px 20px", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
         <span style={{ color:"#E8C547", fontWeight:800, fontSize:16 }}>👑 ניהול ראשי — BuildTrack</span>
         <div style={{ display:"flex", gap:8 }}>
@@ -1985,6 +2178,9 @@ async function shareImg() {
         </div>
       </header>
       <main style={{ padding:20, maxWidth:520, margin:"0 auto" }}>
+        {/* פתיחת גיבוי מהמייל היומי */}
+        <BackupOpener onOpenFile={setViewFile} onRestored={async ()=>{ try { setSaOrgs((await orgGetAll()).filter(o=>o.slug!=="_config")); } catch(e) {} }}/>
+
         {/* הוספת קבלן */}
         <div style={{ background:"#fff", borderRadius:14, padding:"16px 18px", marginBottom:16, boxShadow:"0 2px 8px rgba(0,0,0,0.07)" }}>
           <h3 style={{ margin:"0 0 12px", fontSize:15, fontWeight:700 }}>➕ קבלן חדש</h3>
