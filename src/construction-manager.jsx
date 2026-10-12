@@ -817,9 +817,24 @@ const EXPENSE_CATS = [
   { k:"הובלות", icon:"🚚", color:"#1565C0" },
   { k:"קבלני משנה", icon:"🔨", color:"#6D28D9" },
   { k:"כלי עבודה וציוד", icon:"🛠️", color:"#00897B" },
+  { k:"פינוי פסולת", icon:"🗑️", color:"#6D4C41" },
+  { k:"השכרת ציוד ומנופים", icon:"🏗️", color:"#F9A825" },
+  { k:"אגרות והיתרים", icon:"📋", color:"#3949AB" },
+  { k:"חשמל ומים", icon:"💡", color:"#0097A7" },
   { k:"אחר", icon:"📦", color:"#757575" },
 ];
-const catOf = (k) => EXPENSE_CATS.find(x => x.k === k) || EXPENSE_CATS[EXPENSE_CATS.length-1];
+// קטגוריות שהקבלן הוסיף (נשמרות בשורת ההגדרות: _expenseCats) — מתעדכן בטעינה
+let CUSTOM_CATS = [];
+const CUSTOM_COLORS = ["#C2185B","#7B1FA2","#455A64","#2E7D32","#AD1457","#5D4037","#00838F","#EF6C00"];
+const allCats = () => [...EXPENSE_CATS.slice(0, -1), ...CUSTOM_CATS.map((c, i) => ({ k:c.k, icon:c.icon || "🏷️", color: CUSTOM_COLORS[i % CUSTOM_COLORS.length] })), EXPENSE_CATS[EXPENSE_CATS.length-1]];
+const catOf = (k) => allCats().find(x => x.k === k) || (k ? { k, icon:"🏷️", color:"#546E7A" } : EXPENSE_CATS[EXPENSE_CATS.length-1]);
+const fileHash = async (file) => {
+  try {
+    const buf = await crypto.subtle.digest("SHA-256", await file.arrayBuffer());
+    return Array.from(new Uint8Array(buf)).slice(0, 16).map(b => b.toString(16).padStart(2, "0")).join("");
+  } catch(e) { return ""; }
+};
+const normVendor = (v) => String(v || "").replace(/["'״׳\s\-.,()]/g, "").replace(/בעמ$|בע"מ$/,"").toLowerCase();
 // הוצאות ישנות בלי סוג — ניחוש לפי התיאור
 const guessCat = (desc) => {
   const d = String(desc || "");
@@ -1270,7 +1285,7 @@ export default function App() {
   const [viewFile,    setViewFile]    = useState(null);     // קובץ פתוח במציג (חשבונית / תוכנית / הצעת קבלן)
   const [descFull,    setDescFull]    = useState(false);    // תיאור פרויקט במסך מלא
   // הוספה מהירה מבחוץ — בלי לפתוח את הרשימות
-  const EMPTY_QEXP = { desc:"", amount:"", category:"חומר" };
+  const EMPTY_QEXP = { desc:"", amount:"", category:"חומר", credit:false };
   const EMPTY_QSUB = { name:"", work:"", price:"", single:true };
   const [qExp, setQExp] = useState(EMPTY_QEXP);
   const [qSub, setQSub] = useState(EMPTY_QSUB);
@@ -1438,6 +1453,7 @@ export default function App() {
         if (configRow._adminCode) setAdminCode(configRow._adminCode);
         setAdminConfigDbid(configRow._dbid);
         const { _dbid, _resetHash, _resetExp, ...cd } = configRow; setCfgData(cd); setBizEmailInput(cd._email || "");
+        CUSTOM_CATS = Array.isArray(cd._expenseCats) ? cd._expenseCats.filter(c => c && c.k) : [];
       }
       setCfgLoaded(true);
     } catch(e) { console.error(e); }
@@ -2286,6 +2302,43 @@ async function shareImg() {
       const saved = await dbInsert("workers", next);
       setAdminConfigDbid(saved._dbid);
     }
+  };
+
+  // ===== קטגוריות הוצאות של הקבלן =====
+  const addCustomCat = async (name, icon) => {
+    const k = String(name || "").trim().replace(/["'״׳]/g, "").slice(0, 30);
+    if (!k) return false;
+    if (allCats().some(c => c.k === k)) { alert("קטגוריה בשם הזה כבר קיימת"); return false; }
+    const list = [...(cfgData._expenseCats || []), { k, icon: (String(icon || "").trim() || "🏷️").slice(0, 4) }];
+    const next = { ...cfgData, _isConfig:true, _expenseCats: list, _rejectedCats: (cfgData._rejectedCats || []).filter(x => x !== k) };
+    await saveCfgChecked(next);
+    setCfgData(next); CUSTOM_CATS = list;
+    return true;
+  };
+  const removeCustomCat = async (k) => {
+    if (!window.confirm(`למחוק את הקטגוריה "${k}"?\nהוצאות שכבר סווגו אליה נשארות עם השם הזה.`)) return;
+    const list = (cfgData._expenseCats || []).filter(c => c.k !== k);
+    const next = { ...cfgData, _isConfig:true, _expenseCats: list };
+    try { await saveCfgChecked(next); setCfgData(next); CUSTOM_CATS = list; } catch(e) { alert("השמירה נכשלה: " + e.message); }
+  };
+  // הצעה של ה-AI — אישור: מוסיפים קטגוריה ומעבירים אליה את ההוצאות; דחייה: לא מציעים שוב
+  const reviewCategory = async (k) => {
+    const affected = projects.filter(p => (p.expenses||[]).some(e => e.suggestedCat === k && expCat(e) === "אחר"));
+    const n = affected.reduce((s, p) => s + (p.expenses||[]).filter(e => e.suggestedCat === k && expCat(e) === "אחר").length, 0);
+    if (window.confirm(`🤖 ה-AI מציע קטגוריה חדשה: "${k}"\n${n === 1 ? "הוצאה אחת סווגה" : `${n} הוצאות סווגו`} כרגע "אחר" (${[...new Set(affected.map(p => p.name))].join(", ")}).\n\nאישור = להוסיף את הקטגוריה ולהעביר אליה את ההוצאות`)) {
+      try {
+        if (!(await addCustomCat(k, "🏷️"))) return;
+        for (const p of affected) {
+          const expenses = (p.expenses||[]).map(e => (e.suggestedCat === k && expCat(e) === "אחר") ? (({ suggestedCat, ...r }) => ({ ...r, category: k }))(e) : e);
+          await updateProjField(p, { expenses });
+        }
+        alert(`✅ הקטגוריה "${k}" נוספה, ו${n === 1 ? "ההוצאה הועברה" : `-${n} הוצאות הועברו`} אליה.`);
+      } catch(e) { alert("השמירה נכשלה: " + e.message); }
+      return;
+    }
+    if (!window.confirm(`לדחות את ההצעה "${k}"?\nההוצאות יישארו ב"אחר" וההצעה לא תופיע שוב.`)) return;
+    const next = { ...cfgData, _isConfig:true, _rejectedCats: [...(cfgData._rejectedCats || []), k] };
+    try { await saveCfgChecked(next); setCfgData(next); } catch(e) { alert("השמירה נכשלה: " + e.message); }
   };
 
   // מסך אבטחה חד-פעמי: מייל העסק + קוד מנהל חדש
@@ -3147,6 +3200,33 @@ async function shareImg() {
       detail: `${pr.name} · ${due.map(pm => pm.desc||"שלב").join(", ")}${due[0].dueAt ? ` · אושר ${due[0].dueAt}` : ""}`,
       go: () => goTab("payroll", () => { setPayrollView("subs"); setSubsView("pending"); }) });
   }));
+  // חשבוניות שלא פוענחו / נראות כפולות
+  const openProjInvoices = (p) => goTab("projects", () => { setDetailId(p.id); setTimeout(() => togOpen("inv", true), 120); });
+  visibleProjects.forEach(p => {
+    const inv = p.invoices || [];
+    const bad = inv.filter(x => (x.scanStatus === "failed" || x.scanStatus === "quota") && !x.expensed);
+    const dup = inv.filter(x => x.scanStatus === "dup");
+    if (bad.length) alerts.push({ key:"inv"+p._dbid, icon:"📸", color:"#B71C1C", bg:"#FDECEC",
+      title: bad.length === 1 ? `חשבונית לא פוענחה — ${p.name}` : `${bad.length} חשבוניות לא פוענחו — ${p.name}`,
+      detail: bad.slice(0,3).map(x => x.name).join(", ") + " · לחץ להזנת הסכום", go: () => openProjInvoices(p) });
+    if (dup.length) alerts.push({ key:"dup"+p._dbid, icon:"🟠", color:"#E65100", bg:"#FFF3E0",
+      title: dup.length === 1 ? `חשבונית שנראית כפולה — ${p.name}` : `${dup.length} חשבוניות שנראות כפולות — ${p.name}`,
+      detail: "לא נכנסו להוצאות עד שתאשר · " + dup.slice(0,2).map(x => x.dupOf).join(" | "), go: () => openProjInvoices(p) });
+  });
+  // קטגוריות חדשות שה-AI מציע — לאישור המנהל
+  const catSuggestions = {};
+  if (!isForeman) {
+    const rejected = cfgData._rejectedCats || [];
+    projects.forEach(p => (p.expenses||[]).forEach(e => {
+      const k = e.suggestedCat;
+      if (!k || expCat(e) !== "אחר" || rejected.includes(k) || allCats().some(c => c.k === k)) return;
+      (catSuggestions[k] = catSuggestions[k] || []).push(p.name);
+    }));
+    Object.entries(catSuggestions).forEach(([k, ps]) => alerts.push({ key:"cat"+k, icon:"🤖", color:"#6D28D9", bg:"#EDE9FE",
+      title: `קטגוריה חדשה מוצעת: "${k}"`,
+      detail: `${ps.length === 1 ? "הוצאה אחת שסווגה" : `${ps.length} הוצאות שסווגו`} "אחר" · לחץ לאישור או דחייה`,
+      go: () => { setBellOpen(false); reviewCategory(k); } }));
+  }
 
   return (
     <div style={{ ...base, background:"#F5F5F0" }}>
@@ -3694,8 +3774,14 @@ async function shareImg() {
                   summary={(editProj.expenses||[]).length ? `${(editProj.expenses||[]).length} הוצאות · ${projOpen.exp ? "לחץ לסגירה" : "לחץ לפירוט"}` : ""}/>
                 {/* הוספה מהירה — בלי לפתוח את הרשימה */}
                 <div style={{ background:"#FFF8E1", borderRadius:12, padding:"10px 12px", marginTop:10, marginBottom:projOpen.exp ? 10 : 0 }}>
+                  <div style={{ display:"flex", background:"#FFECB3", borderRadius:8, padding:2, gap:2, marginBottom:7 }}>
+                    {[{v:false,l:"💸 הוצאה"},{v:true,l:"↩️ זיכוי (החזרה)"}].map(o => (
+                      <button key={String(o.v)} onClick={()=>setQExp(q=>({...q, credit:o.v}))}
+                        style={{ flex:1, background:qExp.credit===o.v?(o.v?"#00897B":"#B26A00"):"transparent", color:qExp.credit===o.v?"#fff":"#8D6E00", border:"none", borderRadius:7, padding:"5px 0", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700 }}>{o.l}</button>
+                    ))}
+                  </div>
                   <div style={{ display:"flex", gap:7, marginBottom:7 }}>
-                    <input value={qExp.desc} placeholder="על מה? (למשל: בלוקים)" onChange={e=>setQExp(q=>({...q, desc:e.target.value}))}
+                    <input value={qExp.desc} placeholder={qExp.credit ? "מה הוחזר? (למשל: בלוקים)" : "על מה? (למשל: בלוקים)"} onChange={e=>setQExp(q=>({...q, desc:e.target.value}))}
                       style={{ flex:2, minWidth:0, width:0, border:"1.5px solid #EEE", borderRadius:8, padding:"7px 10px", fontSize:13, fontFamily:"Heebo,sans-serif", outline:"none", background:"#fff" }}/>
                     <input type="number" inputMode="decimal" value={qExp.amount} placeholder="סכום ₪" onChange={e=>setQExp(q=>({...q, amount:e.target.value}))}
                       style={{ flex:1, minWidth:0, width:0, border:"1.5px solid #EEE", borderRadius:8, padding:"7px 10px", fontSize:13, fontFamily:"Heebo,sans-serif", outline:"none", background:"#fff" }}/>
@@ -3703,14 +3789,15 @@ async function shareImg() {
                   <div style={{ display:"flex", gap:7 }}>
                     <select value={qExp.category} onChange={e=>setQExp(q=>({...q, category:e.target.value}))}
                       style={{ flex:1, minWidth:0, border:`1.5px solid ${catOf(qExp.category).color}55`, borderRadius:8, padding:"6px 8px", fontSize:12.5, fontFamily:"Heebo,sans-serif", outline:"none", background:"#fff", color:catOf(qExp.category).color, fontWeight:700 }}>
-                      {EXPENSE_CATS.map(cat => <option key={cat.k} value={cat.k}>{cat.icon} {cat.k}</option>)}
+                      {allCats().map(cat => <option key={cat.k} value={cat.k}>{cat.icon} {cat.k}</option>)}
                     </select>
                     <button onClick={()=>{
-                      if (!(Number(qExp.amount) > 0)) { alert("הזן סכום"); return; }
-                      const expenses=[...(editProj.expenses||[]),{ id:Date.now(), desc:qExp.desc.trim(), amount:qExp.amount, category:qExp.category, date:todayStr() }];
+                      const a = Math.abs(Number(qExp.amount));
+                      if (!(a > 0)) { alert("הזן סכום"); return; }
+                      const expenses=[...(editProj.expenses||[]),{ id:Date.now(), desc:(qExp.credit ? "זיכוי " : "") + qExp.desc.trim(), amount: String(qExp.credit ? -a : a), category:qExp.category, date:todayStr(), ...(qExp.credit ? { isCredit:true } : {}) }];
                       setEditProj(p=>({...p,expenses})); updateProjField(detailProject,{expenses});
                       setQExp(q=>({ ...EMPTY_QEXP, category:q.category }));
-                    }} style={{ background:"#1A1A2E", color:"#E8C547", border:"none", borderRadius:8, padding:"7px 16px", fontSize:13, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700, flexShrink:0 }}>+ הוסף הוצאה</button>
+                    }} style={{ background:qExp.credit?"#00897B":"#1A1A2E", color:qExp.credit?"#fff":"#E8C547", border:"none", borderRadius:8, padding:"7px 16px", fontSize:13, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700, flexShrink:0 }}>{qExp.credit ? "+ הוסף זיכוי" : "+ הוסף הוצאה"}</button>
                   </div>
                 </div>
                 {projOpen.exp && (editProj.expenses||[]).map((ex,idx) => {
@@ -3724,7 +3811,7 @@ async function shareImg() {
                     }
                   };
                   return (
-                    <div key={ex.id} style={{ background:"#F9F9F9", borderRadius:12, padding:"11px 13px", marginBottom:8 }}>
+                    <div key={ex.id} style={{ background: Number(ex.amount) < 0 ? "#E0F2F1" : "#F9F9F9", borderRadius:12, padding:"11px 13px", marginBottom:8 }}>
                       <div style={{ display:"flex", gap:8, alignItems:"center", marginBottom:7 }}>
                         <input value={ex.desc} placeholder="תיאור ההוצאה" onChange={e=>updExp({desc:e.target.value}, true)}
                           style={{ flex:2, minWidth:0, width:0, border:"1.5px solid #EEE", borderRadius:8, padding:"7px 10px", fontSize:13, fontFamily:"Heebo,sans-serif", outline:"none", background:"#fff" }}/>
@@ -3736,11 +3823,13 @@ async function shareImg() {
                       <div style={{ display:"flex", gap:8, alignItems:"center", flexWrap:"wrap" }}>
                         <select value={expCat(ex)} onChange={e=>updExp({category:e.target.value})}
                           style={{ border:`1.5px solid ${catOf(expCat(ex)).color}55`, borderRadius:8, padding:"5px 8px", fontSize:12, fontFamily:"Heebo,sans-serif", outline:"none", background:"#fff", color:catOf(expCat(ex)).color, fontWeight:700 }}>
-                          {EXPENSE_CATS.map(cat => <option key={cat.k} value={cat.k}>{cat.icon} {cat.k}</option>)}
+                          {allCats().map(cat => <option key={cat.k} value={cat.k}>{cat.icon} {cat.k}</option>)}
                         </select>
                         <input type="date" value={ex.date||""} onChange={e=>updExp({date:e.target.value})}
                           style={{ border:"1.5px solid #EEE", borderRadius:8, padding:"5px 9px", fontSize:12, fontFamily:"Heebo,sans-serif", outline:"none", background:"#fff" }}/>
                         {ex.aiScanned && <span style={{ fontSize:11, color:"#2E7D32", fontWeight:600 }}>🤖 מחשבונית</span>}
+                        {Number(ex.amount) < 0 && <span style={{ fontSize:11, color:"#00695C", fontWeight:700 }}>↩️ זיכוי</span>}
+                        {ex.suggestedCat && expCat(ex) === "אחר" && <span style={{ fontSize:11, color:"#6D28D9", fontWeight:600 }}>🤖 הוצעה קטגוריה: {ex.suggestedCat}</span>}
                       </div>
                     </div>
                   );
@@ -3995,28 +4084,55 @@ async function shareImg() {
                     if (res.error === "auth") { try { window.dispatchEvent(new Event("bt_auth_expired")); } catch(e) {} }
                     if (res.error) return { invoice: { ...inv, scanStatus: res.error==="quota" ? "quota" : "failed", scanReason: res.message || "שגיאה" }, newExpenses: [] };
                     if (!res.ok) return { invoice: { ...inv, scanStatus:"failed", scanReason: res.reason || "לא פוענח", scanSuggest: res.totalBeforeVat || "" }, newExpenses: [] };
-                    // קיבוץ שורות לפי קטגוריה — הוצאה אחת לכל סוג
+                    // קיבוץ שורות לפי קטגוריה — הוצאה אחת לכל סוג (ו"אחר" לפי הקטגוריה שה-AI הציע)
                     const byCat = {};
                     res.lines.forEach(l => {
-                      if (!byCat[l.category]) byCat[l.category] = { amount:0, items:[] };
-                      byCat[l.category].amount += l.amount;
-                      byCat[l.category].items.push(l.desc);
+                      const key = l.category + "|" + (l.suggested || "");
+                      if (!byCat[key]) byCat[key] = { cat:l.category, sugg:l.suggested || "", amount:0, items:[] };
+                      byCat[key].amount += l.amount;
+                      byCat[key].items.push(l.desc);
                     });
                     // שם ספק אמיתי (השרת ממלא לפעמים את הפריט הראשון כשאין ספק — לא נשתמש בזה כשם)
                     const realVendor = res.vendor && res.vendor !== String(res.lines?.[0]?.desc||"").slice(0,40) ? res.vendor : "";
                     const vendor = realVendor;
                     // תיאור = שם הספק בלבד (או ריק). הסוג מופיע בבחירת הסוג, הפריטים נשמרים ב-items
-                    const newExpenses = Object.entries(byCat).map(([cat, v], i) => ({
+                    const scanDate = (res.date && /^\d{4}-\d{2}-\d{2}$/.test(res.date)) ? res.date : "";
+                    const newExpenses = Object.values(byCat).map((v, i) => ({
                       id: Date.now() + i,
-                      desc: realVendor,
-                      amount: Math.round(v.amount*100)/100, category: cat,
-                      date: (res.date && /^\d{4}-\d{2}-\d{2}$/.test(res.date)) ? res.date : (inv.date||todayStr()),
+                      desc: (res.isCredit ? "זיכוי " : "") + realVendor,
+                      amount: Math.round(v.amount*100)/100, category: v.cat,
+                      ...(v.sugg ? { suggestedCat: v.sugg } : {}),
+                      ...(res.isCredit ? { isCredit: true } : {}),
+                      date: scanDate || inv.date || todayStr(),
                       fromInvoice: inv.name, aiScanned: true, items: v.items.slice(0,30),
                     }));
-                    return { invoice: { ...inv, scanStatus:"ok", expensed:true, scanTotal: res.totalBeforeVat, scanVendor: vendor }, newExpenses };
+                    return { invoice: { ...inv, scanStatus:"ok", expensed:true, scanTotal: res.totalBeforeVat, scanVendor: vendor,
+                      scanDate, invNo: res.invoiceNumber || "", ...(res.isCredit ? { isCredit: true } : {}) }, newExpenses };
                   } catch(err) {
                     return { invoice: { ...inv, scanStatus:"failed", scanReason: err?.message || "שגיאה" }, newExpenses: [] };
                   }
+                };
+
+                // חשבוניות בכל הפרויקטים (לבדיקת כפילויות). batch = החשבוניות של הפרויקט הנוכחי כפי שהן עכשיו
+                const allInvoices = (batch) => [
+                  ...projects.filter(p => p._dbid !== detailProject._dbid).flatMap(p => (p.invoices||[]).map(x => ({ ...x, _proj: p.name }))),
+                  ...batch.map(x => ({ ...x, _proj: detailProject.name, _self: true })),
+                ];
+                // אותה חשבונית בצילום אחר: אותו ספק + אותו מספר; בלי מספר — אותו ספק + תאריך + סכום
+                const findDupInvoice = (inv, list) => {
+                  const v = normVendor(inv.scanVendor);
+                  if (!v || inv.scanStatus !== "ok") return null;
+                  return list.find(x => x.path !== inv.path && x.scanStatus && x.scanStatus !== "dup" && normVendor(x.scanVendor) === v && (
+                    (inv.invNo && x.invNo) ? x.invNo === inv.invNo
+                      : (!!inv.scanDate && x.scanDate === inv.scanDate && Math.abs(Number(x.scanTotal||0) - Number(inv.scanTotal||0)) < 1)
+                  )) || null;
+                };
+                // חשבונית שנראית כפולה — לא נכנסת להוצאות עד שמאשרים
+                const holdIfDup = (invoice, newExpenses, list) => {
+                  const dup = findDupInvoice(invoice, list);
+                  if (!dup) return { invoice, newExpenses };
+                  return { invoice: { ...invoice, scanStatus:"dup", expensed:false, pending:newExpenses,
+                    dupOf: `${dup.name}${dup._proj ? ` · ${dup._proj}` : ""}${dup.date ? ` · ${dup.date}` : ""}` }, newExpenses: [] };
                 };
 
                 const retryScan = async (inv) => {
@@ -4024,26 +4140,29 @@ async function shareImg() {
                   try {
                     const blob = await (await fetch(inv.url)).blob();
                     const file = new File([blob], inv.name, { type: blob.type || (/\.pdf$/i.test(inv.name) ? "application/pdf" : "image/jpeg") });
-                    const { invoice, newExpenses } = await runScan(file, inv);
+                    const scanned = await runScan(file, inv);
+                    const { invoice, newExpenses } = holdIfDup(scanned.invoice, scanned.newExpenses, allInvoices((editProj.invoices||[]).filter(x => x !== inv)));
                     const invoices = (editProj.invoices||[]).map(x => x===inv ? invoice : x);
                     const expenses = [...(editProj.expenses||[]), ...newExpenses];
                     setEditProj(p=>({...p, invoices, expenses}));
                     updateProjField(detailProject, { invoices, expenses });
-                    if (invoice.scanStatus !== "ok") alert("⚠️ " + (invoice.scanReason || "לא פוענח") + "\nאפשר להזין ידנית עם 'רשום כהוצאה'.");
+                    if (invoice.scanStatus === "dup") alert(`⚠️ נראה שזו חשבונית שכבר נקלטה:\n${invoice.dupOf}\n\nהיא לא נכנסה להוצאות. אם זו לא כפילות — לחץ "זה לא כפול".`);
+                    else if (invoice.scanStatus !== "ok") alert("⚠️ " + (invoice.scanReason || "לא פוענח") + "\nאפשר להזין ידנית עם 'רשום כהוצאה'.");
                   } catch(err) { alert("שגיאה: " + err.message); }
                   setInvoiceAnalyzing(false);
                 };
 
                 const manualExpense = (inv) => {
-                  const amtStr = window.prompt(`מה הסכום בחשבונית "${inv.name}" לפני מע"מ? (₪)`, inv.scanSuggest ? String(inv.scanSuggest) : "");
+                  const amtStr = window.prompt(`מה הסכום בחשבונית "${inv.name}" לפני מע"מ? (₪)\nחשבונית זיכוי — הקלד במינוס, למשל -500`, inv.scanSuggest ? String(inv.scanSuggest) : "");
                   if (amtStr === null) return;
-                  const amt = Number(amtStr);
-                  if (isNaN(amt) || amt <= 0) { alert("סכום לא תקין"); return; }
+                  const amt = Number(String(amtStr).replace(/[,₪\s]/g, ""));
+                  if (isNaN(amt) || amt === 0) { alert("סכום לא תקין"); return; }
                   const desc = window.prompt("תיאור ההוצאה:", inv.name.replace(/\.[^.]+$/,"")) || inv.name;
-                  const catNames = EXPENSE_CATS.map((x,i)=>`${i+1}. ${x.k}`).join("\n");
+                  const catList = allCats();
+                  const catNames = catList.map((x,i)=>`${i+1}. ${x.icon} ${x.k}`).join("\n");
                   const catIdx = Number(window.prompt(`סוג ההוצאה (מספר):\n${catNames}`, "1")) - 1;
-                  const category = EXPENSE_CATS[catIdx]?.k || "אחר";
-                  const expenses = [...(editProj.expenses||[]), { id:Date.now(), desc, amount:amt, category, date: inv.date||todayStr(), fromInvoice: inv.name }];
+                  const category = catList[catIdx]?.k || "אחר";
+                  const expenses = [...(editProj.expenses||[]), { id:Date.now(), desc, amount:amt, category, date: inv.date||todayStr(), fromInvoice: inv.name, ...(amt < 0 ? { isCredit:true } : {}) }];
                   const invoices = (editProj.invoices||[]).map(x => x===inv ? {...x, expensed:true, scanStatus: x.scanStatus==="failed" ? "manual" : x.scanStatus} : x);
                   setEditProj(p=>({...p, expenses, invoices}));
                   updateProjField(detailProject, { expenses, invoices });
@@ -4079,17 +4198,22 @@ async function shareImg() {
                     setInvoiceAnalyzing(true);
                     let invs = [...(editProj.invoices||[])];
                     let expenses = [...(editProj.expenses||[])];
-                    let failed = 0, done = 0;
+                    let failed = 0, done = 0, dups = 0;
                     try {
                       for (const file of files) {
+                        // אותו קובץ בדיוק כבר הועלה (בכל פרויקט) — עוצרים לפני ההעלאה והפענוח
+                        const hash = await fileHash(file);
+                        const same = hash && allInvoices(invs).find(x => x.hash === hash);
+                        if (same && !window.confirm(`⚠️ הקובץ "${file.name}" כבר הועלה${same._proj ? ` לפרויקט "${same._proj}"` : ""}${same.date ? ` (${same.date})` : ""}.\n\nלהעלות אותו שוב?`)) continue;
                         const path = `${CURRENT_ORG?.slug||"default"}/${detailProject.id}/invoices/${Date.now()}_${safeFileName(file.name)}`;
                         const url = await withTimeout(storageUpload(file, path), 60000, "העלאת הקובץ לקחה יותר מדי זמן");
-                        let inv = { name: file.name, url, path, date: todayStr() };
+                        let inv = { name: file.name, url, path, date: todayStr(), ...(hash ? { hash } : {}) };
                         if (aiOn) {
-                          const { invoice, newExpenses } = await runScan(file, inv);
+                          const scanned = await runScan(file, inv);
+                          const { invoice, newExpenses } = holdIfDup(scanned.invoice, scanned.newExpenses, allInvoices(invs));
                           inv = invoice;
                           expenses = [...expenses, ...newExpenses];
-                          if (invoice.scanStatus === "ok") done++; else failed++;
+                          if (invoice.scanStatus === "ok") done++; else if (invoice.scanStatus === "dup") dups++; else failed++;
                         }
                         invs.push(inv);
                       }
@@ -4099,8 +4223,10 @@ async function shareImg() {
                     setEditProj(p=>({...p, invoices: invs, expenses}));
                     updateProjField(detailProject, { invoices: invs, expenses });
                     setInvoiceAnalyzing(false);
-                    if (failed) togOpen("inv", true); // יש חשבוניות שלא פוענחו — פותחים את הרשימה כדי שיראו
-                    if (aiOn && failed) alert(`✓ ${done} פוענחו ונכנסו להוצאות\n⚠️ ${failed} לא פוענחו — מסומנות באדום, הזן ידנית או נסה שוב`);
+                    if (failed || dups) togOpen("inv", true); // יש חשבוניות לטיפול — פותחים את הרשימה כדי שיראו
+                    if (aiOn && (failed || dups)) alert([`✓ ${done} פוענחו ונכנסו להוצאות`,
+                      failed ? `⚠️ ${failed} לא פוענחו — מסומנות באדום, הזן ידנית או נסה שוב` : "",
+                      dups ? `🟠 ${dups} נראות כפולות של חשבונית שכבר נקלטה — לא נכנסו להוצאות, בדוק ברשימה` : ""].filter(Boolean).join("\n"));
                   }}/>
                 </label>
 
@@ -4108,19 +4234,31 @@ async function shareImg() {
                   <div style={{ marginTop:12, display:"flex", flexDirection:"column", gap:8 }}>
                     {(editProj.invoices||[]).map((inv,i) => {
                       const bad = inv.scanStatus === "failed" || inv.scanStatus === "quota";
+                      const dup = inv.scanStatus === "dup";
                       return (
-                      <div key={i} style={{ background: bad ? "#FDECEC" : "#F5F5F0", border: bad ? "1.5px solid #E53935" : "1.5px solid transparent", borderRadius:10, padding:"8px 12px", display:"flex", alignItems:"center", gap:8, flexWrap:"wrap" }}>
+                      <div key={i} style={{ background: bad ? "#FDECEC" : dup ? "#FFF3E0" : "#F5F5F0", border: bad ? "1.5px solid #E53935" : dup ? "1.5px solid #FB8C00" : "1.5px solid transparent", borderRadius:10, padding:"8px 12px", display:"flex", alignItems:"center", gap:8, flexWrap:"wrap" }}>
                         <button onClick={()=>setViewFile({ url: inv.url, name: inv.name })} style={{ background:"none", border:"none", cursor:"pointer", fontSize:13, color: bad ? "#B71C1C" : "#1565C0", fontWeight:600, fontFamily:"Heebo,sans-serif", padding:0, maxWidth:"55%", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
                           🧾 {inv.name}
                         </button>
                         <span style={{ fontSize:11, color:"#AAA" }}>{inv.date}</span>
                         {inv.scanStatus === "ok" && <span style={{ background:"#E8F5E9", color:"#2E7D32", borderRadius:6, padding:"2px 7px", fontSize:10, fontWeight:700 }}>🤖 פוענח · ₪{fmtNum(inv.scanTotal||0)}</span>}
+                        {inv.isCredit && <span style={{ background:"#E0F2F1", color:"#00695C", borderRadius:6, padding:"2px 7px", fontSize:10, fontWeight:700 }}>↩️ זיכוי</span>}
+                        {dup && <span style={{ color:"#E65100", fontSize:11, fontWeight:700, flexBasis:"100%" }}>🟠 נראה כפול של: {inv.dupOf} — לא נכנס להוצאות</span>}
+                        {dup && (
+                          <button onClick={()=>{
+                            if (!window.confirm("לאשר שזו לא כפילות ולהכניס את החשבונית להוצאות?")) return;
+                            const expenses = [...(editProj.expenses||[]), ...(inv.pending||[])];
+                            const invoices = (editProj.invoices||[]).map(x => { if (x !== inv) return x; const { pending, dupOf, ...rest } = x; return { ...rest, scanStatus:"ok", expensed:true, dupChecked:true }; });
+                            setEditProj(p=>({...p, expenses, invoices}));
+                            updateProjField(detailProject, { expenses, invoices });
+                          }} style={{ background:"#FB8C00", color:"#fff", border:"none", borderRadius:6, padding:"3px 9px", fontSize:11, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700 }}>✓ זה לא כפול — הכנס</button>
+                        )}
                         {inv.scanStatus !== "ok" && inv.expensed && <span style={{ background:"#E8F5E9", color:"#2E7D32", borderRadius:6, padding:"2px 7px", fontSize:10, fontWeight:600 }}>✓ נרשם כהוצאה</span>}
                         {bad && !inv.expensed && <span style={{ color:"#B71C1C", fontSize:11, fontWeight:700 }}>⚠️ {inv.scanReason || "לא פוענח"}</span>}
-                        {!inv.expensed && (
+                        {!inv.expensed && !dup && (
                           <button onClick={()=>manualExpense(inv)} style={{ background:"#FFF8E1", color:"#B26A00", border:"none", borderRadius:6, padding:"3px 9px", fontSize:11, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:600 }}>💸 רשום כהוצאה</button>
                         )}
-                        {!inv.expensed && aiOn && inv.url && (
+                        {!inv.expensed && !dup && aiOn && inv.url && (
                           <button onClick={()=>retryScan(inv)} disabled={invoiceAnalyzing} style={{ background:"#E3F2FD", color:"#1565C0", border:"none", borderRadius:6, padding:"3px 9px", fontSize:11, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:600 }}>{inv.scanStatus ? "🔄 נסה שוב" : "🤖 פענח"}</button>
                         )}
                         <button onClick={async ()=>{
@@ -5317,9 +5455,30 @@ async function shareImg() {
                       const next = { ...cfgData, _isConfig:true, _alertsEmail: e.target.checked };
                       try { await saveCfgChecked(next); setCfgData(next); } catch(err) { alert("השמירה נכשלה: " + err.message); }
                     }}/>
-                  <span style={{ fontSize:13, lineHeight:1.55 }}><b>🔔 מייל התראות כל בוקר</b><br/><span style={{ color:"#888", fontSize:12 }}>דיווחי עבר לאישור, שעונים שנשכחו פתוחים ותשלומים לקבלנים. נשלח רק כשיש משהו לטפל בו.</span></span>
+                  <span style={{ fontSize:13, lineHeight:1.55 }}><b>🔔 מייל התראות כל בוקר</b><br/><span style={{ color:"#888", fontSize:12 }}>דיווחי עבר לאישור, שעונים שנשכחו פתוחים, תשלומים לקבלנים, חשבוניות שלא פוענחו וקטגוריות לאישור. נשלח רק כשיש משהו לטפל בו.</span></span>
                 </label>
               )}
+            </div>
+            <div style={{ background:"#fff", borderRadius:14, padding:22, boxShadow:"0 2px 8px rgba(0,0,0,0.07)", maxWidth:360, marginTop:14 }}>
+              <h3 style={{ margin:"0 0 6px", fontWeight:700, fontSize:15 }}>🏷️ קטגוריות הוצאות</h3>
+              <p style={{ margin:"0 0 10px", color:"#777", fontSize:13, lineHeight:1.6 }}>הקטגוריות הקבועות + קטגוריות שלך. פענוח החשבוניות משייך גם אליהן, ומציע חדשות לאישורך.</p>
+              <div style={{ display:"flex", flexWrap:"wrap", gap:6, marginBottom:10 }}>
+                {EXPENSE_CATS.map(c => <span key={c.k} style={{ background:"#F5F5F0", color:"#555", borderRadius:14, padding:"3px 9px", fontSize:12 }}>{c.icon} {c.k}</span>)}
+                {(cfgData._expenseCats||[]).map(c => (
+                  <span key={c.k} style={{ background:"#EDE9FE", color:"#6D28D9", borderRadius:14, padding:"3px 6px 3px 9px", fontSize:12, fontWeight:700, display:"inline-flex", alignItems:"center", gap:4 }}>
+                    {c.icon||"🏷️"} {c.k}
+                    <button onClick={()=>removeCustomCat(c.k)} style={{ background:"none", border:"none", color:"#9575CD", cursor:"pointer", fontSize:12, padding:0 }}>✕</button>
+                  </span>
+                ))}
+              </div>
+              <div style={{ display:"flex", gap:6 }}>
+                <input id="bt-newcat-icon" placeholder="🏷️" maxLength={4} style={{ ...inp, width:52, flex:"none", textAlign:"center", padding:"10px 4px" }}/>
+                <input id="bt-newcat" placeholder="שם קטגוריה חדשה (למשל: ריצוף)" style={{ ...inp, flex:1, minWidth:0 }}/>
+              </div>
+              <button onClick={async ()=>{
+                const n = document.getElementById("bt-newcat"), ic = document.getElementById("bt-newcat-icon");
+                try { if (await addCustomCat(n.value, ic.value)) { n.value = ""; ic.value = ""; } } catch(e) { alert("השמירה נכשלה: " + e.message); }
+              }} style={{ ...btnD, width:"100%", marginTop:8 }}>+ הוסף קטגוריה</button>
             </div>
           </>
         )}
