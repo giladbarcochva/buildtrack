@@ -382,7 +382,7 @@ function backupSheets(bk) {
   const projects = projAll.filter(p => !p._quote), quotes = projAll.filter(p => p._quote);
   const projName = (id) => (projAll.find(p => String(p.id) === String(id)) || {}).name || "";
   const wk = D("workers");
-  const workers = wk.filter(w => !w._isConfig && !w._termsRecord && !w._secret);
+  const workers = wk.filter(w => !w._isConfig && !w._termsRecord && !w._secret && !w._finance);
   const wName = (id) => (workers.find(w => String(w.id) === String(id)) || {}).name || "";
   const reps = D("reports");
   const t = (ms) => ms ? new Date(ms).toLocaleString("he-IL") : "";
@@ -484,10 +484,30 @@ function BackupOpener({ onOpenFile, onRestored }) {
     } catch (e) { alert("שגיאה בשחזור: " + e.message); }
     setBusy("");
   };
+  // קבצים מגיבוי 📎 → חזרה לאחסון, לאותו מקום בדיוק (כך שהקישורים בנתונים עובדים שוב)
+  const restoreFiles = async () => {
+    const list = (bk.files || []).filter(f => f.path && f.b64);
+    if (!list.length) { alert("אין בקובץ הזה קבצים עם מיקום לשחזור"); return; }
+    if (!window.confirm(`♻️ להחזיר ${list.length} קבצים של "${bk.org?.name}" לאחסון?\nקבצים שכבר קיימים לא ישתנו.`)) return;
+    let ok = 0, exist = 0, fail = 0;
+    for (let i = 0; i < list.length; i++) {
+      const f = list[i];
+      setBusy(`מחזיר קבצים... ${i + 1}/${list.length}`);
+      try {
+        const bin = atob(f.b64); const u = new Uint8Array(bin.length); for (let j = 0; j < bin.length; j++) u[j] = bin.charCodeAt(j);
+        const r = await fetch(`${SUPABASE_URL}/storage/v1/object/plans/${encodeURIComponent(f.path)}`, {
+          method:"POST", headers:{ "apikey": SUPABASE_KEY, "Authorization": "Bearer " + (AUTH_TOKEN || SUPABASE_KEY), "Content-Type": f.mime || "application/octet-stream" }, body: u });
+        if (r.ok) ok++;
+        else { const t = await r.text(); if (/exist|duplicate|409/i.test(t) || r.status === 409) exist++; else fail++; }
+      } catch(e) { fail++; }
+    }
+    setBusy("");
+    alert(`✅ ${ok === 1 ? "הוחזר קובץ אחד" : `הוחזרו ${ok} קבצים`}${exist ? `\n${exist === 1 ? "קובץ אחד כבר היה קיים" : `${exist} כבר היו קיימים`} (לא שונו)` : ""}${fail ? `\n⚠️ ${fail} נכשלו` : ""}`);
+  };
   const counts = bk?.kind === "data" ? (() => {
     const T = bk.tables || {}; const d = (t) => (T[t]||[]).map(r => r.data||{});
     return [["פרויקטים", d("projects").filter(p=>!p._quote).length], ["הצעות מחיר", d("projects").filter(p=>p._quote).length],
-            ["עובדים", d("workers").filter(w=>!w._isConfig && !w._termsRecord && !w._secret).length], ["דיווחים", d("reports").filter(r=>!r._paymentRecord && !r._summary).length],
+            ["עובדים", d("workers").filter(w=>!w._isConfig && !w._termsRecord && !w._secret && !w._finance).length], ["דיווחים", d("reports").filter(r=>!r._paymentRecord && !r._summary).length],
             ["ימי יומן", d("calendar").length], ["פריטי ציוד", d("equipment").length]];
   })() : [];
   const btn = { border:"none", borderRadius:9, padding:"9px 12px", fontSize:13, fontWeight:700, cursor:"pointer", fontFamily:"Heebo,sans-serif" };
@@ -522,7 +542,10 @@ function BackupOpener({ onOpenFile, onRestored }) {
       )}
       {bk?.kind === "files" && (
         <div style={{ marginTop:12, background:"#F9F9F9", borderRadius:10, padding:"12px 14px" }}>
-          <p style={{ margin:"0 0 8px", fontWeight:800, fontSize:14 }}>{bk.org?.name} — {(bk.files||[]).length} קבצים <span style={{ fontWeight:400, fontSize:12, color:"#888" }}>({dateStr})</span></p>
+          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", gap:8, marginBottom:8 }}>
+            <p style={{ margin:0, fontWeight:800, fontSize:14 }}>{bk.org?.name} — {(bk.files||[]).length} קבצים <span style={{ fontWeight:400, fontSize:12, color:"#888" }}>({dateStr})</span></p>
+            <button onClick={restoreFiles} disabled={!!busy} style={{ ...btn, padding:"6px 10px", background:"#FCE4EC", color:"#B71C1C", flexShrink:0 }}>♻️ שחזר קבצים</button>
+          </div>
           {(bk.files||[]).map((f, i) => {
             const blob = () => { const bin = atob(f.b64); const u = new Uint8Array(bin.length); for (let j = 0; j < bin.length; j++) u[j] = bin.charCodeAt(j); return new Blob([u], { type: f.mime || "" }); };
             return (
@@ -1072,6 +1095,76 @@ const todayStr = () => {
 };
 const fmtNum   = n => Number(n||0).toLocaleString("he-IL");
 
+// ===== מודול כספים (הכנסות + הוצאות חודשיות) — רק לקבלנים שהמאסטר הפעיל להם (settings.finance) =====
+const FIN_FIXED = [
+  { k:"bl_workers",      label:"ביטוח לאומי — עובדים", icon:"🏛️", alloc:true  },
+  { k:"pension_workers", label:"פנסיה — עובדים",       icon:"🏦", alloc:true  },
+  { k:"bl_owner",        label:"ביטוח לאומי — בעלים",  icon:"🏛️", alloc:false },
+  { k:"pension_owner",   label:"פנסיה — בעלים",        icon:"🏦", alloc:false },
+  { k:"tax_owner",       label:"מס הכנסה — בעלים",     icon:"🧾", alloc:false },
+  { k:"vat",             label:"מע\"מ",                icon:"💼", alloc:false },
+];
+// תאריך בכל פורמט שנשמר אצלנו ("13.10.2026" / "2026-10-13" / מספר) → "2026-10"
+const ymOf = (d) => {
+  if (d == null || d === "") return "";
+  if (typeof d === "number") { const x = new Date(d); return `${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,"0")}`; }
+  const s = String(d).trim();
+  let m = s.match(/^(\d{4})-(\d{1,2})/); if (m) return `${m[1]}-${m[2].padStart(2,"0")}`;
+  m = s.match(/^(\d{1,2})[./](\d{1,2})[./](\d{2,4})/); if (m) return `${m[3].length === 2 ? "20" + m[3] : m[3]}-${m[2].padStart(2,"0")}`;
+  return "";
+};
+const shiftYm = (ym, n) => { const [y, m] = ym.split("-").map(Number); const d = new Date(y, m - 1 + n, 1); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`; };
+const repDays = (r) => r._shift ? ((Number(r.hours) || 0) > 0 ? 1 : 0) : (r.dayType === "half" ? 0.5 : Number(r.days || 1));
+// הסכום של שורה בחודש מסוים: ערך שנקבע לחודש הזה, אחרת הסכום הקבוע (0 לפני שהשורה נוספה / אחרי שהוסרה / לפני תחילת המודול)
+const finActive = (it, ym) => (!it.since || it.since <= ym) && (!it.until || ym < it.until);
+const finVal = (fin, key, def, ym, item) => {
+  if (!fin || (fin.startYm && ym < fin.startYm)) return 0;
+  const v = fin.months?.[ym]?.vals?.[key];
+  if (v !== undefined && v !== null && v !== "") return Number(v) || 0;
+  if (item && !finActive(item, ym)) return 0;
+  return Number(def) || 0;
+};
+// כל השורות של החודש: [{ key, label, group, amount, def, alloc }]
+const finLines = (fin, ym) => {
+  if (!fin) return [];
+  const out = [];
+  (fin.overhead || []).forEach(g => (g.items || []).forEach(it => {
+    if (!finActive(it, ym) && fin.months?.[ym]?.vals?.["o:" + it.id] === undefined) return;
+    out.push({ key:"o:" + it.id, label: it.name, group: g.name, def: it.amount, amount: finVal(fin, "o:" + it.id, it.amount, ym, it), alloc:true, kind:"overhead" });
+  }));
+  (fin.suppliers || []).forEach(it => {
+    if (!finActive(it, ym) && fin.months?.[ym]?.vals?.["s:" + it.id] === undefined) return;
+    out.push({ key:"s:" + it.id, label: it.name, group:"ספקים", def: it.amount, amount: finVal(fin, "s:" + it.id, it.amount, ym, it), alloc:true, kind:"supplier" });
+  });
+  FIN_FIXED.forEach(f => out.push({ key:"f:" + f.k, label: f.label, group:"מיסים וביטוחים", def: fin.fixed?.[f.k] || 0, amount: finVal(fin, "f:" + f.k, fin.fixed?.[f.k] || 0, ym), alloc: f.alloc, kind:"fixed" }));
+  return out;
+};
+// ימי עבודה לפי פרויקט בחודש
+const daysByProject = (reports, ym) => {
+  const by = {}; let total = 0;
+  reports.forEach(r => {
+    if (r._paymentRecord || r._summary || r.pendingApproval || !r.projectId || String(r.date || "").slice(0, 7) !== ym) return;
+    const d = repDays(r); if (!d) return;
+    by[String(r.projectId)] = (by[String(r.projectId)] || 0) + d; total += d;
+  });
+  return { by, total };
+};
+// חלק הפרויקט מהוצאות קבועות (כל החודשים עד היום)
+const projFixedShare = (fin, reports, projectId, uptoYm) => {
+  if (!fin || !fin.startYm) return { total:0, months:[] };
+  const months = []; let total = 0;
+  for (let ym = fin.startYm; ym <= uptoYm; ym = shiftYm(ym, 1)) {
+    const { by, total: all } = daysByProject(reports, ym);
+    const mine = by[String(projectId)] || 0;
+    if (!mine || !all) continue;
+    const pool = finLines(fin, ym).filter(l => l.alloc).reduce((s, l) => s + l.amount, 0);
+    const share = pool * mine / all;
+    if (share) { months.push({ ym, days: mine, all, share }); total += share; }
+  }
+  return { total, months };
+};
+
+const TRASH_DAYS = 30; // קבלן שנמחק נשמר בסל המחזור (נמחק סופית בגיבוי הלילי — daily-backup)
 // ===== קודי כניסה של עובדים: נשמרים בשורות נפרדות (_secret) שרק המנהל יכול לקרוא =====
 const stripCodes = (w) => { const { code, foremanCode, ...rest } = w || {}; return rest; };
 const tokenRole = () => { try { return JSON.parse(atob((AUTH_TOKEN||"").split(".")[1].replace(/-/g,"+").replace(/_/g,"/")) || "{}").app_role || ""; } catch(e) { return ""; } };
@@ -1270,6 +1363,10 @@ export default function App() {
   const [payrollView, setPayrollView] = useState("pending");
   const [subsView,    setSubsView]    = useState("pending"); // קבלנים: לתשלום / היסטוריה
   // התראות + סיכומים
+  const [finDoc, setFinDoc] = useState(null);            // מודול כספים — הוצאות חודשיות (שורת _finance)
+  const [finYm, setFinYm] = useState(todayStr().slice(0,7));
+  const [incView, setIncView] = useState("due");         // הכנסות: due | received | months
+  const finSaveRef = useRef(null);
   const secretsRef = useRef({});            // workerId → שורת הקודים הנעולה
   const persistWorkerRef = useRef(null);
   const migratingRef = useRef(false);    // persistWorker (מוגדרת בהמשך) — לשימוש מתוך loadAll
@@ -1410,7 +1507,8 @@ export default function App() {
       w.filter(x => x._secret).forEach(x => { secMap[String(x.workerId)] = x; });
       secretsRef.current = secMap;
       const isMgr = tokenRole() === "manager";
-      const rawWorkers = w.filter(x => !x._isConfig && !x._termsRecord && !x._secret);
+      const rawWorkers = w.filter(x => !x._isConfig && !x._termsRecord && !x._secret && !x._finance);
+      setFinDoc(w.find(x => x._finance) || null);
       const realWorkers = rawWorkers.map(x => {
         const s = secMap[String(x.id)];
         if (isMgr) return { ...x, code: s?.code ?? x.code ?? "", foremanCode: s?.foremanCode ?? x.foremanCode ?? "" };
@@ -2304,6 +2402,40 @@ async function shareImg() {
     }
   };
 
+  // ===== מודול כספים: שמירת שורת ההוצאות החודשיות =====
+  const finDbidRef = useRef(null), finLatestRef = useRef(null), finInsertRef = useRef(null);
+  if (finDoc?._dbid) finDbidRef.current = finDoc._dbid;
+  const newFin = () => ({ _finance:true, id: Date.now(), startYm: todayStr().slice(0,7), overhead:[], suppliers:[], fixed:{}, months:{} });
+  const persistFin = async (doc) => {
+    const { _dbid, ...data } = doc;
+    const dbid = _dbid || finDbidRef.current;
+    if (dbid) {
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/workers?id=eq.${dbid}`, { method:"PATCH", headers:{ ...hdrs(), "Prefer":"return=representation" }, body: JSON.stringify({ data }) });
+      const rows = r.ok ? await r.json() : [];
+      if (!rows.length) throw new Error(r.ok ? "אין הרשאה" : `שגיאה ${r.status}`);
+      return;
+    }
+    if (!finInsertRef.current) finInsertRef.current = dbInsert("workers", data);
+    const saved = await finInsertRef.current;
+    finDbidRef.current = saved._dbid;
+    setFinDoc(d => d ? { ...d, _dbid: saved._dbid } : d);
+    // אם בזמן היצירה היו עוד שינויים — שומרים גם אותם
+    if (finLatestRef.current && finLatestRef.current !== doc) await persistFin({ ...finLatestRef.current, _dbid: saved._dbid });
+  };
+  const saveFin = (updater, immediate = false) => {
+    lastEditRef.current = Date.now();
+    setFinDoc(prev => {
+      const base = prev || newFin();
+      const next = typeof updater === "function" ? updater(base) : updater;
+      finLatestRef.current = next;
+      return next;
+    });
+    clearTimeout(finSaveRef.current);
+    finSaveRef.current = setTimeout(() => {
+      persistFin(finLatestRef.current).catch(e => alert("השמירה נכשלה: " + e.message + (navigator.onLine ? "" : " (אין קליטה)")));
+    }, immediate ? 0 : 700);
+  };
+
   // ===== קטגוריות הוצאות של הקבלן =====
   const addCustomCat = async (name, icon) => {
     const k = String(name || "").trim().replace(/["'״׳]/g, "").slice(0, 30);
@@ -2594,7 +2726,7 @@ async function shareImg() {
         </div>
 
         {/* רשימת קבלנים */}
-        {saOrgs.map(o => (
+        {saOrgs.filter(o => !o.settings?.deletedAt).map(o => (
           <div key={o._dbid} style={{ background:"#fff", borderRadius:14, padding:"14px 18px", marginBottom:11, boxShadow:"0 2px 8px rgba(0,0,0,0.07)", borderRight:`4px solid ${o.active!==false?"#22C55E":"#E53935"}` }}>
             <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:8 }}>
               <div>
@@ -2667,6 +2799,14 @@ async function shareImg() {
                 {o.active!==false?"⏸ השהה":"▶ הפעל"}
               </button>
               <button onClick={async ()=>{
+                const on = !o.settings?.finance;
+                if (!window.confirm(on ? `להפעיל ל"${o.name}" מודול כספים מלא?\n(טאב הכנסות + טאב הוצאות חודשיות, ושיוך הוצאות קבועות לפרויקטים)` : `לכבות את מודול הכספים ל"${o.name}"?\nהנתונים נשמרים — רק מוסתרים.`)) return;
+                await orgUpdate(o._dbid ?? o.id, { settings: { ...(o.settings||{}), finance: on } });
+                setSaOrgs((await orgGetAll()).filter(x=>x.slug!=="_config"));
+              }} style={{ background:o.settings?.finance?"#1A1A2E":"#F0F0EC", color:o.settings?.finance?"#E8C547":"#555", border:"none", borderRadius:7, padding:"5px 11px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700 }}>
+                💰 מודול כספים {o.settings?.finance ? "✓" : "כבוי"}
+              </button>
+              <button onClick={async ()=>{
                 const newCode = window.prompt(`קוד מנהל זמני חדש ל"${o.name}":`);
                 if (!newCode) return;
                 try {
@@ -2714,37 +2854,44 @@ async function shareImg() {
               }} style={{ background:"#E3F2FD", color:"#1565C0", border:"none", borderRadius:7, padding:"5px 11px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>💾 גיבוי</button>
               {o.slug !== "gne" && (
               <button onClick={async ()=>{
-                const typed = window.prompt(`⚠️ מחיקה לצמיתות של "${o.name}"\nכל הפרויקטים, העובדים, הדיווחים והקבצים שלו יימחקו ולא ניתן לשחזר.\n\nלאישור הקלד את הכתובת שלו: ${o.slug}`);
-                if (typed === null) return;
-                if (typed.trim().toLowerCase() !== o.slug) { alert("הכתובת לא תואמת — לא נמחק."); return; }
+                if (!window.confirm(`🗑 להעביר את "${o.name}" לסל המחזור?\n\n• הקבלן והעובדים שלו לא יוכלו להיכנס.\n• כל הנתונים והקבצים נשמרים ${TRASH_DAYS} יום — אפשר להחזיר בלחיצה.\n• אחרי ${TRASH_DAYS} יום הוא יימחק לצמיתות אוטומטית.`)) return;
                 try {
-                  // 1. נתונים בכל הטבלאות
-                  for (const t of ["projects","workers","reports","calendar","equipment"]) {
-                    const r = await fetch(`${SUPABASE_URL}/rest/v1/${t}?org_id=eq.${o.id}`, { method:"DELETE", headers:hdrs() });
-                    if (!r.ok) throw new Error(`${t}: ${r.status}`);
-                  }
-                  // 2. קבצים (תוכניות, חשבוניות, לוגו) — ככל שאפשר
-                  try {
-                    const lr = await fetch(`${SUPABASE_URL}/storage/v1/object/list/plans`, { method:"POST", headers:hdrs(),
-                      body: JSON.stringify({ prefix: `${o.slug}/`, limit: 1000 }) });
-                    const files = lr.ok ? await lr.json() : [];
-                    const names = (files||[]).filter(f => f && f.id).map(f => `${o.slug}/${f.name}`);
-                    if (names.length) await fetch(`${SUPABASE_URL}/storage/v1/object/plans`, { method:"DELETE", headers:hdrs(),
-                      body: JSON.stringify({ prefixes: names }) });
-                  } catch(e) {}
-                  // 3. הארגון עצמו
-                  const r = await fetch(`${SUPABASE_URL}/rest/v1/organizations?id=eq.${o._dbid ?? o.id}`, { method:"DELETE",
-                    headers:{ ...hdrs(), "Prefer":"return=representation" } });
-                  const del = r.ok ? await r.json() : [];
-                  if (!r.ok || !del.length) throw new Error("הארגון לא נמחק (הרשאה?)");
+                  await orgUpdate(o._dbid ?? o.id, { active:false, settings:{ ...(o.settings||{}), deletedAt: Date.now(), activeBefore: o.active !== false } });
                   setSaOrgs((await orgGetAll()).filter(x=>x.slug!=="_config"));
-                  alert(`"${o.name}" נמחק ✓`);
-                } catch(e) { alert("שגיאה במחיקה: " + e.message); }
+                } catch(e) { alert("שגיאה: " + e.message); }
               }} style={{ background:"#FDECEC", color:"#C62828", border:"1px solid #F5C2C2", borderRadius:7, padding:"5px 11px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>🗑 מחק</button>
               )}
             </div>
           </div>
         ))}
+
+        {/* סל מחזור */}
+        {saOrgs.some(o => o.settings?.deletedAt) && (
+          <div style={{ background:"#fff", borderRadius:14, padding:"14px 18px", marginTop:18, boxShadow:"0 2px 8px rgba(0,0,0,0.07)", border:"1.5px dashed #E0E0E0" }}>
+            <h3 style={{ margin:"0 0 4px", fontSize:15, fontWeight:700 }}>🗑 סל מחזור</h3>
+            <p style={{ margin:"0 0 10px", fontSize:12, color:"#888" }}>קבלנים שנמחקו נשמרים {TRASH_DAYS} יום עם כל הנתונים והקבצים, ואז נמחקים לצמיתות אוטומטית.</p>
+            {saOrgs.filter(o => o.settings?.deletedAt).map(o => {
+              const at = Number(o.settings.deletedAt), purgeAt = at + TRASH_DAYS * 864e5;
+              const daysLeft = Math.max(0, Math.ceil((purgeAt - Date.now()) / 864e5));
+              return (
+                <div key={o._dbid} style={{ display:"flex", alignItems:"center", gap:8, padding:"9px 0", borderTop:"1px solid #F0F0EC", flexWrap:"wrap" }}>
+                  <div style={{ flex:1, minWidth:150 }}>
+                    <p style={{ margin:0, fontWeight:700, fontSize:14, color:"#777" }}>{o.name} <span style={{ fontWeight:400, fontSize:12 }} dir="ltr">/{o.slug}</span></p>
+                    <p style={{ margin:0, fontSize:11.5, color: daysLeft <= 3 ? "#C62828" : "#999" }}>נמחק {new Date(at).toLocaleDateString("he-IL")} · {daysLeft > 0 ? `יימחק לצמיתות בעוד ${daysLeft} ימים` : "יימחק בגיבוי הלילה"}</p>
+                  </div>
+                  <button onClick={async ()=>{
+                    try {
+                      const { deletedAt, activeBefore, ...rest } = o.settings || {};
+                      await orgUpdate(o._dbid ?? o.id, { active: activeBefore !== false, settings: rest });
+                      setSaOrgs((await orgGetAll()).filter(x=>x.slug!=="_config"));
+                      alert(`✅ "${o.name}" הוחזר — הכול בדיוק כמו שהיה.`);
+                    } catch(e) { alert("שגיאה: " + e.message); }
+                  }} style={{ background:"#E8F5E9", color:"#2E7D32", border:"none", borderRadius:7, padding:"6px 12px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700 }}>♻️ החזר</button>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </main>
     </div>
   );
@@ -3168,6 +3315,8 @@ async function shareImg() {
     { key:"projects", label:"פרויקטים", emoji:"🏗️" },
     { key:"summaries",label:"סיכומים",  emoji:"📝" },
     { key:"quotes",   label:"הצעות מחיר", emoji:"📄" },
+    { key:"income",   label:"הכנסות",   emoji:"💵" },
+    { key:"monthly",  label:"הוצאות חודשיות", emoji:"🧮" },
     { key:"workers",  label:"עובדים",   emoji:"👷" },
     { key:"payroll",  label:"שכר",      emoji:"💰" },
     { key:"calendar", label:"יומן",     emoji:"📅" },
@@ -3177,8 +3326,10 @@ async function shareImg() {
     { key:"settings", label:"הגדרות",   emoji:"⚙️" },
   ];
   const foremanTabs = ["reports","projects","summaries","workers","calendar","help"];
+  const finOn = !!org?.settings?.finance && !isForeman; // מודול כספים מלא — רק אם המאסטר הפעיל, ורק למנהל
   const tabs = (isForeman ? allTabs.filter(t => foremanTabs.includes(t.key)) : allTabs)
-    .filter(t => t.key !== "foremen" || plan.foremen);
+    .filter(t => t.key !== "foremen" || plan.foremen)
+    .filter(t => (t.key !== "income" && t.key !== "monthly") || finOn);
 
   // ====== התראות (מחושבות מהנתונים — נעלמות לבד כשמטפלים בהן) ======
   const goTab = (k, extra) => { setMgTab(k); setDetailId(null); setBellOpen(false); if (extra) extra(); try { window.scrollTo(0,0); } catch(e) {} };
@@ -3378,6 +3529,244 @@ async function shareImg() {
             </div>
           </>
         )}
+
+        {/* INCOME — הכנסות (מודול כספים) */}
+        {mgTab==="income" && finOn && (() => {
+          const all = projects.flatMap(p => (p.clientPayments||[]).map((cp, i) => ({ p, cp, i })));
+          const amt = (x) => Number(x.cp.amount||0);
+          const due = all.filter(x => x.cp.due && !x.cp.received).sort((a,b) => String(a.cp.dueAt||"").localeCompare(String(b.cp.dueAt||"")));
+          const rec = all.filter(x => x.cp.received).sort((a,b) => (ymOf(b.cp.receivedIso||b.cp.receivedAt)+String(b.cp.receivedIso||"")).localeCompare(ymOf(a.cp.receivedIso||a.cp.receivedAt)+String(a.cp.receivedIso||"")));
+          const notYet = all.filter(x => !x.cp.due && !x.cp.received);
+          const sum = (l) => l.reduce((s,x) => s + amt(x), 0);
+          const setCp = async (x, changes) => {
+            const clientPayments = (x.p.clientPayments||[]).map((c, j) => j === x.i ? { ...c, ...changes } : c);
+            try { await updateProjField(x.p, { clientPayments }); } catch(e) { alert("השמירה נכשלה: " + e.message); }
+          };
+          const thisYm = todayStr().slice(0,7);
+          const byMonth = {};
+          rec.forEach(x => { const k = ymOf(x.cp.receivedIso || x.cp.receivedAt) || "ללא תאריך"; byMonth[k] = (byMonth[k]||0) + amt(x); });
+          const monthKeys = Object.keys(byMonth).sort().reverse();
+          const maxM = Math.max(1, ...Object.values(byMonth));
+          const yearTot = Object.entries(byMonth).filter(([k]) => k.slice(0,4) === thisYm.slice(0,4)).reduce((s,[,v]) => s+v, 0);
+          const row = (x, right) => (
+            <div key={x.p._dbid + "_" + x.i} style={{ background:"#fff", borderRadius:12, padding:"11px 14px", marginBottom:8, boxShadow:"0 1px 5px rgba(0,0,0,0.06)", display:"flex", alignItems:"center", gap:10 }}>
+              <div style={{ flex:1, minWidth:0 }}>
+                <div style={{ fontWeight:700, fontSize:14 }}>{x.cp.desc || "שלב תשלום"}</div>
+                <div style={{ fontSize:12, color:"#888" }}>🏗️ {x.p.name}{x.cp.dueAt ? ` · בוצע ${fmtIsoShort(x.cp.dueAt)}` : ""}{x.cp.received && (x.cp.receivedIso || x.cp.receivedAt) ? ` · התקבל ${x.cp.receivedIso ? fmtIsoShort(x.cp.receivedIso) : x.cp.receivedAt}` : ""}</div>
+              </div>
+              <div style={{ fontWeight:800, fontSize:15, whiteSpace:"nowrap", color: x.cp.received ? "#2E7D32" : "#B45309" }}>₪{fmtNum(amt(x))}</div>
+              {right}
+            </div>
+          );
+          return (<>
+            <div style={{ marginBottom:14 }}>
+              <h1 style={{ margin:0, fontSize:20, fontWeight:800 }}>💵 הכנסות</h1>
+              <p style={{ margin:"3px 0 0", color:"#777", fontSize:13 }}>שלבי התשלום מכל הפרויקטים — מה לגבות ומה התקבל</p>
+            </div>
+            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:8, marginBottom:14 }}>
+              {[["⏳ לגבייה", sum(due), "#B45309", "#FFF8E1"], [`✓ התקבל ב${HE_MONTHS[Number(thisYm.slice(5))-1]}`, byMonth[thisYm]||0, "#2E7D32", "#E8F5E9"], [`📆 התקבל ב-${thisYm.slice(0,4)}`, yearTot, "#1A1A2E", "#F0F0EC"]].map(([l, v, c, bg]) => (
+                <div key={l} style={{ background:bg, borderRadius:12, padding:"10px 8px", textAlign:"center" }}>
+                  <div style={{ fontWeight:800, fontSize:16, color:c }}>₪{fmtNum(v)}</div>
+                  <div style={{ fontSize:11, color:"#666", marginTop:2 }}>{l}</div>
+                </div>
+              ))}
+            </div>
+            <div style={{ display:"flex", background:"#F0F0EC", borderRadius:12, padding:3, marginBottom:14, gap:3 }}>
+              {[{k:"due",l:`⏳ לגבייה (${due.length})`},{k:"received",l:"✅ התקבלו"},{k:"months",l:"📊 לפי חודש"}].map(t=>(
+                <button key={t.k} onClick={()=>setIncView(t.k)} style={{ flex:1, background:incView===t.k?"#1A1A2E":"transparent", color:incView===t.k?"#E8C547":"#888", border:"none", borderRadius:10, padding:"8px 0", fontWeight:700, fontSize:13, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>{t.l}</button>
+              ))}
+            </div>
+            {incView==="due" && (<>
+              {due.length === 0 && <div style={{ background:"#fff", borderRadius:14, padding:30, textAlign:"center", border:"1.5px dashed #DDD", color:"#AAA" }}>אין כרגע כסף לגבות 👍<br/><span style={{ fontSize:12 }}>כשמסמנים בפרויקט ששלב תשלום בוצע — הוא מופיע כאן</span></div>}
+              {due.map(x => row(x, (
+                <button onClick={()=>{ if (window.confirm(`התקבלו ₪${fmtNum(amt(x))} עבור "${x.cp.desc||"שלב"}" (${x.p.name})?`)) setCp(x, { received:true, receivedAt:new Date().toLocaleDateString("he-IL"), receivedIso:todayStr() }); }}
+                  style={{ background:"#2E7D32", color:"#fff", border:"none", borderRadius:8, padding:"7px 11px", fontSize:12.5, fontWeight:700, cursor:"pointer", fontFamily:"Heebo,sans-serif", flexShrink:0 }}>✓ התקבל</button>
+              )))}
+              {notYet.length > 0 && <p style={{ margin:"10px 2px 0", fontSize:12, color:"#999" }}>עוד {notYet.length} שלבים (₪{fmtNum(sum(notYet))}) שעדיין לא בוצעו בפרויקטים</p>}
+            </>)}
+            {incView==="received" && (<>
+              {rec.length === 0 && <div style={{ background:"#fff", borderRadius:14, padding:30, textAlign:"center", border:"1.5px dashed #DDD", color:"#AAA" }}>עוד לא סומנו תשלומים שהתקבלו</div>}
+              {rec.slice(0, 200).map(x => row(x, (
+                <button onClick={()=>{ if (window.confirm("לבטל את \"התקבל\"? השלב יחזור ללגבייה.")) setCp(x, { received:false, receivedAt:"", receivedIso:"", due:true, dueAt: x.cp.dueAt || todayStr() }); }}
+                  title="בטל" style={{ background:"none", border:"none", color:"#BBB", cursor:"pointer", fontSize:13, flexShrink:0 }}>↩</button>
+              )))}
+            </>)}
+            {incView==="months" && (
+              <div style={{ background:"#fff", borderRadius:14, padding:"14px 16px", boxShadow:"0 1px 5px rgba(0,0,0,0.06)" }}>
+                {monthKeys.length === 0 && <p style={{ margin:0, color:"#AAA", textAlign:"center" }}>עוד אין הכנסות שהתקבלו</p>}
+                {monthKeys.map(k => (
+                  <div key={k} style={{ marginBottom:10 }}>
+                    <div style={{ display:"flex", justifyContent:"space-between", fontSize:13, marginBottom:3 }}>
+                      <span style={{ fontWeight:700 }}>{k.includes("-") ? monthLabel(k) : k}</span>
+                      <span style={{ fontWeight:800, color:"#2E7D32" }}>₪{fmtNum(byMonth[k])}</span>
+                    </div>
+                    <div style={{ height:7, background:"#EEE", borderRadius:99 }}><div style={{ height:"100%", width:`${Math.round(byMonth[k]/maxM*100)}%`, background:"#43A047", borderRadius:99 }}/></div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </>);
+        })()}
+
+        {/* MONTHLY — הוצאות חודשיות (מודול כספים) */}
+        {mgTab==="monthly" && finOn && (() => {
+          const fin = finDoc || newFin();
+          const ym = finYm, thisYm = todayStr().slice(0,7);
+          const mo = fin.months?.[ym] || {};
+          const locked = !!mo.approved;
+          const lines = finLines(fin, ym);
+          const vOf = (key, def) => { const v = mo.vals?.[key]; return v !== undefined && v !== null ? v : (def ?? ""); };
+          const setVal = (key, val) => saveFin(f => ({ ...f, months: { ...(f.months||{}), [ym]: { ...(f.months?.[ym]||{}), vals: { ...(f.months?.[ym]?.vals||{}), [key]: val } } } }));
+          const askAmount = (title, cur) => { const v = window.prompt(title, cur ?? ""); if (v === null) return null; const n = Number(String(v).replace(/[,₪\s]/g, "")); if (isNaN(n) || n < 0) { alert("סכום לא תקין"); return null; } return n; };
+          const fieldStyle = { width:110, flex:"none", border:"1.5px solid #EEE", borderRadius:8, padding:"6px 8px", fontSize:14, fontFamily:"Heebo,sans-serif", outline:"none", background: locked ? "#F5F5F0" : "#fff", textAlign:"left", direction:"ltr" };
+          const lineRow = (key, label, def, onDefault, onRemove, extra) => {
+            const changed = mo.vals?.[key] !== undefined && mo.vals?.[key] !== "" && Number(mo.vals[key]) !== Number(def||0);
+            return (
+              <div key={key} style={{ padding:"8px 0", borderTop:"1px solid #F3F3EF" }}>
+                <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+                  <span style={{ flex:1, minWidth:0, fontSize:14, fontWeight:600 }}>{label}</span>
+                  <input type="number" inputMode="decimal" disabled={locked} value={vOf(key, def)} onChange={e=>setVal(key, e.target.value)} style={fieldStyle}/>
+                  {onRemove && !locked && <button onClick={onRemove} style={{ background:"none", border:"none", color:"#CCC", cursor:"pointer", fontSize:13, padding:0 }}>✕</button>}
+                </div>
+                <div style={{ display:"flex", gap:8, alignItems:"center", marginTop:2, flexWrap:"wrap" }}>
+                  <button onClick={onDefault} disabled={locked} style={{ background:"none", border:"none", color:"#888", fontSize:11.5, cursor:locked?"default":"pointer", padding:0, fontFamily:"Heebo,sans-serif" }}>🔁 קבוע כל חודש: ₪{fmtNum(def||0)} {!locked && "✏️"}</button>
+                  {changed && <span style={{ fontSize:11, color:"#B45309", fontWeight:600 }}>• שונה לחודש הזה</span>}
+                  {extra}
+                </div>
+              </div>
+            );
+          };
+          const card = (title, children, action) => (
+            <div style={{ background:"#fff", borderRadius:14, padding:"14px 16px", marginBottom:12, boxShadow:"0 1px 5px rgba(0,0,0,0.06)" }}>
+              <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:4, gap:8 }}>
+                <h3 style={{ margin:0, fontSize:15, fontWeight:800 }}>{title}</h3>{action}
+              </div>
+              {children}
+            </div>
+          );
+          const smallBtn = { background:"#1A1A2E", color:"#E8C547", border:"none", borderRadius:7, padding:"4px 11px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700 };
+          const addItem = (kind, gid) => {
+            const name = window.prompt(kind === "supplier" ? "שם הספק:" : "שם ההוצאה (למשל: ליסינג, ביטוח רכב):"); if (!name || !name.trim()) return;
+            const amount = askAmount("כמה משלמים כל חודש? (₪)", ""); if (amount === null) return;
+            const it = { id: Date.now(), name: name.trim(), amount, since: ym };
+            saveFin(f => kind === "supplier" ? { ...f, suppliers: [...(f.suppliers||[]), it] }
+              : { ...f, overhead: (f.overhead||[]).map(g => g.id === gid ? { ...g, items: [...(g.items||[]), it] } : g) }, true);
+          };
+          const removeItem = (kind, gid, it) => {
+            if (!window.confirm(`להסיר את "${it.name}" מ${monthLabel(ym)} והלאה?\nחודשים קודמים לא משתנים.`)) return;
+            const upd = (x) => x.id !== it.id ? x : { ...x, until: ym };
+            const purge = (arr) => (arr||[]).map(upd).filter(x => !(x.until && x.since && x.until <= x.since));
+            saveFin(f => kind === "supplier" ? { ...f, suppliers: purge(f.suppliers) } : { ...f, overhead: (f.overhead||[]).map(g => g.id === gid ? { ...g, items: purge(g.items) } : g) }, true);
+          };
+          const setItemDefault = (kind, gid, it) => {
+            const n = askAmount(`הסכום הקבוע של "${it.name}" (כל חודש שלא שונה ידנית):`, it.amount); if (n === null) return;
+            const upd = (x) => x.id === it.id ? { ...x, amount: n } : x;
+            saveFin(f => kind === "supplier" ? { ...f, suppliers: (f.suppliers||[]).map(upd) } : { ...f, overhead: (f.overhead||[]).map(g => g.id === gid ? { ...g, items: (g.items||[]).map(upd) } : g) }, true);
+          };
+          // התראת כפילות: חשבוניות מאותו ספק שנקלטו בפרויקטים באותו חודש
+          const supplierDup = (name) => {
+            const n = normVendor(name); if (n.length < 2) return 0;
+            let tot = 0;
+            projects.forEach(p => (p.expenses||[]).forEach(e => { if (ymOf(e.date) === ym && normVendor(e.desc).includes(n)) tot += Number(e.amount)||0; }));
+            return tot;
+          };
+          const allocTot = lines.filter(l => l.alloc).reduce((s,l)=>s+l.amount,0);
+          const bizTot = lines.filter(l => !l.alloc).reduce((s,l)=>s+l.amount,0);
+          const { by, total: allDays } = daysByProject(reports, ym);
+          // סיכום עסק לחודש
+          const income = projects.reduce((s,p) => s + (p.clientPayments||[]).filter(c => c.received && ymOf(c.receivedIso || c.receivedAt) === ym).reduce((a,c)=>a+Number(c.amount||0),0), 0);
+          const projExp = projects.reduce((s,p) => s + (p.expenses||[]).filter(e => ymOf(e.date) === ym).reduce((a,e)=>a+Number(e.amount||0),0), 0);
+          const subsPaid = projects.reduce((s,p) => s + (p.subcontractors||[]).reduce((a,sc)=>a+(sc.payments||[]).filter(pm=>pm.paid && ymOf(pm.paidAt) === ym).reduce((b,pm)=>b+Number(pm.amount||0),0),0), 0);
+          const labor = workers.reduce((s,w) => s + ((calcWorkerPayroll(w, reports).months||[]).find(m => m.month === ym)?.pay || 0), 0);
+          const net = income - projExp - subsPaid - labor - allocTot - bizTot;
+          return (<>
+            <div style={{ marginBottom:12 }}>
+              <h1 style={{ margin:0, fontSize:20, fontWeight:800 }}>🧮 הוצאות חודשיות</h1>
+              <p style={{ margin:"3px 0 0", color:"#777", fontSize:13 }}>תקורות, ספקים, מיסים וביטוחים — מתחלקים לפרויקטים לפי ימי עבודה</p>
+            </div>
+            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", background:"#fff", borderRadius:12, padding:"8px 10px", marginBottom:12, boxShadow:"0 1px 5px rgba(0,0,0,0.06)", gap:6 }}>
+              <button onClick={()=>setFinYm(shiftYm(ym,-1))} disabled={!!fin.startYm && ym <= fin.startYm} style={{ ...btnG, padding:"6px 12px", opacity:(fin.startYm && ym <= fin.startYm)?0.35:1 }}>→</button>
+              <div style={{ textAlign:"center" }}>
+                <div style={{ fontWeight:800, fontSize:15 }}>{monthLabel(ym)}</div>
+                <div style={{ fontSize:11.5, fontWeight:700, color: locked ? "#2E7D32" : "#B45309" }}>{locked ? `✓ אושר${mo.approvedAt ? " " + fmtIsoShort(mo.approvedAt) : ""}` : "טרם אושר"}</div>
+              </div>
+              <button onClick={()=>setFinYm(shiftYm(ym,1))} disabled={ym >= thisYm} style={{ ...btnG, padding:"6px 12px", opacity:ym>=thisYm?0.35:1 }}>←</button>
+            </div>
+            {fin.startYm && ym < fin.startYm && <p style={{ fontSize:12, color:"#999" }}>המודול התחיל ב{monthLabel(fin.startYm)}.</p>}
+
+            {(fin.overhead||[]).map(g => <div key={g.id}>{card(`🏢 ${g.name}`, (<>
+              {(g.items||[]).filter(it => finActive(it, ym) || mo.vals?.["o:"+it.id] !== undefined).map(it => lineRow("o:"+it.id, it.name, it.amount, ()=>setItemDefault("overhead", g.id, it), ()=>removeItem("overhead", g.id, it)))}
+              {!(g.items||[]).some(it => finActive(it, ym)) && <p style={{ margin:"6px 0 0", fontSize:12, color:"#AAA" }}>אין שורות — לחץ "+ שורה"</p>}
+            </>), !locked && (
+              <div style={{ display:"flex", gap:5 }}>
+                <button onClick={()=>{ const n = window.prompt("שם הקבוצה:", g.name); if (n && n.trim()) saveFin(f => ({ ...f, overhead:(f.overhead||[]).map(x => x.id===g.id ? { ...x, name:n.trim() } : x) }), true); }} style={{ ...smallBtn, background:"#F0F0EC", color:"#555" }}>✏️</button>
+                <button onClick={()=>addItem("overhead", g.id)} style={smallBtn}>+ שורה</button>
+              </div>
+            ))}</div>)}
+            {!locked && (
+              <button onClick={()=>{ const n = window.prompt("שם קבוצת התקורות (למשל: רכב, משרד, ביטוחים):"); if (n && n.trim()) saveFin(f => ({ ...f, overhead:[...(f.overhead||[]), { id:Date.now(), name:n.trim(), items:[] }] }), true); }}
+                style={{ width:"100%", background:"#fff", border:"2px dashed #DDD", borderRadius:12, padding:"11px", fontSize:14, color:"#555", cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700, marginBottom:12 }}>+ קבוצת תקורות חדשה</button>
+            )}
+
+            {card("🚚 ספקים", (<>
+              {(fin.suppliers||[]).filter(it => finActive(it, ym) || mo.vals?.["s:"+it.id] !== undefined).map(it => {
+                const dup = supplierDup(it.name);
+                return lineRow("s:"+it.id, it.name, it.amount, ()=>setItemDefault("supplier", null, it), ()=>removeItem("supplier", null, it),
+                  dup > 0 ? <span style={{ fontSize:11, color:"#E65100", fontWeight:700 }}>⚠️ החודש נקלטו בפרויקטים חשבוניות מהספק הזה: ₪{fmtNum(dup)} — ודא שזה לא נספר פעמיים</span> : null);
+              })}
+              {!(fin.suppliers||[]).some(it => finActive(it, ym)) && <p style={{ margin:"6px 0 0", fontSize:12, color:"#AAA" }}>אין ספקים בתשלום חודשי</p>}
+            </>), !locked && <button onClick={()=>addItem("supplier")} style={smallBtn}>+ ספק</button>)}
+
+            {card("🏛️ מיסים וביטוחים", (<>
+              <p style={{ margin:"0 0 4px", fontSize:11.5, color:"#999" }}>של העובדים — מתחלקים לפרויקטים לפי ימי עבודה · של הבעלים ומע"מ — רק בסיכום העסק</p>
+              {FIN_FIXED.map(f => lineRow("f:"+f.k, `${f.icon} ${f.label}`, fin.fixed?.[f.k] || 0, () => { const n = askAmount(`הסכום הקבוע של "${f.label}":`, fin.fixed?.[f.k] || 0); if (n !== null) saveFin(x => ({ ...x, fixed:{ ...(x.fixed||{}), [f.k]: n } }), true); }, null,
+                f.alloc ? <span style={{ fontSize:11, color:"#3B5BDB" }}>↳ לפרויקטים</span> : <span style={{ fontSize:11, color:"#999" }}>↳ סיכום עסק</span>))}
+            </>))}
+
+            {/* חלוקה לפרויקטים */}
+            {card("📊 חלוקה לפרויקטים", (<>
+              <p style={{ margin:"0 0 8px", fontSize:12, color:"#777" }}>₪{fmtNum(Math.round(allocTot))} (תקורות + ספקים + ביטוח לאומי ופנסיה של עובדים) מתחלקים לפי ימי העבודה ב{monthLabel(ym)}</p>
+              {allDays === 0 ? <p style={{ margin:0, fontSize:13, color:"#B45309" }}>אין ימי עבודה בחודש הזה — הסכום לא שויך לאף פרויקט</p> :
+                Object.entries(by).sort((a,b)=>b[1]-a[1]).map(([pid, d]) => {
+                  const p = projects.find(x => String(x.id) === pid);
+                  const share = allocTot * d / allDays;
+                  return (
+                    <div key={pid} style={{ marginBottom:7 }}>
+                      <div style={{ display:"flex", justifyContent:"space-between", fontSize:13, marginBottom:2 }}>
+                        <span>🏗️ {p?.name || "פרויקט שנמחק"} <span style={{ color:"#999", fontSize:11.5 }}>· {d} ימים ({Math.round(d/allDays*100)}%)</span></span>
+                        <b>₪{fmtNum(Math.round(share))}</b>
+                      </div>
+                      <div style={{ height:5, background:"#EEE", borderRadius:99 }}><div style={{ height:"100%", width:`${Math.round(d/allDays*100)}%`, background:"#3B5BDB", borderRadius:99 }}/></div>
+                    </div>
+                  );
+                })}
+            </>))}
+
+            {/* סיכום העסק לחודש */}
+            <div style={{ background:"#1A1A2E", borderRadius:14, padding:"14px 18px", marginBottom:12, color:"#fff" }}>
+              <p style={{ margin:"0 0 8px", fontSize:14, fontWeight:800, color:"#E8C547" }}>💼 סיכום העסק — {monthLabel(ym)}</p>
+              {[["💵 הכנסות שהתקבלו", income, "#8BC34A"], ["🧾 הוצאות בפרויקטים", -projExp], ["👷 שכר עובדים (כולל דלק)", -labor], ["🔨 תשלומים לקבלני משנה", -subsPaid], ["🏢 תקורות, ספקים וביטוחי עובדים", -allocTot], ["🏛️ בעלים ומע\"מ", -bizTot]].map(([l, v, c]) => (
+                <div key={l} style={{ display:"flex", justifyContent:"space-between", fontSize:12.5, color:c || "#BBB", marginBottom:3 }}><span>{l}</span><span dir="ltr">{v < 0 ? "-" : ""}₪{fmtNum(Math.abs(Math.round(v)))}</span></div>
+              ))}
+              <div style={{ display:"flex", justifyContent:"space-between", paddingTop:8, marginTop:6, borderTop:"1px solid rgba(255,255,255,0.15)" }}>
+                <span style={{ fontWeight:700 }}>רווח משוער לחודש</span>
+                <span dir="ltr" style={{ fontWeight:800, fontSize:18, color: net >= 0 ? "#E8C547" : "#FF8A80" }}>{net < 0 ? "-" : ""}₪{fmtNum(Math.abs(Math.round(net)))}</span>
+              </div>
+              <p style={{ margin:"6px 0 0", fontSize:10.5, color:"#888" }}>לפי מה שהוזן במערכת: הכנסות לפי תאריך הקבלה, הוצאות לפי תאריך ההוצאה, קבלנים לפי תאריך התשלום.</p>
+            </div>
+
+            {locked ? (
+              <button onClick={()=>{ if (window.confirm(`לפתוח את ${monthLabel(ym)} לעריכה?`)) saveFin(f => ({ ...f, months:{ ...(f.months||{}), [ym]:{ ...(f.months?.[ym]||{}), approved:false } } }), true); }}
+                style={{ ...btnG, width:"100%", padding:12 }}>🔓 פתח את החודש לעריכה</button>
+            ) : (
+              <button onClick={()=>{
+                if (!window.confirm(`לאשר את ${monthLabel(ym)}?\nהסכומים של החודש יינעלו — שינוי עתידי בסכום הקבוע לא ישנה אותם.`)) return;
+                const vals = {}; lines.forEach(l => { vals[l.key] = l.amount; });
+                saveFin(f => ({ ...f, months:{ ...(f.months||{}), [ym]:{ ...(f.months?.[ym]||{}), vals, approved:true, approvedAt: todayStr() } } }), true);
+              }} style={{ ...btnD, width:"100%", padding:12, fontSize:15 }}>✓ אשר את {monthLabel(ym)}</button>
+            )}
+          </>);
+        })()}
 
         {/* SUMMARIES — סיכומי יום / שבוע / חודש / היסטוריה */}
         {mgTab==="summaries" && (() => {
@@ -4044,7 +4433,8 @@ async function shareImg() {
                 const expTotal = (editProj.expenses||[]).reduce((s,e)=>s+Number(e.amount||0),0);
                 const subTotal = (editProj.subcontractors||[]).reduce((s,sc)=>s+Number(sc.price||0),0);
                 const subPaid = (editProj.subcontractors||[]).reduce((s,sc)=>s+(sc.payments||[]).filter(p=>p.paid).reduce((s2,p)=>s2+Number(p.amount||0),0),0);
-                if (expTotal===0 && subTotal===0 && laborTotal===0) return null;
+                const fixedShare = finOn ? Math.round(projFixedShare(finDoc, reports, detailProject.id, todayStr().slice(0,7)).total) : 0;
+                if (expTotal===0 && subTotal===0 && laborTotal===0 && fixedShare===0) return null;
                 return (
                   <div style={{ background:"#1A1A2E", borderRadius:14, padding:"14px 20px", marginBottom:14 }}>
                     <p style={{ margin:"0 0 8px", fontSize:13, fontWeight:700, color:"#E8C547" }}>💰 סה"כ הוצאות פרויקט</p>
@@ -4060,9 +4450,14 @@ async function shareImg() {
                     <div style={{ display:"flex", justifyContent:"space-between", fontSize:12, color:"#AAA", marginBottom:8 }}>
                       <span>מתוכם שולם לקבלנים</span><span>₪{fmtNum(subPaid)}</span>
                     </div>
+                    {finOn && (
+                      <div style={{ display:"flex", justifyContent:"space-between", fontSize:12, color:"#AAA", marginBottom:8, marginTop:-5 }}>
+                        <span>🧮 חלק מהוצאות קבועות (לפי ימי עבודה)</span><span>₪{fmtNum(fixedShare)}</span>
+                      </div>
+                    )}
                     <div style={{ display:"flex", justifyContent:"space-between", paddingTop:8, borderTop:"1px solid rgba(255,255,255,0.15)" }}>
                       <span style={{ color:"#fff", fontWeight:700, fontSize:14 }}>סה"כ</span>
-                      <span style={{ color:"#E8C547", fontWeight:800, fontSize:18 }}>₪{fmtNum(expTotal + subTotal + laborTotal)}</span>
+                      <span style={{ color:"#E8C547", fontWeight:800, fontSize:18 }}>₪{fmtNum(expTotal + subTotal + laborTotal + fixedShare)}</span>
                     </div>
                   </div>
                 );
@@ -4434,6 +4829,7 @@ async function shareImg() {
                     style={{ background:"#1A1A2E", color:"#E8C547", border:"none", borderRadius:7, padding:"4px 12px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700 }}>+ שלב תשלום</button>
                 </div>
                 {(!editProj.clientPayments||editProj.clientPayments.length===0) && <p style={{ margin:0, fontSize:13, color:"#AAA" }}>אין שלבי תשלום — למשל: מקדמה, אחרי שלד, מסירה</p>}
+                {finOn && (editProj.clientPayments||[]).length>0 && <p style={{ margin:"0 0 8px", fontSize:10.5, color:"#999" }}>לחץ על העיגול כשהשלב בוצע ← ⏳ עובר ל"הכנסות ← לגבייה" ← כשהכסף נכנס מסמנים ✓ התקבל</p>}
                 {(editProj.clientPayments||[]).map((cp,ci) => {
                   const updCp = (changes, isText=false) => {
                     const clientPayments=(editProj.clientPayments||[]).map((x,i)=>i===ci?{...x,...changes}:x);
@@ -4443,11 +4839,24 @@ async function shareImg() {
                   };
                   return (
                     <div key={cp.id} style={{ display:"flex", gap:6, alignItems:"center", marginBottom:7 }}>
-                      <button onClick={()=>{
-                        if (!cp.received && !window.confirm(`לסמן שקיבלת ₪${Number(cp.amount||0).toLocaleString("he-IL")}?`)) return;
-                        updCp({received:!cp.received, receivedAt: !cp.received ? new Date().toLocaleDateString("he-IL") : ""});
+                      <button title={cp.received ? "התקבל" : cp.due ? "לגבייה" : (finOn ? "השלב בוצע — לגבייה" : "התקבל")} onClick={()=>{
+                        const amt = `₪${Number(cp.amount||0).toLocaleString("he-IL")}`;
+                        if (finOn) {
+                          if (cp.received) { if (!window.confirm(`לבטל את הסימון "התקבל"?\nהשלב יחזור ל"לגבייה".`)) return; updCp({ received:false, receivedAt:"", receivedIso:"" }); return; }
+                          if (cp.due) {
+                            if (window.confirm(`הכסף התקבל? (${amt})\n\nאישור = התקבל · ביטול = אפשרות לבטל את "לגבייה"`)) { updCp({ received:true, receivedAt:new Date().toLocaleDateString("he-IL"), receivedIso:todayStr() }); return; }
+                            if (window.confirm("לבטל את הסימון \"לגבייה\"? (השלב עוד לא בוצע)")) updCp({ due:false, dueAt:"" });
+                            return;
+                          }
+                          if (!(Number(cp.amount) > 0)) { alert("הזן סכום לשלב לפני הסימון"); return; }
+                          if (!window.confirm(`השלב "${cp.desc||"שלב"}" בוצע?\n${amt} יעבור לטאב הכנסות ← לגבייה.`)) return;
+                          updCp({ due:true, dueAt: todayStr() });
+                          return;
+                        }
+                        if (!cp.received && !window.confirm(`לסמן שקיבלת ${amt}?`)) return;
+                        updCp({received:!cp.received, receivedAt: !cp.received ? new Date().toLocaleDateString("he-IL") : "", receivedIso: !cp.received ? todayStr() : ""});
                       }}
-                        style={{ width:24, height:24, borderRadius:"50%", border:`2px solid ${cp.received?"#22C55E":"#CCC"}`, background:cp.received?"#22C55E":"#fff", cursor:"pointer", flexShrink:0, color:"#fff", fontSize:13, display:"flex", alignItems:"center", justifyContent:"center" }}>{cp.received?"✓":""}</button>
+                        style={{ width:24, height:24, borderRadius:"50%", border:`2px solid ${cp.received?"#22C55E":cp.due?"#F59E0B":"#CCC"}`, background:cp.received?"#22C55E":cp.due?"#FEF3C7":"#fff", cursor:"pointer", flexShrink:0, color:cp.received?"#fff":"#B45309", fontSize:12, display:"flex", alignItems:"center", justifyContent:"center" }}>{cp.received?"✓":cp.due?"⏳":""}</button>
                       <input value={cp.desc} placeholder="מתי (למשל: אחרי שלד)" onChange={e=>updCp({desc:e.target.value}, true)}
                         style={{ flex:2, border:"1.5px solid #EEE", borderRadius:8, padding:"7px 10px", fontSize:13, fontFamily:"Heebo,sans-serif", outline:"none", background:"#fff", textDecoration:cp.received?"line-through":"none", color:cp.received?"#AAA":"#333" }}/>
                       <input type="number" value={cp.amount} placeholder="₪" onChange={e=>updCp({amount:e.target.value}, true)}
@@ -4460,10 +4869,12 @@ async function shareImg() {
                 {(editProj.clientPayments||[]).length>0 && (() => {
                   const cpTotal = (editProj.clientPayments||[]).reduce((s,x)=>s+Number(x.amount||0),0);
                   const cpReceived = (editProj.clientPayments||[]).filter(x=>x.received).reduce((s,x)=>s+Number(x.amount||0),0);
+                  const cpDue = (editProj.clientPayments||[]).filter(x=>x.due && !x.received).reduce((s,x)=>s+Number(x.amount||0),0);
                   return (
                     <div style={{ display:"flex", justifyContent:"space-between", flexWrap:"wrap", gap:4, paddingTop:10, borderTop:"1px solid #EEE", marginTop:6, fontSize:13 }}>
                       <span style={{ color:"#555" }}>סה"כ: <b>₪{fmtNum(cpTotal)}</b></span>
                       <span style={{ color:"#2E7D32" }}>התקבל: <b>₪{fmtNum(cpReceived)}</b></span>
+                      {finOn && cpDue > 0 && <span style={{ color:"#B45309" }}>⏳ לגבייה: <b>₪{fmtNum(cpDue)}</b></span>}
                       <span style={{ color:(cpTotal-cpReceived)>0?"#B71C1C":"#2E7D32" }}>נותר: <b>₪{fmtNum(cpTotal-cpReceived)}</b></span>
                     </div>
                   );
