@@ -103,9 +103,12 @@ const HELP_TOPICS = [
   { icon:"💰", title:"שכר עובדים", body:"בטאב שכר: 'לתשלום' מציג כמה מגיע לכל עובד, עם פירוט לפי חודש ולפי פרויקט.\n• 'שולם במלואו' סוגר את החודש, 'שולם חלקית' מזין סכום ומשאיר יתרה.\n• 'היסטוריה' מציגה תשלומים שבוצעו + סה\"כ ימים לפי פרויקט, ומאפשרת עריכה או ביטול.\nשעתי מוצג עם פירוט שעות רגילות/נוספות; גלובלי מופיע עם המשכורת הקבועה בכל חודש פעיל." },
   { icon:"🦺", title:"מנהלי עבודה", body:"בטאב מנהלי עבודה: מוסיפים מנהל חדש או הופכים עובד קיים, מגדירים לו קוד כניסה נפרד ומשייכים פרויקטים (פעילים בלבד).\nמנהל עבודה רואה רק את הפרויקטים שלו: דיווחים, פרויקטים (בלי יצירה/מחיקה), עובדים (צפייה ושיוך), ויומן. בלי שכר, ציוד והגדרות.\nכפתור '📝 דיווח יום' בכותרת מאפשר לו לדווח ימי עבודה לעצמו." },
   { icon:"✅", title:"אישור דיווחי עבר", body:"דיווח של עובד על תאריך שכבר עבר לא נכנס ישר לשכר — הוא ממתין בקטע צהוב בראש טאב הדיווחים.\nהמנהל (או מנהל העבודה של אותו פרויקט) מאשר דיווח בודד או את כולם — ורק אז הוא נספר בשכר ובימי הפרויקט." },
-  { icon:"📸", title:"חשבוניות ותוכניות", body:"בתוך דף פרויקט מעלים תמונות חשבוניות ותוכניות אדריכליות (תמונה או PDF, גם כמה יחד).\nלחיצה על שם הקובץ פותחת אותו לצפייה; ✕ מוחק (עם אישור).\nהקבצים נשמרים בענן מאובטח ונגישים מכל מכשיר.\nאם הפענוח האוטומטי פעיל במסלול — כל חשבונית שעולה נקראת ע\"י המערכת: הסכום (לפני מע\"מ) נכנס להוצאות, מחולק לפי סוג (חומר, דלק, אוכל, הובלות, קבלני משנה, כלי עבודה, אחר). חשבונית שלא הצליחה להיקרא מסומנת באדום — אפשר 'נסה שוב' או 'רשום כהוצאה' ידנית.\nבלי פענוח אוטומטי: כפתור '💸 רשום כהוצאה' — מזינים סכום, תיאור וסוג.\nבקטע ההוצאות יש סיכום '📊 הוצאות לפי סוג', ולכל הוצאה אפשר לשנות סוג.\nגם לקבלן משנה אפשר לצרף קובץ הצעת מחיר בתוך הכרטיס שלו." },
+  { icon:"📸", title:"חשבוניות ותוכניות", body:"בתוך דף פרויקט מעלים תמונות חשבוניות ותוכניות אדריכליות (תמונה או PDF, גם כמה יחד).\nלחיצה על שם הקובץ פותחת אותו לצפייה; ✕ מוחק (עם אישור).\nהקבצים נשמרים בענן מאובטח ונגישים מכל מכשיר.\nאם הפענוח האוטומטי פעיל במסלול — כל חשבונית שעולה נקראת ע\"י המערכת: הסכום (לפני מע\"מ) נכנס להוצאות — חוץ מאוכל, שעליו לא מזדכים, ולכן נרשם הסכום המלא כולל מע\"מ — מחולק לפי סוג (חומר, דלק, אוכל, הובלות, קבלני משנה, כלי עבודה, אחר). חשבונית שלא הצליחה להיקרא מסומנת באדום — אפשר 'נסה שוב' או 'רשום כהוצאה' ידנית.\nבלי פענוח אוטומטי: כפתור '💸 רשום כהוצאה' — מזינים סכום, תיאור וסוג.\nבקטע ההוצאות יש סיכום '📊 הוצאות לפי סוג', ולכל הוצאה אפשר לשנות סוג.\nגם לקבלן משנה אפשר לצרף קובץ הצעת מחיר בתוך הכרטיס שלו." },
   { icon:"🛒", title:"ציוד — רשימת קניות", body:"טאב ציוד הוא רשימת קניות משותפת: מוסיפים פריט וכמות, מסמנים ✓ כשנקנה, ומוחקים כשלא צריך.\nמתעדכן לכל המנהלים במכשירים שלהם." },
   { icon:"📶", title:"עבודה בלי קליטה (אופליין)", body:"אין אינטרנט באתר? אפשר להמשיך לעבוד:\n• האפליקציה נפתחת גם בלי קליטה (מאייקון מסך הבית), ומוצג פס כתום 'אין קליטה'.\n• כניסה עם הקוד עובדת בלי קליטה — בתנאי שנכנסת פעם אחת עם קליטה באותו טלפון (ב-30 הימים האחרונים).\n• מוצגים הנתונים האחרונים שנטענו כשהייתה קליטה.\n• לחיצה על כניסה/יציאה בשעון או שליחת דיווח יומי נשמרות במכשיר עם השעה המדויקת, ומופיעה הודעה 'יסונכרן כשתחזור הקליטה'.\n• ברגע שחוזרת קליטה — הנתונים עולים אוטומטית לשרת עם הזמנים האמיתיים, גם אם עברו שעות.\n• המנהל רואה על דיווח שעוד לא סונכרן תג '📶 ממתין לסנכרון'.\n• פענוח חשבוניות, העלאת קבצים ושינויים בניהול — דורשים קליטה.\nחשוב: לא למחוק את האפליקציה/נתוני האתר לפני שהסנכרון הושלם." },
+  { icon:"💵", fin:true, title:"הכנסות — גבייה מלקוחות", body:"חשוב: כל הסכומים בשלבי התשלום של הלקוח נרשמים לפני מע\"מ (כמו בהצעת המחיר). המערכת מחשבת את המע\"מ לבד.\nבדף הפרויקט, בקטע 'שלבי תשלום מהלקוח', לוחצים על העיגול של שלב:\n• לחיצה ראשונה — ⏳ לגבייה (העבודה בוצעה, צריך לגבות).\n• לחיצה שנייה — ✓ התקבל (הכסף נכנס; נרשם תאריך הקבלה).\nבטאב 💵 הכנסות רואים מה לגבות מכל הפרויקטים, מה התקבל, וסיכום לפי חודש. אפשר לסמן '✓ התקבל' גם משם, ו-↩ מבטל." },
+  { icon:"🧮", fin:true, title:"הוצאות חודשיות קבועות", body:"בטאב 🧮 הוצאות חודשיות רושמים את מה שמשלמים כל חודש — כל הסכומים לפני מע\"מ:\n• תקורות — בקבוצות (רכב, משרד, ביטוחים...) עם '+ שורה'.\n• ספקים בתשלום חודשי. אם החודש נקלטו בפרויקטים חשבוניות מאותו ספק — תופיע אזהרה כדי שלא ייספר פעמיים.\n• מיסים וביטוחים — ביטוח לאומי ופנסיה של העובדים (סכום כולל), ושל הבעלים, ומס הכנסה.\nלכל שורה יש סכום קבוע (🔁) שחוזר כל חודש, ואפשר לשנות בשדה רק לחודש הנוכחי. בסוף החודש לוחצים '✓ אשר' — הסכומים ננעלים.\nתקורות, ספקים וביטוחי העובדים מתחלקים לפרויקטים לפי ימי העבודה בחודש (ומופיעים בדף הפרויקט כ'חלק מהוצאות קבועות'). של הבעלים — רק בסיכום העסק." },
+  { icon:"💼", fin:true, title:"מע\"מ — הערכה אוטומטית", body:"בטאב 🧮 הוצאות חודשיות, בכרטיס 💼 מע\"מ, המערכת מעריכה כמה מע\"מ תשלם:\nמע\"מ עסקאות (18% מההכנסות שהתקבלו בחודש) פחות מע\"מ תשומות (18% מההוצאות בפרויקטים, מהתשלומים לקבלני משנה ומהספקים והתקורות).\nלכן חשוב שכל הסכומים יירשמו לפני מע\"מ.\n• תקופת דיווח — בוחרים 'כל חודש', 'כל חודשיים' או מספר חודשים אחר. כשהתקופה ארוכה מחודש מוצג גם סה\"כ לדוח של כל התקופה.\n• מה לא נכלל: שכר, ביטוח לאומי, פנסיה ומס הכנסה (אין עליהם מע\"מ), הוצאות מסוג אוכל (עליהן לא מזדכים, ולכן הן נרשמות בסכום המלא כולל מע\"מ), וכל מה שסומן 'בלי מע\"מ' — קבלן משנה עוסק פטור (בכרטיס הקבלן), ספק או תקורה (ליד השורה), או הוצאה (ליד ההוצאה). חשבונית שנקראה בלי מע\"מ מסומנת כך אוטומטית.\n• אפשר להקליד סכום אחר ידנית; '↺ חזור לחישוב' מחזיר להערכה. סכום במינוס = החזר משוער.\n• המע\"מ לא יורד מהרווח בסיכום העסק — הוא כסף שגובים מהלקוח ומעבירים למדינה.\nזו הערכה בלבד — הדיווח הרשמי נעשה מול רואה החשבון." },
   { icon:"🛠️", title:"תקלות נפוצות", body:"• 'קוד שגוי' למרות קוד נכון — ודאו שנכנסתם דרך הקישור הנכון של העסק שלכם.\n• נתונים לא מתעדכנים — צאו והתחברו מחדש, או משכו לרענון.\n• המסך נראה ישן אחרי עדכון — סגרו את האפליקציה לגמרי ופתחו שוב.\n• ההתחברות תקפה 12 שעות — אחריהן פשוט מתחברים שוב.\n• 'לא ניתן לאמת מיקום' — יש לאשר גישה למיקום: הגדרות הטלפון ← ספארי/כרום ← מיקום ← אפשר.\nלכל בעיה אחרת — פנו לספק המערכת." },
 ];
 
@@ -1125,19 +1128,54 @@ const finVal = (fin, key, def, ym, item) => {
   return Number(def) || 0;
 };
 // כל השורות של החודש: [{ key, label, group, amount, def, alloc }]
-const finLines = (fin, ym) => {
+const finLines = (fin, ym, vatEst) => {
   if (!fin) return [];
   const out = [];
   (fin.overhead || []).forEach(g => (g.items || []).forEach(it => {
     if (!finActive(it, ym) && fin.months?.[ym]?.vals?.["o:" + it.id] === undefined) return;
-    out.push({ key:"o:" + it.id, label: it.name, group: g.name, def: it.amount, amount: finVal(fin, "o:" + it.id, it.amount, ym, it), alloc:true, kind:"overhead" });
+    out.push({ key:"o:" + it.id, label: it.name, group: g.name, def: it.amount, amount: finVal(fin, "o:" + it.id, it.amount, ym, it), alloc:true, kind:"overhead", noVat: !!it.noVat });
   }));
   (fin.suppliers || []).forEach(it => {
     if (!finActive(it, ym) && fin.months?.[ym]?.vals?.["s:" + it.id] === undefined) return;
-    out.push({ key:"s:" + it.id, label: it.name, group:"ספקים", def: it.amount, amount: finVal(fin, "s:" + it.id, it.amount, ym, it), alloc:true, kind:"supplier" });
+    out.push({ key:"s:" + it.id, label: it.name, group:"ספקים", def: it.amount, amount: finVal(fin, "s:" + it.id, it.amount, ym, it), alloc:true, kind:"supplier", noVat: !!it.noVat });
   });
-  FIN_FIXED.forEach(f => out.push({ key:"f:" + f.k, label: f.label, group:"מיסים וביטוחים", def: fin.fixed?.[f.k] || 0, amount: finVal(fin, "f:" + f.k, fin.fixed?.[f.k] || 0, ym), alloc: f.alloc, kind:"fixed" }));
+  FIN_FIXED.forEach(f => {
+    // מע"מ: ברירת המחדל היא ההערכה האוטומטית (עסקאות פחות תשומות), אלא אם הוקלד סכום לחודש
+    const def = f.k === "vat" ? Math.round(Number(vatEst) || 0) : (fin.fixed?.[f.k] || 0);
+    out.push({ key:"f:" + f.k, label: f.label, group:"מיסים וביטוחים", def, amount: finVal(fin, "f:" + f.k, def, ym), alloc: f.alloc, kind: f.k === "vat" ? "vat" : "fixed" });
+  });
   return out;
+};
+// ===== הערכת מע"מ — כל הסכומים במערכת לפני מע"מ =====
+// מע"מ עסקאות (הכנסות שהתקבלו) פחות מע"מ תשומות (הוצאות בפרויקטים + קבלני משנה ששולמו + ספקים ותקורות)
+const NO_VAT_CATS = ["אוכל"];
+// אוכל — לא מזדכים על המע"מ, לכן מחשבונית נרשם הסכום המלא כולל מע"מ (vatIn). שינוי סוג מעדכן את הסכום בהתאם
+const withCat = (e, cat) => {
+  const toFood = NO_VAT_CATS.includes(cat);
+  if (!e.fromInvoice || e.noVat) return { ...e, category: cat };
+  const a = Number(e.amount) || 0;
+  if (toFood && !e.vatIn) return { ...e, category: cat, amount: Math.round(a * (1 + VAT_RATE) * 100) / 100, vatIn: true };
+  if (!toFood && e.vatIn) { const { vatIn, ...r } = e; return { ...r, category: cat, amount: Math.round(a / (1 + VAT_RATE) * 100) / 100 }; }
+  return { ...e, category: cat };
+};
+const vatPeriodOf = (fin) => Math.max(1, Math.min(12, Math.round(Number(fin?.vatPeriod) || 1)));
+// חודשי תקופת הדיווח שהחודש שייך אליה (התקופות מתחילות בינואר)
+const vatPeriodMonths = (fin, ym) => {
+  const n = vatPeriodOf(fin); const [y, m] = ym.split("-").map(Number);
+  const start = Math.floor((m - 1) / n) * n + 1; const out = [];
+  for (let k = start; k < start + n && k <= 12; k++) out.push(`${y}-${String(k).padStart(2, "0")}`);
+  return out;
+};
+const vatEstimate = (fin, projects, ym) => {
+  let income = 0, exp = 0, subs = 0, fixed = 0;
+  (projects || []).forEach(p => {
+    (p.clientPayments || []).forEach(c => { if (c.received && ymOf(c.receivedIso || c.receivedAt) === ym) income += Number(c.amount) || 0; });
+    (p.expenses || []).forEach(e => { if (ymOf(e.date) === ym && !e.noVat && !NO_VAT_CATS.includes(expCat(e))) exp += Number(e.amount) || 0; });
+    (p.subcontractors || []).forEach(sc => { if (sc.noVat) return; (sc.payments || []).forEach(pm => { if (pm.paid && ymOf(pm.paidAt) === ym) subs += Number(pm.amount) || 0; }); });
+  });
+  if (fin && !(fin.startYm && ym < fin.startYm)) finLines(fin, ym).forEach(l => { if ((l.kind === "overhead" || l.kind === "supplier") && !l.noVat) fixed += l.amount; });
+  const outV = income * VAT_RATE, inV = (exp + subs + fixed) * VAT_RATE;
+  return { income, exp, subs, fixed, outV, inV, net: outV - inV };
 };
 // ימי עבודה לפי פרויקט בחודש
 const daysByProject = (reports, ym) => {
@@ -3614,9 +3652,11 @@ async function shareImg() {
           const ym = finYm, thisYm = todayStr().slice(0,7);
           const mo = fin.months?.[ym] || {};
           const locked = !!mo.approved;
-          const lines = finLines(fin, ym);
+          const vat = vatEstimate(fin, projects, ym);
+          const lines = finLines(fin, ym, vat.net);
           const vOf = (key, def) => { const v = mo.vals?.[key]; return v !== undefined && v !== null ? v : (def ?? ""); };
           const setVal = (key, val) => saveFin(f => ({ ...f, months: { ...(f.months||{}), [ym]: { ...(f.months?.[ym]||{}), vals: { ...(f.months?.[ym]?.vals||{}), [key]: val } } } }));
+          const clearVal = (key) => saveFin(f => { const vals = { ...(f.months?.[ym]?.vals||{}) }; delete vals[key]; return { ...f, months: { ...(f.months||{}), [ym]: { ...(f.months?.[ym]||{}), vals } } }; }, true);
           const askAmount = (title, cur) => { const v = window.prompt(title, cur ?? ""); if (v === null) return null; const n = Number(String(v).replace(/[,₪\s]/g, "")); if (isNaN(n) || n < 0) { alert("סכום לא תקין"); return null; } return n; };
           const fieldStyle = { width:110, flex:"none", border:"1.5px solid #EEE", borderRadius:8, padding:"6px 8px", fontSize:14, fontFamily:"Heebo,sans-serif", outline:"none", background: locked ? "#F5F5F0" : "#fff", textAlign:"left", direction:"ltr" };
           const lineRow = (key, label, def, onDefault, onRemove, extra) => {
@@ -3663,6 +3703,14 @@ async function shareImg() {
             const upd = (x) => x.id === it.id ? { ...x, amount: n } : x;
             saveFin(f => kind === "supplier" ? { ...f, suppliers: (f.suppliers||[]).map(upd) } : { ...f, overhead: (f.overhead||[]).map(g => g.id === gid ? { ...g, items: (g.items||[]).map(upd) } : g) }, true);
           };
+          const toggleVat = (kind, gid, it) => {
+            const upd = (x) => x.id === it.id ? { ...x, noVat: !x.noVat } : x;
+            saveFin(f => kind === "supplier" ? { ...f, suppliers: (f.suppliers||[]).map(upd) } : { ...f, overhead: (f.overhead||[]).map(g => g.id === gid ? { ...g, items: (g.items||[]).map(upd) } : g) }, true);
+          };
+          const vatChip = (kind, gid, it) => (
+            <button onClick={()=>toggleVat(kind, gid, it)} title="האם משלמים מע״מ על השורה — משפיע על הערכת המע״מ"
+              style={{ background: it.noVat ? "#FFF3E0" : "#F0F0EC", color: it.noVat ? "#E65100" : "#888", border:"none", borderRadius:6, padding:"1px 7px", fontSize:11, fontWeight:700, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>{it.noVat ? "בלי מע\"מ" : "עם מע\"מ ✓"}</button>
+          );
           // התראת כפילות: חשבוניות מאותו ספק שנקלטו בפרויקטים באותו חודש
           const supplierDup = (name) => {
             const n = normVendor(name); if (n.length < 2) return 0;
@@ -3671,7 +3719,16 @@ async function shareImg() {
             return tot;
           };
           const allocTot = lines.filter(l => l.alloc).reduce((s,l)=>s+l.amount,0);
-          const bizTot = lines.filter(l => !l.alloc).reduce((s,l)=>s+l.amount,0);
+          const bizTot = lines.filter(l => !l.alloc && l.kind !== "vat").reduce((s,l)=>s+l.amount,0);
+          const vatLine = lines.find(l => l.kind === "vat");
+          const vatManual = mo.vals?.["f:vat"] !== undefined && mo.vals?.["f:vat"] !== null && mo.vals?.["f:vat"] !== "";
+          const vatN = vatPeriodOf(fin);
+          const perMonths = vatPeriodMonths(fin, ym);
+          const vatOfMonth = (m) => m === ym ? (vatLine?.amount || 0) : (finLines(fin, m, vatEstimate(fin, projects, m).net).find(l => l.kind === "vat")?.amount || 0);
+          const perTot = perMonths.filter(m => m <= thisYm).reduce((s, m) => s + vatOfMonth(m), 0);
+          const shortM = (m) => HE_MONTHS[Number(m.slice(5)) - 1];
+          const perLabel = perMonths.length > 1 ? `${shortM(perMonths[0])}–${shortM(perMonths[perMonths.length-1])} ${ym.slice(0,4)}` : monthLabel(ym);
+          const nis = (v) => `${v < 0 ? "-" : ""}₪${fmtNum(Math.abs(Math.round(v)))}`;
           const { by, total: allDays } = daysByProject(reports, ym);
           // סיכום עסק לחודש
           const income = projects.reduce((s,p) => s + (p.clientPayments||[]).filter(c => c.received && ymOf(c.receivedIso || c.receivedAt) === ym).reduce((a,c)=>a+Number(c.amount||0),0), 0);
@@ -3695,7 +3752,7 @@ async function shareImg() {
             {fin.startYm && ym < fin.startYm && <p style={{ fontSize:12, color:"#999" }}>המודול התחיל ב{monthLabel(fin.startYm)}.</p>}
 
             {(fin.overhead||[]).map(g => <div key={g.id}>{card(`🏢 ${g.name}`, (<>
-              {(g.items||[]).filter(it => finActive(it, ym) || mo.vals?.["o:"+it.id] !== undefined).map(it => lineRow("o:"+it.id, it.name, it.amount, ()=>setItemDefault("overhead", g.id, it), ()=>removeItem("overhead", g.id, it)))}
+              {(g.items||[]).filter(it => finActive(it, ym) || mo.vals?.["o:"+it.id] !== undefined).map(it => lineRow("o:"+it.id, it.name, it.amount, ()=>setItemDefault("overhead", g.id, it), ()=>removeItem("overhead", g.id, it), vatChip("overhead", g.id, it)))}
               {!(g.items||[]).some(it => finActive(it, ym)) && <p style={{ margin:"6px 0 0", fontSize:12, color:"#AAA" }}>אין שורות — לחץ "+ שורה"</p>}
             </>), !locked && (
               <div style={{ display:"flex", gap:5 }}>
@@ -3712,15 +3769,56 @@ async function shareImg() {
               {(fin.suppliers||[]).filter(it => finActive(it, ym) || mo.vals?.["s:"+it.id] !== undefined).map(it => {
                 const dup = supplierDup(it.name);
                 return lineRow("s:"+it.id, it.name, it.amount, ()=>setItemDefault("supplier", null, it), ()=>removeItem("supplier", null, it),
-                  dup > 0 ? <span style={{ fontSize:11, color:"#E65100", fontWeight:700 }}>⚠️ החודש נקלטו בפרויקטים חשבוניות מהספק הזה: ₪{fmtNum(dup)} — ודא שזה לא נספר פעמיים</span> : null);
+                  <>{vatChip("supplier", null, it)}{dup > 0 && <span style={{ fontSize:11, color:"#E65100", fontWeight:700 }}>⚠️ החודש נקלטו בפרויקטים חשבוניות מהספק הזה: ₪{fmtNum(dup)} — ודא שזה לא נספר פעמיים</span>}</>);
               })}
               {!(fin.suppliers||[]).some(it => finActive(it, ym)) && <p style={{ margin:"6px 0 0", fontSize:12, color:"#AAA" }}>אין ספקים בתשלום חודשי</p>}
             </>), !locked && <button onClick={()=>addItem("supplier")} style={smallBtn}>+ ספק</button>)}
 
             {card("🏛️ מיסים וביטוחים", (<>
-              <p style={{ margin:"0 0 4px", fontSize:11.5, color:"#999" }}>של העובדים — מתחלקים לפרויקטים לפי ימי עבודה · של הבעלים ומע"מ — רק בסיכום העסק</p>
-              {FIN_FIXED.map(f => lineRow("f:"+f.k, `${f.icon} ${f.label}`, fin.fixed?.[f.k] || 0, () => { const n = askAmount(`הסכום הקבוע של "${f.label}":`, fin.fixed?.[f.k] || 0); if (n !== null) saveFin(x => ({ ...x, fixed:{ ...(x.fixed||{}), [f.k]: n } }), true); }, null,
+              <p style={{ margin:"0 0 4px", fontSize:11.5, color:"#999" }}>של העובדים — מתחלקים לפרויקטים לפי ימי עבודה · של הבעלים — רק בסיכום העסק</p>
+              {FIN_FIXED.filter(f => f.k !== "vat").map(f => lineRow("f:"+f.k, `${f.icon} ${f.label}`, fin.fixed?.[f.k] || 0, () => { const n = askAmount(`הסכום הקבוע של "${f.label}":`, fin.fixed?.[f.k] || 0); if (n !== null) saveFin(x => ({ ...x, fixed:{ ...(x.fixed||{}), [f.k]: n } }), true); }, null,
                 f.alloc ? <span style={{ fontSize:11, color:"#3B5BDB" }}>↳ לפרויקטים</span> : <span style={{ fontSize:11, color:"#999" }}>↳ סיכום עסק</span>))}
+            </>))}
+
+            {/* מע"מ — הערכה אוטומטית */}
+            {card("💼 מע\"מ (הערכה)", (<>
+              <div style={{ display:"flex", gap:4, background:"#F0F0EC", borderRadius:9, padding:2, margin:"6px 0 10px" }}>
+                {[{n:1,l:"כל חודש"},{n:2,l:"כל חודשיים"},{n:0,l: (vatN !== 1 && vatN !== 2) ? `כל ${vatN} חודשים ✏️` : "אחר…"}].map(o => {
+                  const on = o.n ? vatN === o.n : (vatN !== 1 && vatN !== 2);
+                  return <button key={o.n} onClick={()=>{
+                    let n = o.n;
+                    if (!n) { const v = window.prompt("כל כמה חודשים מדווחים מע\"מ? (1–12)", String(vatN)); if (v === null) return; n = Math.round(Number(v)); if (!(n >= 1 && n <= 12)) { alert("מספר בין 1 ל-12"); return; } }
+                    saveFin(f => ({ ...f, vatPeriod: n }), true);
+                  }} style={{ flex:1, background:on?"#1A1A2E":"transparent", color:on?"#E8C547":"#777", border:"none", borderRadius:7, padding:"6px 0", fontSize:12, fontWeight:700, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>{o.l}</button>;
+                })}
+              </div>
+              {[[`עסקאות — 18% מהכנסות ₪${fmtNum(Math.round(vat.income))}`, vat.outV, "#2E7D32"],
+                [`תשומות — 18% מהוצאות ₪${fmtNum(Math.round(vat.exp))}, קבלנים ₪${fmtNum(Math.round(vat.subs))}, ספקים ותקורות ₪${fmtNum(Math.round(vat.fixed))}`, -vat.inV, "#C62828"]].map(([l, v, c]) => (
+                <div key={l} style={{ display:"flex", justifyContent:"space-between", gap:8, fontSize:12, color:"#666", marginBottom:4 }}><span>{l}</span><span dir="ltr" style={{ color:c, fontWeight:700, flexShrink:0 }}>{nis(v)}</span></div>
+              ))}
+              <div style={{ display:"flex", alignItems:"center", gap:8, paddingTop:8, marginTop:4, borderTop:"1px solid #F3F3EF" }}>
+                <span style={{ flex:1, fontSize:14, fontWeight:700 }}>{vat.net < 0 && !vatManual ? "החזר משוער" : "מע\"מ לחודש הזה"}</span>
+                <input type="number" inputMode="decimal" disabled={locked} value={vOf("f:vat", Math.round(vat.net))} onChange={e=>setVal("f:vat", e.target.value)} style={fieldStyle}/>
+              </div>
+              <div style={{ display:"flex", gap:8, alignItems:"center", marginTop:3, flexWrap:"wrap" }}>
+                {vatManual ? (<>
+                  <span style={{ fontSize:11, color:"#B45309", fontWeight:600 }}>• הוקלד ידנית (החישוב: {nis(vat.net)})</span>
+                  {!locked && <button onClick={()=>clearVal("f:vat")} style={{ background:"none", border:"none", color:"#3B5BDB", fontSize:11.5, cursor:"pointer", padding:0, fontFamily:"Heebo,sans-serif", fontWeight:700 }}>↺ חזור לחישוב</button>}
+                </>) : <span style={{ fontSize:11, color:"#999" }}>🤖 מחושב אוטומטית — אפשר להקליד סכום אחר</span>}
+              </div>
+              {vatN > 1 && (
+                <div style={{ background:"#F7F7F2", borderRadius:10, padding:"8px 10px", marginTop:10 }}>
+                  {perMonths.map(m => (
+                    <div key={m} style={{ display:"flex", justifyContent:"space-between", fontSize:12, color: m > thisYm ? "#BBB" : "#555", marginBottom:2 }}>
+                      <span>{monthLabel(m)}{m === ym ? " ←" : ""}</span><span dir="ltr">{m > thisYm ? "—" : nis(vatOfMonth(m))}</span>
+                    </div>
+                  ))}
+                  <div style={{ display:"flex", justifyContent:"space-between", fontSize:13.5, fontWeight:800, paddingTop:5, marginTop:4, borderTop:"1px solid #E5E5DD" }}>
+                    <span>{perTot < 0 ? "החזר משוער" : "לתשלום"} בדוח {perLabel}</span><span dir="ltr" style={{ color: perTot < 0 ? "#2E7D32" : "#1A1A2E" }}>{nis(perTot)}</span>
+                  </div>
+                </div>
+              )}
+              <p style={{ margin:"8px 0 0", fontSize:10.5, color:"#999" }}>הערכה בלבד — הדיווח הרשמי אצל רואה החשבון. כל הסכומים במערכת לפני מע"מ. לא נכללים: שכר, ביטוחים ומיסים, אוכל, ומה שסומן "בלי מע"מ".</p>
             </>))}
 
             {/* חלוקה לפרויקטים */}
@@ -3745,14 +3843,15 @@ async function shareImg() {
             {/* סיכום העסק לחודש */}
             <div style={{ background:"#1A1A2E", borderRadius:14, padding:"14px 18px", marginBottom:12, color:"#fff" }}>
               <p style={{ margin:"0 0 8px", fontSize:14, fontWeight:800, color:"#E8C547" }}>💼 סיכום העסק — {monthLabel(ym)}</p>
-              {[["💵 הכנסות שהתקבלו", income, "#8BC34A"], ["🧾 הוצאות בפרויקטים", -projExp], ["👷 שכר עובדים (כולל דלק)", -labor], ["🔨 תשלומים לקבלני משנה", -subsPaid], ["🏢 תקורות, ספקים וביטוחי עובדים", -allocTot], ["🏛️ בעלים ומע\"מ", -bizTot]].map(([l, v, c]) => (
+              {[["💵 הכנסות שהתקבלו", income, "#8BC34A"], ["🧾 הוצאות בפרויקטים", -projExp], ["👷 שכר עובדים (כולל דלק)", -labor], ["🔨 תשלומים לקבלני משנה", -subsPaid], ["🏢 תקורות, ספקים וביטוחי עובדים", -allocTot], ["🏛️ מס וביטוחים של הבעלים", -bizTot]].map(([l, v, c]) => (
                 <div key={l} style={{ display:"flex", justifyContent:"space-between", fontSize:12.5, color:c || "#BBB", marginBottom:3 }}><span>{l}</span><span dir="ltr">{v < 0 ? "-" : ""}₪{fmtNum(Math.abs(Math.round(v)))}</span></div>
               ))}
               <div style={{ display:"flex", justifyContent:"space-between", paddingTop:8, marginTop:6, borderTop:"1px solid rgba(255,255,255,0.15)" }}>
                 <span style={{ fontWeight:700 }}>רווח משוער לחודש</span>
                 <span dir="ltr" style={{ fontWeight:800, fontSize:18, color: net >= 0 ? "#E8C547" : "#FF8A80" }}>{net < 0 ? "-" : ""}₪{fmtNum(Math.abs(Math.round(net)))}</span>
               </div>
-              <p style={{ margin:"6px 0 0", fontSize:10.5, color:"#888" }}>לפי מה שהוזן במערכת: הכנסות לפי תאריך הקבלה, הוצאות לפי תאריך ההוצאה, קבלנים לפי תאריך התשלום.</p>
+              <div style={{ display:"flex", justifyContent:"space-between", fontSize:12, color:"#999", marginTop:6 }}><span>💼 מע"מ {(vatLine?.amount||0) < 0 ? "להחזר" : "לתשלום"} (לא יורד מהרווח)</span><span dir="ltr">{nis(vatLine?.amount||0)}</span></div>
+              <p style={{ margin:"6px 0 0", fontSize:10.5, color:"#888" }}>הכול לפני מע"מ. הכנסות לפי תאריך הקבלה, הוצאות לפי תאריך ההוצאה, קבלנים לפי תאריך התשלום.</p>
             </div>
 
             {locked ? (
@@ -4172,7 +4271,7 @@ async function shareImg() {
                   <div style={{ display:"flex", gap:7, marginBottom:7 }}>
                     <input value={qExp.desc} placeholder={qExp.credit ? "מה הוחזר? (למשל: בלוקים)" : "על מה? (למשל: בלוקים)"} onChange={e=>setQExp(q=>({...q, desc:e.target.value}))}
                       style={{ flex:2, minWidth:0, width:0, border:"1.5px solid #EEE", borderRadius:8, padding:"7px 10px", fontSize:13, fontFamily:"Heebo,sans-serif", outline:"none", background:"#fff" }}/>
-                    <input type="number" inputMode="decimal" value={qExp.amount} placeholder="סכום ₪" onChange={e=>setQExp(q=>({...q, amount:e.target.value}))}
+                    <input type="number" inputMode="decimal" value={qExp.amount} placeholder={NO_VAT_CATS.includes(qExp.category) ? "סכום כולל מע״מ" : "סכום ₪"} onChange={e=>setQExp(q=>({...q, amount:e.target.value}))}
                       style={{ flex:1, minWidth:0, width:0, border:"1.5px solid #EEE", borderRadius:8, padding:"7px 10px", fontSize:13, fontFamily:"Heebo,sans-serif", outline:"none", background:"#fff" }}/>
                   </div>
                   <div style={{ display:"flex", gap:7 }}>
@@ -4210,7 +4309,7 @@ async function shareImg() {
                           style={{ background:"none", border:"none", cursor:"pointer", color:"#CCC", fontSize:14, padding:0, flexShrink:0 }}>✕</button>
                       </div>
                       <div style={{ display:"flex", gap:8, alignItems:"center", flexWrap:"wrap" }}>
-                        <select value={expCat(ex)} onChange={e=>updExp({category:e.target.value})}
+                        <select value={expCat(ex)} onChange={e=>{ const n = withCat(ex, e.target.value); updExp({ category:n.category, amount:n.amount, vatIn:n.vatIn }); }}
                           style={{ border:`1.5px solid ${catOf(expCat(ex)).color}55`, borderRadius:8, padding:"5px 8px", fontSize:12, fontFamily:"Heebo,sans-serif", outline:"none", background:"#fff", color:catOf(expCat(ex)).color, fontWeight:700 }}>
                           {allCats().map(cat => <option key={cat.k} value={cat.k}>{cat.icon} {cat.k}</option>)}
                         </select>
@@ -4219,6 +4318,10 @@ async function shareImg() {
                         {ex.aiScanned && <span style={{ fontSize:11, color:"#2E7D32", fontWeight:600 }}>🤖 מחשבונית</span>}
                         {Number(ex.amount) < 0 && <span style={{ fontSize:11, color:"#00695C", fontWeight:700 }}>↩️ זיכוי</span>}
                         {ex.suggestedCat && expCat(ex) === "אחר" && <span style={{ fontSize:11, color:"#6D28D9", fontWeight:600 }}>🤖 הוצעה קטגוריה: {ex.suggestedCat}</span>}
+                        {finOn && (NO_VAT_CATS.includes(expCat(ex))
+                          ? <span style={{ fontSize:11, color:"#999" }}>{ex.vatIn ? "כולל מע\"מ — לא מזדכים" : "לא מזדכים על מע\"מ"}</span>
+                          : <button onClick={()=>updExp({ noVat: !ex.noVat })} title="האם יש מע״מ בהוצאה — משפיע על הערכת המע״מ"
+                              style={{ background: ex.noVat ? "#FFF3E0" : "#F0F0EC", color: ex.noVat ? "#E65100" : "#888", border:"none", borderRadius:6, padding:"2px 8px", fontSize:11, fontWeight:700, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>{ex.noVat ? "בלי מע\"מ" : "עם מע\"מ ✓"}</button>)}
                       </div>
                     </div>
                   );
@@ -4361,6 +4464,14 @@ async function shareImg() {
                         <input type="number" value={sc.plannedDays} placeholder="ימים מתוכננים" onChange={e=>updSub({plannedDays:e.target.value}, true)}
                           style={{ flex:1, minWidth:0, width:0, border:"1.5px solid #EEE", borderRadius:8, padding:"7px 10px", fontSize:13, fontFamily:"Heebo,sans-serif", outline:"none", background:"#fff" }}/>
                       </div>
+                      {finOn && (
+                        <div style={{ display:"flex", gap:6, marginBottom:6 }}>
+                          {[{v:false,l:"🧾 עם מע\"מ"},{v:true,l:"בלי מע\"מ (עוסק פטור)"}].map(opt=>(
+                            <button key={String(opt.v)} onClick={()=>updSub({noVat:opt.v})}
+                              style={{ flex:1, background:!!sc.noVat===opt.v?"#1A1A2E":"#F0F0EC", color:!!sc.noVat===opt.v?"#E8C547":"#888", border:"none", borderRadius:8, padding:"6px 0", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:!!sc.noVat===opt.v?700:400 }}>{opt.l}</button>
+                          ))}
+                        </div>
+                      )}
                       <div style={{ display:"flex", gap:6, marginBottom:10 }}>
                         {[{v:true,l:"🧱 כולל חומר"},{v:false,l:"🚫 בלי חומר (אני מביא)"}].map(opt=>(
                           <button key={String(opt.v)} onClick={()=>updSub({withMaterial:opt.v})}
@@ -4492,12 +4603,17 @@ async function shareImg() {
                     const vendor = realVendor;
                     // תיאור = שם הספק בלבד (או ריק). הסוג מופיע בבחירת הסוג, הפריטים נשמרים ב-items
                     const scanDate = (res.date && /^\d{4}-\d{2}-\d{2}$/.test(res.date)) ? res.date : "";
+                    // חשבונית בלי מע"מ (עוסק פטור / עסקה פטורה) — לא נכנסת למע"מ תשומות
+                    const invNoVat = Math.abs(Number(res.totalWithVat) || 0) > 0 && Math.abs(Number(res.vat) || 0) < 0.01 && Math.abs(Math.abs(Number(res.totalWithVat)) - Math.abs(Number(res.totalBeforeVat) || 0)) < 1;
                     const newExpenses = Object.values(byCat).map((v, i) => ({
                       id: Date.now() + i,
                       desc: (res.isCredit ? "זיכוי " : "") + realVendor,
-                      amount: Math.round(v.amount*100)/100, category: v.cat,
+                      // אוכל: לא מזדכים על המע"מ — נרשם הסכום כולל מע"מ
+                      ...((NO_VAT_CATS.includes(v.cat) && !invNoVat) ? { vatIn: true } : {}),
+                      amount: Math.round(v.amount * ((NO_VAT_CATS.includes(v.cat) && !invNoVat) ? 1 + VAT_RATE : 1) * 100)/100, category: v.cat,
                       ...(v.sugg ? { suggestedCat: v.sugg } : {}),
                       ...(res.isCredit ? { isCredit: true } : {}),
+                      ...(invNoVat ? { noVat: true } : {}),
                       date: scanDate || inv.date || todayStr(),
                       fromInvoice: inv.name, aiScanned: true, items: v.items.slice(0,30),
                     }));
@@ -4557,7 +4673,7 @@ async function shareImg() {
                   const catNames = catList.map((x,i)=>`${i+1}. ${x.icon} ${x.k}`).join("\n");
                   const catIdx = Number(window.prompt(`סוג ההוצאה (מספר):\n${catNames}`, "1")) - 1;
                   const category = catList[catIdx]?.k || "אחר";
-                  const expenses = [...(editProj.expenses||[]), { id:Date.now(), desc, amount:amt, category, date: inv.date||todayStr(), fromInvoice: inv.name, ...(amt < 0 ? { isCredit:true } : {}) }];
+                  const expenses = [...(editProj.expenses||[]), withCat({ id:Date.now(), desc, amount:amt, category:"אחר", date: inv.date||todayStr(), fromInvoice: inv.name, ...(amt < 0 ? { isCredit:true } : {}) }, category)];
                   const invoices = (editProj.invoices||[]).map(x => x===inv ? {...x, expensed:true, scanStatus: x.scanStatus==="failed" ? "manual" : x.scanStatus} : x);
                   setEditProj(p=>({...p, expenses, invoices}));
                   updateProjField(detailProject, { expenses, invoices });
@@ -4829,7 +4945,7 @@ async function shareImg() {
                     style={{ background:"#1A1A2E", color:"#E8C547", border:"none", borderRadius:7, padding:"4px 12px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700 }}>+ שלב תשלום</button>
                 </div>
                 {(!editProj.clientPayments||editProj.clientPayments.length===0) && <p style={{ margin:0, fontSize:13, color:"#AAA" }}>אין שלבי תשלום — למשל: מקדמה, אחרי שלד, מסירה</p>}
-                {finOn && (editProj.clientPayments||[]).length>0 && <p style={{ margin:"0 0 8px", fontSize:10.5, color:"#999" }}>לחץ על העיגול כשהשלב בוצע ← ⏳ עובר ל"הכנסות ← לגבייה" ← כשהכסף נכנס מסמנים ✓ התקבל</p>}
+                {finOn && (editProj.clientPayments||[]).length>0 && <p style={{ margin:"0 0 8px", fontSize:10.5, color:"#999" }}>לחץ על העיגול כשהשלב בוצע ← ⏳ עובר ל"הכנסות ← לגבייה" ← כשהכסף נכנס מסמנים ✓ התקבל. הסכומים לפני מע״מ.</p>}
                 {(editProj.clientPayments||[]).map((cp,ci) => {
                   const updCp = (changes, isText=false) => {
                     const clientPayments=(editProj.clientPayments||[]).map((x,i)=>i===ci?{...x,...changes}:x);
@@ -4858,9 +4974,9 @@ async function shareImg() {
                       }}
                         style={{ width:24, height:24, borderRadius:"50%", border:`2px solid ${cp.received?"#22C55E":cp.due?"#F59E0B":"#CCC"}`, background:cp.received?"#22C55E":cp.due?"#FEF3C7":"#fff", cursor:"pointer", flexShrink:0, color:cp.received?"#fff":"#B45309", fontSize:12, display:"flex", alignItems:"center", justifyContent:"center" }}>{cp.received?"✓":cp.due?"⏳":""}</button>
                       <input value={cp.desc} placeholder="מתי (למשל: אחרי שלד)" onChange={e=>updCp({desc:e.target.value}, true)}
-                        style={{ flex:2, border:"1.5px solid #EEE", borderRadius:8, padding:"7px 10px", fontSize:13, fontFamily:"Heebo,sans-serif", outline:"none", background:"#fff", textDecoration:cp.received?"line-through":"none", color:cp.received?"#AAA":"#333" }}/>
-                      <input type="number" value={cp.amount} placeholder="₪" onChange={e=>updCp({amount:e.target.value}, true)}
-                        style={{ flex:1, border:"1.5px solid #EEE", borderRadius:8, padding:"7px 10px", fontSize:13, fontFamily:"Heebo,sans-serif", outline:"none", background:"#fff", textDecoration:cp.received?"line-through":"none", color:cp.received?"#AAA":"#333" }}/>
+                        style={{ flex:2, minWidth:0, width:0, border:"1.5px solid #EEE", borderRadius:8, padding:"7px 10px", fontSize:13, fontFamily:"Heebo,sans-serif", outline:"none", background:"#fff", textDecoration:cp.received?"line-through":"none", color:cp.received?"#AAA":"#333" }}/>
+                      <input type="number" value={cp.amount} placeholder="₪ לפני מע״מ" onChange={e=>updCp({amount:e.target.value}, true)}
+                        style={{ flex:1, minWidth:0, width:0, border:"1.5px solid #EEE", borderRadius:8, padding:"7px 10px", fontSize:13, fontFamily:"Heebo,sans-serif", outline:"none", background:"#fff", textDecoration:cp.received?"line-through":"none", color:cp.received?"#AAA":"#333" }}/>
                       <button onClick={()=>{ const clientPayments=(editProj.clientPayments||[]).filter((_,i)=>i!==ci); setEditProj(p=>({...p,clientPayments})); updateProjField(detailProject,{clientPayments}); }}
                         style={{ background:"none", border:"none", cursor:"pointer", color:"#CCC", fontSize:14, padding:0, flexShrink:0 }}>✕</button>
                     </div>
@@ -5731,7 +5847,7 @@ async function shareImg() {
         {/* HELP TAB */}
         {mgTab==="help" && (() => {
           const q = helpSearch.trim();
-          const shown = HELP_TOPICS.filter(t => !q || t.title.includes(q) || t.body.includes(q));
+          const shown = HELP_TOPICS.filter(t => (!t.fin || finOn) && (!q || t.title.includes(q) || t.body.includes(q)));
           return (
           <>
             <h1 style={{ margin:"0 0 4px", fontSize:20, fontWeight:800 }}>❓ מדריך שימוש</h1>
