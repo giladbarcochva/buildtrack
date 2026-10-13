@@ -106,8 +106,8 @@ const HELP_TOPICS = [
   { icon:"📸", title:"חשבוניות ותוכניות", body:"בתוך דף פרויקט מעלים תמונות חשבוניות ותוכניות אדריכליות (תמונה או PDF, גם כמה יחד).\nלחיצה על שם הקובץ פותחת אותו לצפייה; ✕ מוחק (עם אישור).\nהקבצים נשמרים בענן מאובטח ונגישים מכל מכשיר.\nאם הפענוח האוטומטי פעיל במסלול — כל חשבונית שעולה נקראת ע\"י המערכת: הסכום (לפני מע\"מ) נכנס להוצאות — חוץ מאוכל, שעליו לא מזדכים, ולכן נרשם הסכום המלא כולל מע\"מ — מחולק לפי סוג (חומר, דלק, אוכל, הובלות, קבלני משנה, כלי עבודה, אחר). חשבונית שלא הצליחה להיקרא מסומנת באדום — אפשר 'נסה שוב' או 'רשום כהוצאה' ידנית.\nבלי פענוח אוטומטי: כפתור '💸 רשום כהוצאה' — מזינים סכום, תיאור וסוג.\nבקטע ההוצאות יש סיכום '📊 הוצאות לפי סוג', ולכל הוצאה אפשר לשנות סוג.\nגם לקבלן משנה אפשר לצרף קובץ הצעת מחיר בתוך הכרטיס שלו." },
   { icon:"🛒", title:"ציוד — רשימת קניות", body:"טאב ציוד הוא רשימת קניות משותפת: מוסיפים פריט וכמות, מסמנים ✓ כשנקנה, ומוחקים כשלא צריך.\nמתעדכן לכל המנהלים במכשירים שלהם." },
   { icon:"📶", title:"עבודה בלי קליטה (אופליין)", body:"אין אינטרנט באתר? אפשר להמשיך לעבוד:\n• האפליקציה נפתחת גם בלי קליטה (מאייקון מסך הבית), ומוצג פס כתום 'אין קליטה'.\n• כניסה עם הקוד עובדת בלי קליטה — בתנאי שנכנסת פעם אחת עם קליטה באותו טלפון (ב-30 הימים האחרונים).\n• מוצגים הנתונים האחרונים שנטענו כשהייתה קליטה.\n• לחיצה על כניסה/יציאה בשעון או שליחת דיווח יומי נשמרות במכשיר עם השעה המדויקת, ומופיעה הודעה 'יסונכרן כשתחזור הקליטה'.\n• ברגע שחוזרת קליטה — הנתונים עולים אוטומטית לשרת עם הזמנים האמיתיים, גם אם עברו שעות.\n• המנהל רואה על דיווח שעוד לא סונכרן תג '📶 ממתין לסנכרון'.\n• פענוח חשבוניות, העלאת קבצים ושינויים בניהול — דורשים קליטה.\nחשוב: לא למחוק את האפליקציה/נתוני האתר לפני שהסנכרון הושלם." },
-  { icon:"💵", fin:true, title:"הכנסות — גבייה מלקוחות", body:"חשוב: כל הסכומים בשלבי התשלום של הלקוח נרשמים לפני מע\"מ (כמו בהצעת המחיר). המערכת מחשבת את המע\"מ לבד.\nבדף הפרויקט, בקטע 'שלבי תשלום מהלקוח', לוחצים על העיגול של שלב:\n• לחיצה ראשונה — ⏳ לגבייה (העבודה בוצעה, צריך לגבות).\n• לחיצה שנייה — ✓ התקבל (הכסף נכנס; נרשם תאריך הקבלה).\nבטאב 💵 הכנסות רואים מה לגבות מכל הפרויקטים, מה התקבל, וסיכום לפי חודש. אפשר לסמן '✓ התקבל' גם משם, ו-↩ מבטל." },
-  { icon:"🧮", fin:true, title:"הוצאות חודשיות קבועות", body:"בטאב 🧮 הוצאות חודשיות רושמים את מה שמשלמים כל חודש — כל הסכומים לפני מע\"מ:\n• תקורות — בקבוצות (רכב, משרד, ביטוחים...) עם '+ שורה'.\n• ספקים בתשלום חודשי. אם החודש נקלטו בפרויקטים חשבוניות מאותו ספק — תופיע אזהרה כדי שלא ייספר פעמיים.\n• מיסים וביטוחים — ביטוח לאומי ופנסיה של העובדים (סכום כולל), ושל הבעלים, ומס הכנסה.\nלכל שורה יש סכום קבוע (🔁) שחוזר כל חודש, ואפשר לשנות בשדה רק לחודש הנוכחי. בסוף החודש לוחצים '✓ אשר' — הסכומים ננעלים.\nתקורות, ספקים וביטוחי העובדים מתחלקים לפרויקטים לפי ימי העבודה בחודש (ומופיעים בדף הפרויקט כ'חלק מהוצאות קבועות'). של הבעלים — רק בסיכום העסק." },
+  { icon:"💵", fin:true, title:"הכנסות — גבייה מלקוחות", body:"חשוב: כל הסכומים בשלבי התשלום של הלקוח נרשמים לפני מע\"מ (כמו בהצעת המחיר). המערכת מחשבת את המע\"מ לבד.\nבדף הפרויקט, בקטע 'שלבי תשלום מהלקוח', לוחצים על העיגול של שלב:\n• לחיצה ראשונה — ⏳ לגבייה (העבודה בוצעה, צריך לגבות).\n• לחיצה שנייה — ✓ התקבל (הכסף נכנס; נרשם תאריך הקבלה).\nבטאב 💵 הכנסות רואים מה לגבות מכל הפרויקטים, מה התקבל, וסיכום לפי חודש. אפשר לסמן '✓ התקבל' גם משם, ו-↩ מבטל.\n• 📧 דרישת תשלום — נשלחת ללקוח במייל בשם העסק: השלב, הסכום לפני מע\"מ, מע\"מ וסה\"כ, ופרטי הבנק (מגדירים פעם אחת ב-⚙️ הגדרות ← 🏦 פרטי תשלום). עותק מגיע אליך ותשובות הלקוח למייל שלך. המייל של הלקוח נלקח מהצעת המחיר; אם אין — המערכת שואלת ושומרת.\n• 💬 ווטסאפ — פותח ווטסאפ ללקוח עם אותה הודעה מוכנה.\n• למחרת בבוקר מגיע מייל על כל שלב חדש שסומן לגבייה (טאב 🔔 התראות)." },
+  { icon:"🧮", fin:true, title:"הוצאות חודשיות קבועות", body:"בטאב 🧮 הוצאות חודשיות רושמים את מה שמשלמים כל חודש — כל הסכומים לפני מע\"מ:\n• תקורות — בקבוצות (רכב, משרד, ביטוחים...) עם '+ שורה'.\n• ספקים בתשלום חודשי. אם החודש נקלטו בפרויקטים חשבוניות מאותו ספק — תופיע אזהרה כדי שלא ייספר פעמיים.\n• מיסים וביטוחים — ביטוח לאומי ופנסיה של העובדים (סכום כולל), ושל הבעלים, ומס הכנסה.\nלכל שורה יש סכום קבוע (🔁) שחוזר כל חודש, ואפשר לשנות בשדה רק לחודש הנוכחי. בסוף החודש לוחצים '✓ אשר' — הסכומים ננעלים.\n• 📎 חשבונית לספק — מעלים את החשבונית של החודש (נקראת אוטומטית); הסכום שלה (או סכום כמה חשבוניות) מחליף את הסכום הקבוע של אותו חודש. החשבוניות נשלחות גם לרואה החשבון, ויש בדיקת כפילות מול החשבוניות בפרויקטים.\n• 👷 עלות מעסיק לפי עובד — ביטוח לאומי, ופנסיה + פיצויים + קרן השתלמות של המעסיק, לכל עובד. אפשר להעלות '📄 ריכוז שכר' (או דוח עלות מעסיק / תלושים) והמערכת ממלאת לפי שמות העובדים, או להקליד ידנית. כל עובד מתחלק לפרויקטים לפי איפה שהוא עבד.\n• 📊 חלוקה לפרויקטים — לכל חודש בוחרים: לפי ימי עבודה, או לפי גודל הפרויקט ('עלות פרויקט') בין הפרויקטים שהיו פעילים בחודש (עובדים, קבלנים, הוצאות או תשלומים). ביטוח לאומי ופנסיה של עובדים תמיד לפי איפה שעבדו. הסכום מופיע בדף הפרויקט כ'חלק מהוצאות קבועות'. של הבעלים — רק בסיכום העסק." },
   { icon:"💼", fin:true, title:"מע\"מ — הערכה אוטומטית", body:"בטאב 🧮 הוצאות חודשיות, בכרטיס 💼 מע\"מ, המערכת מעריכה כמה מע\"מ תשלם:\nמע\"מ עסקאות (18% מההכנסות שהתקבלו בחודש) פחות מע\"מ תשומות (18% מההוצאות בפרויקטים, מהתשלומים לקבלני משנה ומהספקים והתקורות).\nלכן חשוב שכל הסכומים יירשמו לפני מע\"מ.\n• תקופת דיווח — בוחרים 'כל חודש', 'כל חודשיים' או מספר חודשים אחר. כשהתקופה ארוכה מחודש מוצג גם סה\"כ לדוח של כל התקופה.\n• מה לא נכלל: שכר, ביטוח לאומי, פנסיה ומס הכנסה (אין עליהם מע\"מ), הוצאות מסוג אוכל (עליהן לא מזדכים, ולכן הן נרשמות בסכום המלא כולל מע\"מ), וכל מה שסומן 'בלי מע\"מ' — קבלן משנה עוסק פטור (בכרטיס הקבלן), ספק או תקורה (ליד השורה), או הוצאה (ליד ההוצאה). חשבונית שנקראה בלי מע\"מ מסומנת כך אוטומטית.\n• אפשר להקליד סכום אחר ידנית; '↺ חזור לחישוב' מחזיר להערכה. סכום במינוס = החזר משוער.\n• המע\"מ לא יורד מהרווח בסיכום העסק — הוא כסף שגובים מהלקוח ומעבירים למדינה.\nזו הערכה בלבד — הדיווח הרשמי נעשה מול רואה החשבון." },
   { icon:"🔔", title:"טאב התראות ושליחה לרואה החשבון", body:"בטאב 🔔 התראות מחליטים מה נשלח, מתי ולמי. המיילים יוצאים בבוקר (6:30–7:30); יום שיוצא בשבת — נשלח ביום ראשון.\n• 📤 שליחה לרואה החשבון — מגדירים את המייל והטלפון שלו, בוחרים חודש ושולחים: דוח שכר ברוטו (PDF) ו/או את כל החשבוניות של החודש — במייל, או בווטסאפ (מהטלפון נפתח חלון השיתוף עם הקבצים). '💬 הודעת סיכום' פותח ווטסאפ עם הודעה מוכנה.\n• דוח השכר: לכל עובד ימים, שעות, תעריף ושכר ברוטו, ובנפרד תוספות אוכל ודלק, ו'שולם עד כה' — מה שכבר שולם לעובד על החודש (כולל מקדמות).\n• לכל התראה: מתג פעיל/כבוי, יום בחודש או מספר ימים, למי (דוח שכר וחשבוניות), ואיך — אוטומטי במייל או רק תזכורת בפעמון ושליחה ידנית.\n• התראות: דוח שכר, חשבוניות, להוציא משכורות (ב-7 לחודש), מע\"מ, אישור הוצאות חודשיות, כסף שלא נגבה, הצעת מחיר בלי תשובה, עובד שלא דיווח.\n• מייל התראות בוקר — הדיווחים לאישור, שעונים שנשכחו וכו'. התזכורות מצטרפות אליו." },
   { icon:"🍔", title:"תוספת אוכל לעובד", body:"בעריכת עובד (טאב עובדים) מפעילים '🍔 תוספת אוכל לכל יום עבודה' וקובעים סכום ליום. הסכום מתווסף אוטומטית לכל יום עבודה (חצי יום — חצי), כמו הדלק.\nבטאב שכר ובדוח לרואה החשבון האוכל והדלק מופיעים בנפרד מהשכר ברוטו. שינוי הסכום חל מהדיווחים הבאים — חודשים קודמים לא משתנים." },
@@ -1130,6 +1130,14 @@ const finVal = (fin, key, def, ym, item) => {
   return Number(def) || 0;
 };
 // כל השורות של החודש: [{ key, label, group, amount, def, alloc }]
+// חשבוניות של ספק לחודש (הועלו בטאב הוצאות חודשיות)
+const supInvOf = (fin, ym, supId) => (fin?.months?.[ym]?.supInv || []).filter(x => String(x.supplierId) === String(supId) && x.scanStatus !== "dup" && x.scanTotal !== "" && x.scanTotal != null);
+// עלות מעסיק לכל עובד לחודש: { workerId: { bl, pension } } — null אם לא מולא
+const workerCostsOf = (fin, ym) => {
+  const w = fin?.months?.[ym]?.workers;
+  if (!w || !Object.values(w).some(c => Number(c?.bl) || Number(c?.pension))) return null;
+  return w;
+};
 const finLines = (fin, ym, vatEst) => {
   if (!fin) return [];
   const out = [];
@@ -1138,11 +1146,22 @@ const finLines = (fin, ym, vatEst) => {
     out.push({ key:"o:" + it.id, label: it.name, group: g.name, def: it.amount, amount: finVal(fin, "o:" + it.id, it.amount, ym, it), alloc:true, kind:"overhead", noVat: !!it.noVat });
   }));
   (fin.suppliers || []).forEach(it => {
-    if (!finActive(it, ym) && fin.months?.[ym]?.vals?.["s:" + it.id] === undefined) return;
-    out.push({ key:"s:" + it.id, label: it.name, group:"ספקים", def: it.amount, amount: finVal(fin, "s:" + it.id, it.amount, ym, it), alloc:true, kind:"supplier", noVat: !!it.noVat });
+    const inv = supInvOf(fin, ym, it.id);
+    if (!finActive(it, ym) && fin.months?.[ym]?.vals?.["s:" + it.id] === undefined && !inv.length) return;
+    // יש חשבוניות של הספק לחודש → הסכום שלהן במקום הסכום הקבוע
+    const def = inv.length ? Math.round(inv.reduce((s, x) => s + (Number(x.scanTotal) || 0), 0) * 100) / 100 : it.amount;
+    out.push({ key:"s:" + it.id, label: it.name, group:"ספקים", def, amount: inv.length ? finVal(fin, "s:" + it.id, def, ym) : finVal(fin, "s:" + it.id, it.amount, ym, it), alloc:true, kind:"supplier", noVat: !!it.noVat, invCount: inv.length });
   });
+  const wc = workerCostsOf(fin, ym);
   FIN_FIXED.forEach(f => {
     // מע"מ: ברירת המחדל היא ההערכה האוטומטית (עסקאות פחות תשומות), אלא אם הוקלד סכום לחודש
+    // ביטוח לאומי / פנסיה של העובדים: אם מולאו סכומים לכל עובד — הסה"כ שלהם
+    if (wc && (f.k === "bl_workers" || f.k === "pension_workers")) {
+      const fld = f.k === "bl_workers" ? "bl" : "pension";
+      const sum = Math.round(Object.values(wc).reduce((s, c) => s + (Number(c?.[fld]) || 0), 0) * 100) / 100;
+      out.push({ key:"f:" + f.k, label: f.label, group:"מיסים וביטוחים", def: sum, amount: sum, alloc: true, kind:"fixed", perWorker: true });
+      return;
+    }
     const def = f.k === "vat" ? Math.round(Number(vatEst) || 0) : (fin.fixed?.[f.k] || 0);
     out.push({ key:"f:" + f.k, label: f.label, group:"מיסים וביטוחים", def, amount: finVal(fin, "f:" + f.k, def, ym), alloc: f.alloc, kind: f.k === "vat" ? "vat" : "fixed" });
   });
@@ -1186,6 +1205,7 @@ const ALERT_DEFS = [
   { k:"pay_reminder",icon:"💸", title:"תזכורת להוציא משכורות", desc:"כמה נשאר לשלם לכל עובד על החודש הקודם.", when:"day", def:{ on:true, day:7, email:true } },
   { k:"vat",         icon:"🧾", title:"תזכורת מע\"מ", desc:"הסכום המשוער לדוח, לפני ה-15 בחודש הדיווח (לפי תקופת הדיווח שבחרת בהוצאות החודשיות).", when:"before", fin:true, def:{ on:true, before:5, email:true } },
   { k:"approve",     icon:"🧮", title:"לאשר את ההוצאות החודשיות", desc:"אם החודש הקודם עוד לא אושר בטאב הוצאות חודשיות.", when:"day", fin:true, def:{ on:true, day:1, email:true } },
+  { k:"due_new",     icon:"💵", title:"שלב חדש לגבייה", desc:"מייל למחרת בבוקר על כל שלב תשלום של לקוח שסומן ⏳ לגבייה.", when:"next", fin:true, def:{ on:true, email:true } },
   { k:"collect",     icon:"💵", title:"כסף שלא נגבה", desc:"שלב תשלום של לקוח שממתין ב\"לגבייה\" יותר מכמה ימים.", when:"days", fin:true, def:{ on:true, days:14, email:true } },
   { k:"quotes",      icon:"📨", title:"הצעת מחיר בלי תשובה", desc:"הצעה שנשלחה ללקוח ולא נסגרה ולא נדחתה.", when:"days", def:{ on:true, days:7, email:true } },
   { k:"noreport",    icon:"👷", title:"עובד שלא דיווח", desc:"עובד ששויך לפרויקט בביצוע ולא דיווח כמה ימי עבודה (בלי שבת).", when:"days", unit:"ימי עבודה", def:{ on:false, days:2, email:true } },
@@ -1210,16 +1230,66 @@ const daysByProject = (reports, ym) => {
   return { by, total };
 };
 // חלק הפרויקט מהוצאות קבועות (כל החודשים עד היום)
-const projFixedShare = (fin, reports, projectId, uptoYm) => {
+// פרויקטים שהיו פעילים בחודש: ימי עבודה, הוצאות, חשבוניות, קבלני משנה או תשלומים מהלקוח
+const activeProjectIds = (projects, reports, ym) => {
+  const ids = new Set();
+  reports.forEach(r => { if (!r._paymentRecord && !r._summary && r.projectId && String(r.date || "").slice(0, 7) === ym) ids.add(String(r.projectId)); });
+  (projects || []).forEach(p => {
+    const hit = (p.expenses || []).some(e => ymOf(e.date) === ym)
+      || (p.invoices || []).some(x => ymOf(x.scanDate || x.date) === ym)
+      || (p.subcontractors || []).some(sc => (sc.payments || []).some(pm => ymOf(pm.paidAt) === ym || ymOf(pm.dueAt) === ym))
+      || (p.clientPayments || []).some(c => ymOf(c.receivedIso || c.receivedAt) === ym || ymOf(c.dueAt) === ym);
+    if (hit) ids.add(String(p.id));
+  });
+  return ids;
+};
+// חלוקת ההוצאות הקבועות של חודש לפרויקטים:
+//  • ביטוח לאומי ופנסיה של עובדים — תמיד לפי איפה שכל עובד עבד (או לפי ימי העבודה הכלליים כשאין פירוט לכל עובד)
+//  • תקורות וספקים — לפי השיטה שנבחרה לחודש: ימי עבודה, או גודל הפרויקט (עלות פרויקט) מבין הפרויקטים הפעילים
+const finAlloc = (fin, reports, projects, ym) => {
+  const lines = finLines(fin, ym);
+  const mo = fin?.months?.[ym] || {};
+  const { by: daysBy, total: allDays } = daysByProject(reports, ym);
+  const share = {}; const add = (pid, v) => { if (v) share[pid] = (share[pid] || 0) + v; };
+  const wc = workerCostsOf(fin, ym);
+  let workersPool = 0, byDaysLeft = 0;
+  if (wc) {
+    Object.entries(wc).forEach(([wid, c]) => {
+      const amt = (Number(c?.bl) || 0) + (Number(c?.pension) || 0); if (!amt) return;
+      workersPool += amt;
+      const wd = {}; let tot = 0;
+      reports.forEach(r => {
+        if (r._paymentRecord || r._summary || r.pendingApproval || !r.projectId || String(r.date || "").slice(0, 7) !== ym || String(r.workerId) !== String(wid)) return;
+        const d = repDays(r); if (!d) return; wd[String(r.projectId)] = (wd[String(r.projectId)] || 0) + d; tot += d;
+      });
+      if (!tot) { byDaysLeft += amt; return; }
+      Object.entries(wd).forEach(([pid, d]) => add(pid, amt * d / tot));
+    });
+  } else {
+    workersPool = lines.filter(l => l.key === "f:bl_workers" || l.key === "f:pension_workers").reduce((s, l) => s + l.amount, 0);
+    byDaysLeft = workersPool;
+  }
+  if (byDaysLeft && allDays) Object.entries(daysBy).forEach(([pid, d]) => add(pid, byDaysLeft * d / allDays));
+  const overPool = lines.filter(l => l.kind === "overhead" || l.kind === "supplier").reduce((s, l) => s + l.amount, 0);
+  let method = mo.allocBy === "value" ? "value" : "days", weights = {}, wTot = 0;
+  if (method === "value") {
+    const act = activeProjectIds(projects, reports, ym);
+    (projects || []).forEach(p => { const v = Number(p.totalCost) || 0; if (v > 0 && act.has(String(p.id))) { weights[String(p.id)] = v; wTot += v; } });
+  }
+  const valueFallback = method === "value" && !wTot;
+  if (method === "days" || valueFallback) { weights = daysBy; wTot = allDays; }
+  if (wTot) Object.entries(weights).forEach(([pid, w]) => add(pid, overPool * w / wTot));
+  const pool = overPool + workersPool;
+  const assigned = Object.values(share).reduce((s, v) => s + v, 0);
+  return { share, pool, overPool, workersPool, method, valueFallback, weights, wTot, daysBy, allDays, perWorker: !!wc, unassigned: Math.max(0, pool - assigned) };
+};
+const projFixedShare = (fin, reports, projectId, uptoYm, projects) => {
   if (!fin || !fin.startYm) return { total:0, months:[] };
   const months = []; let total = 0;
   for (let ym = fin.startYm; ym <= uptoYm; ym = shiftYm(ym, 1)) {
-    const { by, total: all } = daysByProject(reports, ym);
-    const mine = by[String(projectId)] || 0;
-    if (!mine || !all) continue;
-    const pool = finLines(fin, ym).filter(l => l.alloc).reduce((s, l) => s + l.amount, 0);
-    const share = pool * mine / all;
-    if (share) { months.push({ ym, days: mine, all, share }); total += share; }
+    const a = finAlloc(fin, reports, projects, ym);
+    const share = a.share[String(projectId)] || 0;
+    if (share) { months.push({ ym, share }); total += share; }
   }
   return { total, months };
 };
@@ -1384,6 +1454,10 @@ export default function App() {
   const [sendBusy, setSendBusy] = useState("");
   const [sendOpen, setSendOpen] = useState(false);
   const [accForm, setAccForm] = useState(null); // עריכת פרטי רואה החשבון
+  const supFileRef = useRef(null), payDocRef = useRef(null); // העלאת חשבונית ספק / ריכוז שכר (טאב הוצאות חודשיות)
+  const [supTarget, setSupTarget] = useState(null);
+  const [finBusy, setFinBusy] = useState("");
+  const [bankForm, setBankForm] = useState(null); // פרטי בנק לדרישת תשלום
   const [helpOpen, setHelpOpen] = useState(null);
 
   const [screen,       setScreen]       = useState("home");
@@ -2483,7 +2557,10 @@ async function shareImg() {
   const saveAlert = (k, patch) => saveCfgPatch({ _alerts: { ...(cfgData._alerts || {}), [k]: { ...alertOf(cfgData, k), ...patch } } });
   const alertsApi = (body) => fetch(`${SUPABASE_URL}/functions/v1/daily-alerts`, { method: "POST", headers: hdrs(), body: JSON.stringify(body) });
   const markSent = (k, ym) => saveCfgPatch({ _alertsSent: { ...(cfgData._alertsSent || {}), [k]: ym } });
-  const monthInvoices = (ym) => projects.flatMap(p => (p.invoices || []).filter(x => x.path && x.scanStatus !== "dup" && ymOf(x.scanDate || x.date) === ym).map(x => ({ ...x, _proj: p.name })));
+  const monthInvoices = (ym) => [
+    ...projects.flatMap(p => (p.invoices || []).filter(x => x.path && x.scanStatus !== "dup" && ymOf(x.scanDate || x.date) === ym).map(x => ({ ...x, _proj: p.name }))),
+    ...((finOn && finDoc?.months?.[ym]?.supInv) || []).filter(x => x.path && x.scanStatus !== "dup").map(x => ({ ...x, _proj: "ספק חודשי" })),
+  ];
   const payrollOfMonth = (ym) => {
     const rows = workers.map(w => ({ w, m: (calcWorkerPayroll(w, reports).months || []).find(m => m.month === ym) })).filter(x => x.m);
     return { rows, count: rows.length, gross: rows.reduce((s, x) => s + (x.m.gross || 0), 0), food: rows.reduce((s, x) => s + (x.m.food || 0), 0), fuel: rows.reduce((s, x) => s + (x.m.fuel || 0), 0) };
@@ -2598,6 +2675,88 @@ async function shareImg() {
     finSaveRef.current = setTimeout(() => {
       persistFin(finLatestRef.current).catch(e => alert("השמירה נכשלה: " + e.message + (navigator.onLine ? "" : " (אין קליטה)")));
     }, immediate ? 0 : 700);
+  };
+
+  // ===== מודול כספים: חשבוניות ספקים + עלות מעסיק לכל עובד =====
+  const aiAvailable = () => {
+    const lim = Number(org?.settings?.aiTier || 0); const mk = new Date().toISOString().slice(0,7);
+    const u = org?.settings?.aiUsage?.month === mk ? org.settings.aiUsage : { usd:0 };
+    return lim > 0 && Number(u.usd || 0) < lim;
+  };
+  const allKnownInvoices = () => [
+    ...projects.flatMap(p => (p.invoices || []).map(x => ({ ...x, _proj: p.name }))),
+    ...Object.entries(finDoc?.months || {}).flatMap(([m, mo]) => (mo.supInv || []).map(x => ({ ...x, _proj: `ספקים · ${monthLabel(m)}` }))),
+  ];
+  const updSupInv = (ym, id, changes) => saveFin(f => {
+    const mo = f.months?.[ym] || {};
+    return { ...f, months: { ...(f.months || {}), [ym]: { ...mo, supInv: changes === null ? (mo.supInv || []).filter(x => x.id !== id) : (mo.supInv || []).map(x => x.id === id ? { ...x, ...changes } : x) } } };
+  }, true);
+  const uploadSupplierInvoices = async (sup, files, ym) => {
+    setFinBusy("sup_" + sup.id);
+    try {
+      for (const file of files) {
+        const hash = await fileHash(file);
+        const same = hash && allKnownInvoices().find(x => x.hash === hash);
+        if (same && !window.confirm(`⚠️ הקובץ "${file.name}" כבר הועלה (${same._proj}).\nלהעלות אותו שוב?`)) continue;
+        const path = `${CURRENT_ORG?.slug || "default"}/_finance/invoices/${Date.now()}_${safeFileName(file.name)}`;
+        const url = await withTimeout(storageUpload(file, path), 60000, "העלאת הקובץ לקחה יותר מדי זמן");
+        let inv = { id: Date.now(), supplierId: sup.id, name: file.name, url, path, date: todayStr(), ...(hash ? { hash } : {}) };
+        let ok = false;
+        if (aiAvailable()) {
+          const res = await scanInvoiceFile(file);
+          if (res.usage) setOrg(o => o ? ({ ...o, settings: { ...(o.settings||{}), aiUsage: res.usage } }) : o);
+          if (res.ok) { ok = true; inv = { ...inv, scanStatus:"ok", scanTotal: res.totalBeforeVat, scanVendor: res.vendor || "", invNo: res.invoiceNumber || "", scanDate: res.date || "", ...(res.isCredit ? { isCredit:true } : {}) }; }
+        }
+        if (!ok) {
+          const v = window.prompt(`${aiAvailable() ? "החשבונית לא פוענחה אוטומטית. " : ""}מה הסכום בחשבונית "${file.name}" לפני מע"מ? (₪)\nזיכוי — במינוס`, "");
+          const n = Number(String(v || "").replace(/[,₪\s]/g, ""));
+          inv = (v === null || !isFinite(n) || n === 0) ? { ...inv, scanStatus:"failed", scanTotal:"" } : { ...inv, scanStatus:"manual", scanTotal: n, ...(n < 0 ? { isCredit:true } : {}) };
+        }
+        // אותה חשבונית (ספק + מספר) כבר נקלטה בפרויקט או כאן?
+        const vn = normVendor(inv.scanVendor);
+        const dup = vn && inv.invNo && allKnownInvoices().find(x => x.path !== inv.path && normVendor(x.scanVendor) === vn && x.invNo === inv.invNo);
+        if (dup && !window.confirm(`⚠️ נראה שחשבונית ${inv.invNo} של ${inv.scanVendor} כבר נקלטה (${dup._proj}).\nלספור אותה גם כאן?`)) inv = { ...inv, scanStatus:"dup", dupOf: dup._proj };
+        saveFin(f => {
+          const mo = f.months?.[ym] || {}; const vals = { ...(mo.vals || {}) }; delete vals["s:" + sup.id]; // הסכום יילקח מהחשבוניות
+          return { ...f, months: { ...(f.months || {}), [ym]: { ...mo, vals, supInv: [...(mo.supInv || []), inv] } } };
+        }, true);
+      }
+    } catch (e) { alert("שגיאה: " + e.message); }
+    setFinBusy("");
+  };
+  // ריכוז שכר / דוח עלות מעסיק / תלושים → ביטוח לאומי ופנסיה (מעסיק) לכל עובד
+  const scanPayrollDoc = async (file, ym) => {
+    if (!aiAvailable()) { alert("קריאה אוטומטית לא פעילה במסלול שלך — אפשר להקליד את הסכומים ידנית"); return; }
+    setFinBusy("payroll");
+    try {
+      const payload = await withTimeout(fileToScanPayload(file), 20000, "עיבוד הקובץ לקח יותר מדי זמן");
+      const r = await fetch(`${SUPABASE_URL}/functions/v1/scan-invoice`, { method:"POST",
+        headers: { "Content-Type":"application/json", "apikey": SUPABASE_KEY, "Authorization": "Bearer " + SUPABASE_KEY, "x-app-token": AUTH_TOKEN || "" },
+        body: JSON.stringify({ ...payload, mode:"payroll" }) });
+      const res = await r.json().catch(() => ({ error:"server", message:`תשובה לא תקינה (${r.status})` }));
+      if (res.usage) setOrg(o => o ? ({ ...o, settings: { ...(o.settings||{}), aiUsage: res.usage } }) : o);
+      if (res.error) throw new Error(res.message || res.error);
+      if (!res.ok || !(res.employees || []).length) throw new Error(res.reason || "לא נמצאו עובדים במסמך");
+      const norm = (x) => String(x || "").replace(/["'״׳.\-]/g, " ").replace(/\s+/g, " ").trim();
+      const match = (name) => {
+        const n = norm(name), toks = n.split(" ");
+        return workers.find(w => norm(w.name) === n)
+          || workers.find(w => { const wt = norm(w.name).split(" ").filter(Boolean); return wt.length && wt.every(t => toks.includes(t)); })
+          || workers.find(w => { const wn = norm(w.name); return wn.length > 2 && (n.includes(wn) || wn.includes(n)); });
+      };
+      const r2 = (x) => Math.round((Number(x) || 0) * 100) / 100;
+      const got = {}, missing = [];
+      res.employees.forEach(e => {
+        const w = match(e.name); if (!w) { missing.push(e.name); return; }
+        got[w.id] = { bl: r2(e.employer_bl), pension: r2((Number(e.employer_pension) || 0) + (Number(e.employer_severance) || 0) + (Number(e.employer_study) || 0) + (Number(e.employer_other) || 0)), from:"doc" };
+      });
+      if (!Object.keys(got).length) { alert(`לא הצלחתי להתאים אף עובד לשמות במסמך:\n${missing.join(", ")}\n\nבדוק שהשמות בטאב עובדים זהים, או הקלד ידנית.`); return; }
+      const list = Object.entries(got).map(([id, c]) => `• ${workers.find(w => String(w.id) === String(id))?.name}: ב"ל ₪${fmtNum(c.bl)} · פנסיה וקופות ₪${fmtNum(c.pension)}`).join("\n");
+      const warnM = res.month && res.month !== ym ? `\n\n⚠️ במסמך כתוב ${monthLabel(res.month)} — הסכומים יישמרו ל${monthLabel(ym)}.` : "";
+      if (!window.confirm(`נמצאו ${Object.keys(got).length} עובדים:\n${list}${missing.length ? `\n\nלא זוהו (אפשר להקליד ידנית): ${missing.join(", ")}` : ""}${warnM}\n\nלשמור ל${monthLabel(ym)}?`)) return;
+      saveFin(f => { const mo = f.months?.[ym] || {}; return { ...f, months: { ...(f.months || {}), [ym]: { ...mo, workers: { ...(mo.workers || {}), ...got } } } }; }, true);
+    } catch (e) { alert("הקריאה נכשלה: " + e.message); }
+    setFinBusy("");
   };
 
   // ===== קטגוריות הוצאות של הקבלן =====
@@ -3864,11 +4023,60 @@ async function shareImg() {
           const monthKeys = Object.keys(byMonth).sort().reverse();
           const maxM = Math.max(1, ...Object.values(byMonth));
           const yearTot = Object.entries(byMonth).filter(([k]) => k.slice(0,4) === thisYm.slice(0,4)).reduce((s,[,v]) => s+v, 0);
-          const row = (x, right) => (
+          // דרישת תשלום ללקוח — במייל (נשלח מהשרת בשם העסק) או בווטסאפ
+          const payText = (x) => {
+            const a = amt(x), v = Math.round(a * VAT_RATE * 100) / 100, b = cfgData._bank || {};
+            const bank = [b.bank && `בנק ${b.bank}`, b.branch && `סניף ${b.branch}`, b.account && `חשבון ${b.account}`, b.holder && `על שם ${b.holder}`].filter(Boolean).join(", ");
+            return [`שלום${x.p.clientName ? " " + x.p.clientName : ""},`, `בהמשך לעבודה ב${x.p.name}, נבקש להעביר את התשלום עבור: ${x.cp.desc || "שלב תשלום"}.`,
+              `סכום: ₪${fmtNum(a)} + מע"מ ₪${fmtNum(v)} = *₪${fmtNum(Math.round((a + v) * 100) / 100)}*`,
+              bank ? `להעברה: ${bank}` : "", b.note || "", `תודה, ${org?.name || ""}`].filter(Boolean).join("\n");
+          };
+          const payRequest = async (x, ch) => {
+            if (ch === "mail") {
+              let em = String(x.p.clientEmail || "").trim();
+              if (!MAIL_RE.test(em)) {
+                const v = window.prompt(`מה המייל של הלקוח ב"${x.p.name}"?`, ""); if (v === null) return;
+                em = v.trim(); if (!MAIL_RE.test(em)) { alert("כתובת מייל לא תקינה"); return; }
+                try { await updateProjField(x.p, { clientEmail: em }); } catch (e) {}
+                x = { ...x, p: { ...x.p, clientEmail: em } };
+              }
+              if (!cfgData._email) { alert("קודם הגדר את מייל העסק בטאב ⚙️ הגדרות — לשם יגיעו תשובות הלקוח"); return; }
+              const a = amt(x);
+              if (!window.confirm(`לשלוח ל-${em} דרישת תשלום על "${x.cp.desc || "שלב"}"?\n₪${fmtNum(a)} + מע"מ = ₪${fmtNum(Math.round(a * (1 + VAT_RATE)))}${cfgData._bank?.account ? "" : "\n\n(לא הוגדרו פרטי בנק — אפשר להוסיף בטאב ⚙️ הגדרות)"}`)) return;
+              setSendBusy("pay_" + x.p._dbid + "_" + x.i);
+              try {
+                const r = await alertsApi({ action:"pay_request", projectId: x.p.id, cpId: x.cp.id, cpIndex: x.i });
+                const res = await r.json().catch(() => ({}));
+                if (!r.ok || !res.ok) throw new Error(res.error || ("שגיאה " + r.status));
+                await setCp(x, { requestedAt: todayStr(), requestedVia: "mail" });
+                alert(`✅ דרישת התשלום נשלחה ל-${res.to}\nעותק נשלח אליך.`);
+              } catch (e) { alert("השליחה נכשלה: " + e.message); }
+              setSendBusy("");
+            } else {
+              let ph = x.p.clientPhone;
+              if (!waPhone(ph)) {
+                const v = window.prompt(`מה הטלפון של הלקוח ב"${x.p.name}"?`, ""); if (v === null) return;
+                if (!waPhone(v)) { alert("מספר טלפון לא תקין"); return; }
+                ph = v.trim(); try { await updateProjField(x.p, { clientPhone: ph }); } catch (e) {}
+                x = { ...x, p: { ...x.p, clientPhone: ph } };
+              }
+              window.open(`https://wa.me/${waPhone(ph)}?text=${encodeURIComponent(payText(x))}`, "_blank");
+              await setCp(x, { requestedAt: todayStr(), requestedVia: "wa" });
+            }
+          };
+          const reqBtns = (x) => (
+            <div style={{ display:"flex", gap:6, alignItems:"center", marginTop:6, flexWrap:"wrap" }}>
+              <button disabled={!!sendBusy} onClick={()=>payRequest(x, "mail")} style={{ background:"#E8EEFF", color:"#3B5BDB", border:"none", borderRadius:7, padding:"4px 9px", fontSize:11.5, fontWeight:700, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>{sendBusy === "pay_" + x.p._dbid + "_" + x.i ? "שולח…" : "📧 דרישת תשלום"}</button>
+              <button onClick={()=>payRequest(x, "wa")} style={{ background:"#E7F8EE", color:"#1B8A4B", border:"none", borderRadius:7, padding:"4px 9px", fontSize:11.5, fontWeight:700, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>💬 ווטסאפ</button>
+              {x.cp.requestedAt && <span style={{ fontSize:11, color:"#888" }}>📨 נשלחה דרישה {fmtIsoShort(x.cp.requestedAt)}</span>}
+            </div>
+          );
+          const row = (x, right, below) => (
             <div key={x.p._dbid + "_" + x.i} style={{ background:"#fff", borderRadius:12, padding:"11px 14px", marginBottom:8, boxShadow:"0 1px 5px rgba(0,0,0,0.06)", display:"flex", alignItems:"center", gap:10 }}>
               <div style={{ flex:1, minWidth:0 }}>
                 <div style={{ fontWeight:700, fontSize:14 }}>{x.cp.desc || "שלב תשלום"}</div>
                 <div style={{ fontSize:12, color:"#888" }}>🏗️ {x.p.name}{x.cp.dueAt ? ` · בוצע ${fmtIsoShort(x.cp.dueAt)}` : ""}{x.cp.received && (x.cp.receivedIso || x.cp.receivedAt) ? ` · התקבל ${x.cp.receivedIso ? fmtIsoShort(x.cp.receivedIso) : x.cp.receivedAt}` : ""}</div>
+                {below}
               </div>
               <div style={{ fontWeight:800, fontSize:15, whiteSpace:"nowrap", color: x.cp.received ? "#2E7D32" : "#B45309" }}>₪{fmtNum(amt(x))}</div>
               {right}
@@ -3897,7 +4105,7 @@ async function shareImg() {
               {due.map(x => row(x, (
                 <button onClick={()=>{ if (window.confirm(`התקבלו ₪${fmtNum(amt(x))} עבור "${x.cp.desc||"שלב"}" (${x.p.name})?`)) setCp(x, { received:true, receivedAt:new Date().toLocaleDateString("he-IL"), receivedIso:todayStr() }); }}
                   style={{ background:"#2E7D32", color:"#fff", border:"none", borderRadius:8, padding:"7px 11px", fontSize:12.5, fontWeight:700, cursor:"pointer", fontFamily:"Heebo,sans-serif", flexShrink:0 }}>✓ התקבל</button>
-              )))}
+              ), reqBtns(x)))}
               {notYet.length > 0 && <p style={{ margin:"10px 2px 0", fontSize:12, color:"#999" }}>עוד {notYet.length} שלבים (₪{fmtNum(sum(notYet))}) שעדיין לא בוצעו בפרויקטים</p>}
             </>)}
             {incView==="received" && (<>
@@ -3937,13 +4145,14 @@ async function shareImg() {
           const clearVal = (key) => saveFin(f => { const vals = { ...(f.months?.[ym]?.vals||{}) }; delete vals[key]; return { ...f, months: { ...(f.months||{}), [ym]: { ...(f.months?.[ym]||{}), vals } } }; }, true);
           const askAmount = (title, cur) => { const v = window.prompt(title, cur ?? ""); if (v === null) return null; const n = Number(String(v).replace(/[,₪\s]/g, "")); if (isNaN(n) || n < 0) { alert("סכום לא תקין"); return null; } return n; };
           const fieldStyle = { width:110, flex:"none", border:"1.5px solid #EEE", borderRadius:8, padding:"6px 8px", fontSize:14, fontFamily:"Heebo,sans-serif", outline:"none", background: locked ? "#F5F5F0" : "#fff", textAlign:"left", direction:"ltr" };
-          const lineRow = (key, label, def, onDefault, onRemove, extra) => {
-            const changed = mo.vals?.[key] !== undefined && mo.vals?.[key] !== "" && Number(mo.vals[key]) !== Number(def||0);
+          const lineRow = (key, label, def, onDefault, onRemove, extra, curDef) => {
+            const cur = curDef !== undefined ? curDef : def;
+            const changed = mo.vals?.[key] !== undefined && mo.vals?.[key] !== "" && Number(mo.vals[key]) !== Number(cur||0);
             return (
               <div key={key} style={{ padding:"8px 0", borderTop:"1px solid #F3F3EF" }}>
                 <div style={{ display:"flex", alignItems:"center", gap:8 }}>
                   <span style={{ flex:1, minWidth:0, fontSize:14, fontWeight:600 }}>{label}</span>
-                  <input type="number" inputMode="decimal" disabled={locked} value={vOf(key, def)} onChange={e=>setVal(key, e.target.value)} style={fieldStyle}/>
+                  <input type="number" inputMode="decimal" disabled={locked} value={vOf(key, cur)} onChange={e=>setVal(key, e.target.value)} style={fieldStyle}/>
                   {onRemove && !locked && <button onClick={onRemove} style={{ background:"none", border:"none", color:"#CCC", cursor:"pointer", fontSize:13, padding:0 }}>✕</button>}
                 </div>
                 <div style={{ display:"flex", gap:8, alignItems:"center", marginTop:2, flexWrap:"wrap" }}>
@@ -4016,6 +4225,8 @@ async function shareImg() {
           const net = income - projExp - subsPaid - labor - allocTot - bizTot;
           return (<>
             <div style={{ marginBottom:12 }}>
+              <input ref={supFileRef} type="file" accept="image/*,application/pdf" multiple style={{ display:"none" }} onChange={e=>{ const files = [...(e.target.files||[])]; e.target.value = ""; if (files.length && supTarget) uploadSupplierInvoices(supTarget, files, ym); }}/>
+              <input ref={payDocRef} type="file" accept="image/*,application/pdf" style={{ display:"none" }} onChange={e=>{ const f = e.target.files?.[0]; e.target.value = ""; if (f) scanPayrollDoc(f, ym); }}/>
               <h1 style={{ margin:0, fontSize:20, fontWeight:800 }}>🧮 הוצאות חודשיות</h1>
               <p style={{ margin:"3px 0 0", color:"#777", fontSize:13 }}>תקורות, ספקים, מיסים וביטוחים — מתחלקים לפרויקטים לפי ימי עבודה</p>
             </div>
@@ -4044,19 +4255,86 @@ async function shareImg() {
             )}
 
             {card("🚚 ספקים", (<>
-              {(fin.suppliers||[]).filter(it => finActive(it, ym) || mo.vals?.["s:"+it.id] !== undefined).map(it => {
+              {(fin.suppliers||[]).filter(it => finActive(it, ym) || mo.vals?.["s:"+it.id] !== undefined || (mo.supInv||[]).some(x => String(x.supplierId) === String(it.id))).map(it => {
                 const dup = supplierDup(it.name);
+                const invs = (mo.supInv||[]).filter(x => String(x.supplierId) === String(it.id));
+                const ln = lines.find(l => l.key === "s:"+it.id);
                 return lineRow("s:"+it.id, it.name, it.amount, ()=>setItemDefault("supplier", null, it), ()=>removeItem("supplier", null, it),
-                  <>{vatChip("supplier", null, it)}{dup > 0 && <span style={{ fontSize:11, color:"#E65100", fontWeight:700 }}>⚠️ החודש נקלטו בפרויקטים חשבוניות מהספק הזה: ₪{fmtNum(dup)} — ודא שזה לא נספר פעמיים</span>}</>);
+                  <>{vatChip("supplier", null, it)}
+                    {!locked && <button onClick={()=>{ setSupTarget(it); supFileRef.current?.click(); }} disabled={!!finBusy} style={{ background:"#E8EEFF", color:"#3B5BDB", border:"none", borderRadius:6, padding:"1px 8px", fontSize:11, fontWeight:700, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>{finBusy === "sup_"+it.id ? "מעלה…" : "📎 חשבונית"}</button>}
+                    {dup > 0 && <span style={{ fontSize:11, color:"#E65100", fontWeight:700 }}>⚠️ החודש נקלטו בפרויקטים חשבוניות מהספק הזה: ₪{fmtNum(dup)} — ודא שזה לא נספר פעמיים</span>}
+                    {invs.length > 0 && (
+                      <div style={{ width:"100%", background:"#F7F7F2", borderRadius:8, padding:"5px 8px", marginTop:3 }}>
+                        <div style={{ fontSize:11, color:"#3B5BDB", fontWeight:700, marginBottom:2 }}>📎 הסכום לחודש לפי {ln?.invCount === 1 ? "החשבונית" : `${ln?.invCount || 0} החשבוניות`}</div>
+                        {invs.map(x => (
+                          <div key={x.id} style={{ display:"flex", alignItems:"center", gap:6, fontSize:11.5, padding:"2px 0" }}>
+                            <a href={x.url} target="_blank" rel="noreferrer" style={{ flex:1, minWidth:0, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", color:"#333" }}>{x.scanVendor || x.name}{x.invNo ? ` · ${x.invNo}` : ""}</a>
+                            {x.scanStatus === "dup" ? <span style={{ color:"#E65100", fontWeight:700 }}>כפולה — לא נספרת</span>
+                              : x.scanStatus === "failed" ? <button onClick={()=>{ const v = window.prompt("הסכום לפני מע\"מ (₪):", ""); const n = Number(String(v||"").replace(/[,₪\s]/g,"")); if (v !== null && isFinite(n) && n !== 0) updSupInv(ym, x.id, { scanStatus:"manual", scanTotal:n }); }} style={{ background:"none", border:"none", color:"#B71C1C", fontWeight:700, fontSize:11, cursor:"pointer", padding:0, fontFamily:"Heebo,sans-serif" }}>⚠️ הזן סכום</button>
+                              : <b dir="ltr">{Number(x.scanTotal) < 0 ? "-" : ""}₪{fmtNum(Math.abs(Number(x.scanTotal)||0))}</b>}
+                            {!locked && <button onClick={async ()=>{ if (!window.confirm(`למחוק את החשבונית "${x.name}"?`)) return; updSupInv(ym, x.id, null); if (x.path) { try { await storageDelete(x.path); } catch(e) {} } }} style={{ background:"none", border:"none", color:"#CCC", cursor:"pointer", fontSize:12, padding:0 }}>✕</button>}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </>, invs.length ? ln?.def : undefined);
               })}
               {!(fin.suppliers||[]).some(it => finActive(it, ym)) && <p style={{ margin:"6px 0 0", fontSize:12, color:"#AAA" }}>אין ספקים בתשלום חודשי</p>}
             </>), !locked && <button onClick={()=>addItem("supplier")} style={smallBtn}>+ ספק</button>)}
 
             {card("🏛️ מיסים וביטוחים", (<>
               <p style={{ margin:"0 0 4px", fontSize:11.5, color:"#999" }}>של העובדים — מתחלקים לפרויקטים לפי ימי עבודה · של הבעלים — רק בסיכום העסק</p>
-              {FIN_FIXED.filter(f => f.k !== "vat").map(f => lineRow("f:"+f.k, `${f.icon} ${f.label}`, fin.fixed?.[f.k] || 0, () => { const n = askAmount(`הסכום הקבוע של "${f.label}":`, fin.fixed?.[f.k] || 0); if (n !== null) saveFin(x => ({ ...x, fixed:{ ...(x.fixed||{}), [f.k]: n } }), true); }, null,
-                f.alloc ? <span style={{ fontSize:11, color:"#3B5BDB" }}>↳ לפרויקטים</span> : <span style={{ fontSize:11, color:"#999" }}>↳ סיכום עסק</span>))}
+              {FIN_FIXED.filter(f => f.k !== "vat").map(f => {
+                const ln = lines.find(l => l.key === "f:"+f.k);
+                if (ln?.perWorker) return (
+                  <div key={f.k} style={{ padding:"8px 0", borderTop:"1px solid #F3F3EF" }}>
+                    <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+                      <span style={{ flex:1, minWidth:0, fontSize:14, fontWeight:600 }}>{f.icon} {f.label}</span>
+                      <span style={{ ...fieldStyle, background:"#F5F5F0", color:"#555" }}>{fmtNum(ln.amount)}</span>
+                    </div>
+                    <div style={{ fontSize:11.5, color:"#3B5BDB", marginTop:2 }}>👷 הסה"כ מ"עלות מעסיק לפי עובד" · כל עובד ↳ לפרויקטים שלו</div>
+                  </div>
+                );
+                return lineRow("f:"+f.k, `${f.icon} ${f.label}`, fin.fixed?.[f.k] || 0, () => { const n = askAmount(`הסכום הקבוע של "${f.label}":`, fin.fixed?.[f.k] || 0); if (n !== null) saveFin(x => ({ ...x, fixed:{ ...(x.fixed||{}), [f.k]: n } }), true); }, null,
+                  f.alloc ? <span style={{ fontSize:11, color:"#3B5BDB" }}>↳ לפרויקטים</span> : <span style={{ fontSize:11, color:"#999" }}>↳ סיכום עסק</span>);
+              })}
             </>))}
+
+            {/* עלות מעסיק לכל עובד — ביטוח לאומי ופנסיה, מתחלקים לפי איפה שהעובד עבד */}
+            {(() => {
+              const wDays = {};
+              reports.forEach(r => { if (r._paymentRecord || r._summary || r.pendingApproval || String(r.date||"").slice(0,7) !== ym) return; const d = repDays(r); if (d) wDays[String(r.workerId)] = (wDays[String(r.workerId)] || 0) + d; });
+              const wcm = mo.workers || {};
+              const list = workers.filter(w => wDays[String(w.id)] || wcm[w.id] || wcm[String(w.id)]);
+              const cOf = (w) => wcm[w.id] || wcm[String(w.id)] || {};
+              const setWC = (w, fld, v) => saveFin(f => { const m2 = f.months?.[ym] || {}; const cur = (m2.workers || {})[w.id] || {}; return { ...f, months: { ...(f.months||{}), [ym]: { ...m2, workers: { ...(m2.workers||{}), [w.id]: { ...cur, [fld]: v } } } } }; });
+              const prevW = fin.months?.[shiftYm(ym,-1)]?.workers;
+              const tot = (fld) => list.reduce((s2, w) => s2 + (Number(cOf(w)[fld]) || 0), 0);
+              const inS = { ...fieldStyle, width:78, padding:"5px 6px", fontSize:13 };
+              return card("👷 עלות מעסיק לפי עובד", (<>
+                <p style={{ margin:"2px 0 8px", fontSize:11.5, color:"#888", lineHeight:1.5 }}>ביטוח לאומי מעסיק, ופנסיה + פיצויים + קרן השתלמות של המעסיק. כל עובד מתחלק לפרויקטים לפי איפה שהוא עבד. כשממלאים כאן — השורות של העובדים למעלה מחושבות מהסכום.</p>
+                {list.length === 0 ? <p style={{ margin:0, fontSize:12.5, color:"#AAA" }}>אין עובדים עם ימי עבודה בחודש הזה</p> : (<>
+                  <div style={{ display:"flex", gap:6, fontSize:11, color:"#999", fontWeight:700, padding:"0 0 4px" }}>
+                    <span style={{ flex:1 }}>עובד</span><span style={{ width:78, textAlign:"center" }}>ביטוח לאומי</span><span style={{ width:78, textAlign:"center" }}>פנסיה וקופות</span>
+                  </div>
+                  {list.map(w => (
+                    <div key={w.id} style={{ display:"flex", alignItems:"center", gap:6, padding:"4px 0", borderTop:"1px solid #F3F3EF" }}>
+                      <span style={{ flex:1, minWidth:0, fontSize:13, fontWeight:600, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{w.name} <span style={{ color:"#AAA", fontWeight:400, fontSize:11 }}>{wDays[String(w.id)] || 0} ימים{cOf(w).from === "doc" ? " · 📄" : ""}</span></span>
+                      <input type="number" inputMode="decimal" disabled={locked} value={cOf(w).bl ?? ""} placeholder="0" onChange={e=>setWC(w, "bl", e.target.value)} style={inS}/>
+                      <input type="number" inputMode="decimal" disabled={locked} value={cOf(w).pension ?? ""} placeholder="0" onChange={e=>setWC(w, "pension", e.target.value)} style={inS}/>
+                    </div>
+                  ))}
+                  <div style={{ display:"flex", gap:6, fontSize:12.5, fontWeight:800, paddingTop:6, borderTop:"1.5px solid #EEE" }}>
+                    <span style={{ flex:1 }}>סה"כ</span><span style={{ width:78, textAlign:"center" }}>₪{fmtNum(Math.round(tot("bl")))}</span><span style={{ width:78, textAlign:"center" }}>₪{fmtNum(Math.round(tot("pension")))}</span>
+                  </div>
+                </>)}
+              </>), !locked && (
+                <div style={{ display:"flex", gap:5, flexWrap:"wrap", justifyContent:"flex-end" }}>
+                  {prevW && !Object.keys(wcm).length && <button onClick={()=>saveFin(f => { const m2 = f.months?.[ym] || {}; return { ...f, months: { ...(f.months||{}), [ym]: { ...m2, workers: JSON.parse(JSON.stringify(prevW)) } } }; }, true)} style={{ ...smallBtn, background:"#F0F0EC", color:"#555" }}>📋 כמו בחודש הקודם</button>}
+                  <button onClick={()=>payDocRef.current?.click()} disabled={!!finBusy} style={smallBtn}>{finBusy === "payroll" ? "קורא…" : "📄 ריכוז שכר"}</button>
+                </div>
+              ));
+            })()}
 
             {/* מע"מ — הערכה אוטומטית */}
             {card("💼 מע\"מ (הערכה)", (<>
@@ -4100,23 +4378,43 @@ async function shareImg() {
             </>))}
 
             {/* חלוקה לפרויקטים */}
-            {card("📊 חלוקה לפרויקטים", (<>
-              <p style={{ margin:"0 0 8px", fontSize:12, color:"#777" }}>₪{fmtNum(Math.round(allocTot))} (תקורות + ספקים + ביטוח לאומי ופנסיה של עובדים) מתחלקים לפי ימי העבודה ב{monthLabel(ym)}</p>
-              {allDays === 0 ? <p style={{ margin:0, fontSize:13, color:"#B45309" }}>אין ימי עבודה בחודש הזה — הסכום לא שויך לאף פרויקט</p> :
-                Object.entries(by).sort((a,b)=>b[1]-a[1]).map(([pid, d]) => {
-                  const p = projects.find(x => String(x.id) === pid);
-                  const share = allocTot * d / allDays;
-                  return (
-                    <div key={pid} style={{ marginBottom:7 }}>
-                      <div style={{ display:"flex", justifyContent:"space-between", fontSize:13, marginBottom:2 }}>
-                        <span>🏗️ {p?.name || "פרויקט שנמחק"} <span style={{ color:"#999", fontSize:11.5 }}>· {d} ימים ({Math.round(d/allDays*100)}%)</span></span>
-                        <b>₪{fmtNum(Math.round(share))}</b>
+            {(() => {
+              const al = finAlloc(fin, reports, projects, ym);
+              const rows = Object.entries(al.share).sort((a,b) => b[1]-a[1]);
+              const byValue = al.method === "value" && !al.valueFallback;
+              const seg = (
+                <div style={{ display:"flex", gap:3, background:"#F0F0EC", borderRadius:9, padding:2, margin:"6px 0 8px", opacity: locked ? 0.6 : 1 }}>
+                  {[{v:"days",l:"📅 לפי ימי עבודה"},{v:"value",l:"💰 לפי גודל הפרויקט"}].map(o => (
+                    <button key={o.v} disabled={locked} onClick={()=>saveFin(f => ({ ...f, months:{ ...(f.months||{}), [ym]:{ ...(f.months?.[ym]||{}), allocBy:o.v } } }), true)}
+                      style={{ flex:1, background:al.method===o.v?"#1A1A2E":"transparent", color:al.method===o.v?"#E8C547":"#777", border:"none", borderRadius:7, padding:"6px 0", fontSize:12, fontWeight:700, cursor:locked?"default":"pointer", fontFamily:"Heebo,sans-serif" }}>{o.l}</button>
+                  ))}
+                </div>
+              );
+              return card("📊 חלוקה לפרויקטים", (<>
+                {seg}
+                <p style={{ margin:"0 0 4px", fontSize:12, color:"#777", lineHeight:1.55 }}>
+                  🏢 תקורות וספקים ₪{fmtNum(Math.round(al.overPool))} — {byValue ? "לפי עלות הפרויקט, בין הפרויקטים שהיו פעילים החודש" : "לפי ימי העבודה בחודש"}<br/>
+                  👷 ביטוח לאומי ופנסיה של עובדים ₪{fmtNum(Math.round(al.workersPool))} — {al.perWorker ? "כל עובד לפי איפה שהוא עבד" : "לפי ימי העבודה בחודש"}
+                </p>
+                {al.valueFallback && <p style={{ margin:"0 0 6px", fontSize:11.5, color:"#B45309" }}>⚠️ לפרויקטים הפעילים החודש לא הוגדרה "עלות פרויקט" — חולק לפי ימי עבודה</p>}
+                {rows.length === 0 ? <p style={{ margin:0, fontSize:13, color:"#B45309" }}>אין עדיין פרויקטים לחלק להם בחודש הזה</p> :
+                  rows.map(([pid, sh]) => {
+                    const p = projects.find(x => String(x.id) === pid);
+                    const pct = al.pool ? Math.round(sh / al.pool * 100) : 0;
+                    const d = al.daysBy[pid] || 0;
+                    return (
+                      <div key={pid} style={{ marginBottom:7 }}>
+                        <div style={{ display:"flex", justifyContent:"space-between", gap:8, fontSize:13, marginBottom:2 }}>
+                          <span style={{ minWidth:0 }}>🏗️ {p?.name || "פרויקט שנמחק"} <span style={{ color:"#999", fontSize:11.5 }}>· {byValue && al.weights[pid] ? `עלות ₪${fmtNum(al.weights[pid])} · ` : ""}{d} ימים · {pct}%</span></span>
+                          <b style={{ flexShrink:0 }}>₪{fmtNum(Math.round(sh))}</b>
+                        </div>
+                        <div style={{ height:5, background:"#EEE", borderRadius:99 }}><div style={{ height:"100%", width:`${pct}%`, background:"#3B5BDB", borderRadius:99 }}/></div>
                       </div>
-                      <div style={{ height:5, background:"#EEE", borderRadius:99 }}><div style={{ height:"100%", width:`${Math.round(d/allDays*100)}%`, background:"#3B5BDB", borderRadius:99 }}/></div>
-                    </div>
-                  );
-                })}
-            </>))}
+                    );
+                  })}
+                {al.unassigned > 1 && <p style={{ margin:"6px 0 0", fontSize:11.5, color:"#B45309" }}>₪{fmtNum(Math.round(al.unassigned))} עוד לא שויכו (אין ימי עבודה / פרויקטים פעילים בחודש)</p>}
+              </>));
+            })()}
 
             {/* סיכום העסק לחודש */}
             <div style={{ background:"#1A1A2E", borderRadius:14, padding:"14px 18px", marginBottom:12, color:"#fff" }}>
@@ -4822,7 +5120,7 @@ async function shareImg() {
                 const expTotal = (editProj.expenses||[]).reduce((s,e)=>s+Number(e.amount||0),0);
                 const subTotal = (editProj.subcontractors||[]).reduce((s,sc)=>s+Number(sc.price||0),0);
                 const subPaid = (editProj.subcontractors||[]).reduce((s,sc)=>s+(sc.payments||[]).filter(p=>p.paid).reduce((s2,p)=>s2+Number(p.amount||0),0),0);
-                const fixedShare = finOn ? Math.round(projFixedShare(finDoc, reports, detailProject.id, todayStr().slice(0,7)).total) : 0;
+                const fixedShare = finOn ? Math.round(projFixedShare(finDoc, reports, detailProject.id, todayStr().slice(0,7), projects).total) : 0;
                 if (expTotal===0 && subTotal===0 && laborTotal===0 && fixedShare===0) return null;
                 return (
                   <div style={{ background:"#1A1A2E", borderRadius:14, padding:"14px 20px", marginBottom:14 }}>
@@ -4841,7 +5139,7 @@ async function shareImg() {
                     </div>
                     {finOn && (
                       <div style={{ display:"flex", justifyContent:"space-between", fontSize:12, color:"#AAA", marginBottom:8, marginTop:-5 }}>
-                        <span>🧮 חלק מהוצאות קבועות (לפי ימי עבודה)</span><span>₪{fmtNum(fixedShare)}</span>
+                        <span>🧮 חלק מהוצאות קבועות</span><span>₪{fmtNum(fixedShare)}</span>
                       </div>
                     )}
                     <div style={{ display:"flex", justifyContent:"space-between", paddingTop:8, borderTop:"1px solid rgba(255,255,255,0.15)" }}>
@@ -6184,6 +6482,7 @@ async function shareImg() {
                         {d.when === "day" && <>מתי: ביום {numSel(a.day, 1, 28, n=>saveAlert(d.k, { day:n }))} בכל חודש</>}
                         {d.when === "before" && <>מתי: {numSel(a.before, 1, 14, n=>saveAlert(d.k, { before:n }))} ימים לפני ה-15 (בחודש הדיווח)</>}
                         {d.when === "days" && <>אחרי {numSel(a.days, 1, 60, n=>saveAlert(d.k, { days:n }))} {d.unit || "ימים"}</>}
+                        {d.when === "next" && <>מתי: למחרת בבוקר (שישי ושבת — ביום ראשון)</>}
                       </div>
                       {d.who && <div><div style={{ fontSize:12, color:"#888", marginBottom:3 }}>למי:</div>{seg([{v:"me",l:"אליי"},{v:"acc",l:"לרואה החשבון"},{v:"both",l:"לשנינו"}], a.to, v=>saveAlert(d.k, { to:v }))}</div>}
                       {d.who && a.to !== "me" && !cfgData._accEmail && <div style={{ fontSize:12, color:"#B45309" }}>⚠️ לא הוגדר מייל של רואה החשבון (למעלה ב"📤 שליחה לרואה החשבון") — עד אז יישלח אליך</div>}
@@ -6341,6 +6640,32 @@ async function shareImg() {
                 </label>
               )}
             </div>
+            {finOn && (
+            <div style={{ background:"#fff", borderRadius:14, padding:22, boxShadow:"0 2px 8px rgba(0,0,0,0.07)", maxWidth:360, marginTop:14 }}>
+              <h3 style={{ margin:"0 0 6px", fontWeight:700, fontSize:15 }}>🏦 פרטי תשלום (לדרישות תשלום)</h3>
+              <p style={{ margin:"0 0 10px", color:"#777", fontSize:13, lineHeight:1.6 }}>מופיעים בדרישת תשלום ללקוח — במייל ובווטסאפ (💵 הכנסות ← 📧 דרישת תשלום).</p>
+              {bankForm === null ? (<>
+                {cfgData._bank?.account ? (
+                  <div style={{ fontSize:13, lineHeight:1.7, background:"#F7F7F2", borderRadius:10, padding:"8px 12px", marginBottom:10 }}>
+                    {cfgData._bank.bank && <div>בנק: <b>{cfgData._bank.bank}</b></div>}
+                    {cfgData._bank.branch && <div>סניף: <b>{cfgData._bank.branch}</b></div>}
+                    <div>חשבון: <b dir="ltr">{cfgData._bank.account}</b></div>
+                    {cfgData._bank.holder && <div>על שם: <b>{cfgData._bank.holder}</b></div>}
+                    {cfgData._bank.note && <div style={{ color:"#666" }}>{cfgData._bank.note}</div>}
+                  </div>
+                ) : <p style={{ margin:"0 0 10px", fontSize:12.5, color:"#B45309" }}>לא הוגדרו פרטי בנק</p>}
+                <button onClick={()=>setBankForm({ bank:"", branch:"", account:"", holder:"", note:"", ...(cfgData._bank||{}) })} style={{ ...btnG, width:"100%" }}>✏️ {cfgData._bank?.account ? "עריכה" : "הוספת פרטי בנק"}</button>
+              </>) : (<>
+                {[["bank","שם הבנק (למשל: לאומי / 10)"],["branch","מספר סניף"],["account","מספר חשבון"],["holder","שם בעל החשבון"],["note","הערה (למשל: אפשר גם בביט 050-...)"]].map(([k, ph]) => (
+                  <input key={k} value={bankForm[k] || ""} placeholder={ph} onChange={e=>setBankForm(f=>({ ...f, [k]: e.target.value }))} inputMode={k === "branch" || k === "account" ? "numeric" : undefined} style={{ ...inp, fontSize:14, padding:"8px 12px", marginBottom:7 }}/>
+                ))}
+                <div style={{ display:"flex", gap:6 }}>
+                  <button onClick={async ()=>{ const b = Object.fromEntries(Object.entries(bankForm).map(([k,v]) => [k, String(v||"").trim().slice(0, 80)])); if (await saveCfgPatch({ _bank: b })) setBankForm(null); }} style={{ ...btnD, flex:1 }}>שמור</button>
+                  <button onClick={()=>setBankForm(null)} style={btnG}>ביטול</button>
+                </div>
+              </>)}
+            </div>
+            )}
             <div style={{ background:"#fff", borderRadius:14, padding:22, boxShadow:"0 2px 8px rgba(0,0,0,0.07)", maxWidth:360, marginTop:14 }}>
               <h3 style={{ margin:"0 0 6px", fontWeight:700, fontSize:15 }}>🏷️ קטגוריות הוצאות</h3>
               <p style={{ margin:"0 0 10px", color:"#777", fontSize:13, lineHeight:1.6 }}>הקטגוריות הקבועות + קטגוריות שלך. פענוח החשבוניות משייך גם אליהן, ומציע חדשות לאישורך.</p>
