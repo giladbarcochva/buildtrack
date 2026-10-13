@@ -109,6 +109,8 @@ const HELP_TOPICS = [
   { icon:"💵", fin:true, title:"הכנסות — גבייה מלקוחות", body:"חשוב: כל הסכומים בשלבי התשלום של הלקוח נרשמים לפני מע\"מ (כמו בהצעת המחיר). המערכת מחשבת את המע\"מ לבד.\nבדף הפרויקט, בקטע 'שלבי תשלום מהלקוח', לוחצים על העיגול של שלב:\n• לחיצה ראשונה — ⏳ לגבייה (העבודה בוצעה, צריך לגבות).\n• לחיצה שנייה — ✓ התקבל (הכסף נכנס; נרשם תאריך הקבלה).\nבטאב 💵 הכנסות רואים מה לגבות מכל הפרויקטים, מה התקבל, וסיכום לפי חודש. אפשר לסמן '✓ התקבל' גם משם, ו-↩ מבטל." },
   { icon:"🧮", fin:true, title:"הוצאות חודשיות קבועות", body:"בטאב 🧮 הוצאות חודשיות רושמים את מה שמשלמים כל חודש — כל הסכומים לפני מע\"מ:\n• תקורות — בקבוצות (רכב, משרד, ביטוחים...) עם '+ שורה'.\n• ספקים בתשלום חודשי. אם החודש נקלטו בפרויקטים חשבוניות מאותו ספק — תופיע אזהרה כדי שלא ייספר פעמיים.\n• מיסים וביטוחים — ביטוח לאומי ופנסיה של העובדים (סכום כולל), ושל הבעלים, ומס הכנסה.\nלכל שורה יש סכום קבוע (🔁) שחוזר כל חודש, ואפשר לשנות בשדה רק לחודש הנוכחי. בסוף החודש לוחצים '✓ אשר' — הסכומים ננעלים.\nתקורות, ספקים וביטוחי העובדים מתחלקים לפרויקטים לפי ימי העבודה בחודש (ומופיעים בדף הפרויקט כ'חלק מהוצאות קבועות'). של הבעלים — רק בסיכום העסק." },
   { icon:"💼", fin:true, title:"מע\"מ — הערכה אוטומטית", body:"בטאב 🧮 הוצאות חודשיות, בכרטיס 💼 מע\"מ, המערכת מעריכה כמה מע\"מ תשלם:\nמע\"מ עסקאות (18% מההכנסות שהתקבלו בחודש) פחות מע\"מ תשומות (18% מההוצאות בפרויקטים, מהתשלומים לקבלני משנה ומהספקים והתקורות).\nלכן חשוב שכל הסכומים יירשמו לפני מע\"מ.\n• תקופת דיווח — בוחרים 'כל חודש', 'כל חודשיים' או מספר חודשים אחר. כשהתקופה ארוכה מחודש מוצג גם סה\"כ לדוח של כל התקופה.\n• מה לא נכלל: שכר, ביטוח לאומי, פנסיה ומס הכנסה (אין עליהם מע\"מ), הוצאות מסוג אוכל (עליהן לא מזדכים, ולכן הן נרשמות בסכום המלא כולל מע\"מ), וכל מה שסומן 'בלי מע\"מ' — קבלן משנה עוסק פטור (בכרטיס הקבלן), ספק או תקורה (ליד השורה), או הוצאה (ליד ההוצאה). חשבונית שנקראה בלי מע\"מ מסומנת כך אוטומטית.\n• אפשר להקליד סכום אחר ידנית; '↺ חזור לחישוב' מחזיר להערכה. סכום במינוס = החזר משוער.\n• המע\"מ לא יורד מהרווח בסיכום העסק — הוא כסף שגובים מהלקוח ומעבירים למדינה.\nזו הערכה בלבד — הדיווח הרשמי נעשה מול רואה החשבון." },
+  { icon:"🔔", title:"טאב התראות ושליחה לרואה החשבון", body:"בטאב 🔔 התראות מחליטים מה נשלח, מתי ולמי. המיילים יוצאים בבוקר (6:30–7:30); יום שיוצא בשבת — נשלח ביום ראשון.\n• 📤 שליחה לרואה החשבון — מגדירים את המייל והטלפון שלו, בוחרים חודש ושולחים: דוח שכר ברוטו (PDF) ו/או את כל החשבוניות של החודש — במייל, או בווטסאפ (מהטלפון נפתח חלון השיתוף עם הקבצים). '💬 הודעת סיכום' פותח ווטסאפ עם הודעה מוכנה.\n• דוח השכר: לכל עובד ימים, שעות, תעריף ושכר ברוטו, ובנפרד תוספות אוכל ודלק ומקדמות ששולמו (לקיזוז בתלוש).\n• לכל התראה: מתג פעיל/כבוי, יום בחודש או מספר ימים, למי (דוח שכר וחשבוניות), ואיך — אוטומטי במייל או רק תזכורת בפעמון ושליחה ידנית.\n• התראות: דוח שכר, חשבוניות, להוציא משכורות (ב-7 לחודש), מע\"מ, אישור הוצאות חודשיות, כסף שלא נגבה, הצעת מחיר בלי תשובה, עובד שלא דיווח.\n• מייל התראות בוקר — הדיווחים לאישור, שעונים שנשכחו וכו'. התזכורות מצטרפות אליו." },
+  { icon:"🍔", title:"תוספת אוכל לעובד", body:"בעריכת עובד (טאב עובדים) מפעילים '🍔 תוספת אוכל לכל יום עבודה' וקובעים סכום ליום. הסכום מתווסף אוטומטית לכל יום עבודה (חצי יום — חצי), כמו הדלק.\nבטאב שכר ובדוח לרואה החשבון האוכל והדלק מופיעים בנפרד מהשכר ברוטו. שינוי הסכום חל מהדיווחים הבאים — חודשים קודמים לא משתנים." },
   { icon:"🛠️", title:"תקלות נפוצות", body:"• 'קוד שגוי' למרות קוד נכון — ודאו שנכנסתם דרך הקישור הנכון של העסק שלכם.\n• נתונים לא מתעדכנים — צאו והתחברו מחדש, או משכו לרענון.\n• המסך נראה ישן אחרי עדכון — סגרו את האפליקציה לגמרי ופתחו שוב.\n• ההתחברות תקפה 12 שעות — אחריהן פשוט מתחברים שוב.\n• 'לא ניתן לאמת מיקום' — יש לאשר גישה למיקום: הגדרות הטלפון ← ספארי/כרום ← מיקום ← אפשר.\nלכל בעיה אחרת — פנו לספק המערכת." },
 ];
 
@@ -1177,6 +1179,26 @@ const vatEstimate = (fin, projects, ym) => {
   const outV = income * VAT_RATE, inV = (exp + subs + fixed) * VAT_RATE;
   return { income, exp, subs, fixed, outV, inV, net: outV - inV };
 };
+// ===== טאב התראות — מה נשלח, מתי ולמי (נשמר בשורת ההגדרות: _alerts). חייב להתאים לפונקציה daily-alerts =====
+const ALERT_DEFS = [
+  { k:"payroll_pdf", icon:"📄", title:"דוח שכר ברוטו (PDF)", desc:"לכל עובד: ימים, שעות, תעריף ושכר ברוטו, ובנפרד תוספות אוכל ודלק ומקדמות ששולמו. על החודש הקודם.", when:"day", who:true, manual:true, def:{ on:true, day:1, to:"both", email:true } },
+  { k:"invoices",    icon:"📎", title:"חשבוניות החודש", desc:"כל החשבוניות של החודש הקודם מכל הפרויקטים — כקבצים מצורפים, עם רשימה מסודרת.", when:"day", who:true, manual:true, def:{ on:true, day:1, to:"acc", email:true } },
+  { k:"pay_reminder",icon:"💸", title:"תזכורת להוציא משכורות", desc:"כמה נשאר לשלם לכל עובד על החודש הקודם.", when:"day", def:{ on:true, day:7, email:true } },
+  { k:"vat",         icon:"🧾", title:"תזכורת מע\"מ", desc:"הסכום המשוער לדוח, לפני ה-15 בחודש הדיווח (לפי תקופת הדיווח שבחרת בהוצאות החודשיות).", when:"before", fin:true, def:{ on:true, before:5, email:true } },
+  { k:"approve",     icon:"🧮", title:"לאשר את ההוצאות החודשיות", desc:"אם החודש הקודם עוד לא אושר בטאב הוצאות חודשיות.", when:"day", fin:true, def:{ on:true, day:1, email:true } },
+  { k:"collect",     icon:"💵", title:"כסף שלא נגבה", desc:"שלב תשלום של לקוח שממתין ב\"לגבייה\" יותר מכמה ימים.", when:"days", fin:true, def:{ on:true, days:14, email:true } },
+  { k:"quotes",      icon:"📨", title:"הצעת מחיר בלי תשובה", desc:"הצעה שנשלחה ללקוח ולא נסגרה ולא נדחתה.", when:"days", def:{ on:true, days:7, email:true } },
+  { k:"noreport",    icon:"👷", title:"עובד שלא דיווח", desc:"עובד ששויך לפרויקט בביצוע ולא דיווח כמה ימי עבודה (בלי שבת).", when:"days", unit:"ימי עבודה", def:{ on:false, days:2, email:true } },
+];
+const alertOf = (cfg, k) => ({ ...(ALERT_DEFS.find(a => a.k === k)?.def || {}), ...((cfg?._alerts || {})[k] || {}) });
+const waPhone = (p) => { let d = String(p || "").replace(/\D/g, ""); if (d.startsWith("0")) d = "972" + d.slice(1); return d.length >= 11 ? d : ""; };
+const MAIL_RE = /^[^\s@<>"']+@[^\s@<>"']+\.[a-z]{2,}$/i;
+const workdaysBetween = (fromIso, toIso) => { // ימי עבודה (בלי שבת) אחרי fromIso ולפני toIso
+  let n = 0; const d = new Date(fromIso + "T12:00:00");
+  for (d.setDate(d.getDate() + 1); isoOf(d) < toIso && n < 400; d.setDate(d.getDate() + 1)) if (d.getDay() !== 6) n++;
+  return n;
+};
+
 // ימי עבודה לפי פרויקט בחודש
 const daysByProject = (reports, ym) => {
   const by = {}; let total = 0;
@@ -1240,7 +1262,9 @@ function workerDaysForProject(reports, projectId) {
 
 // ✅ חישוב שכר לעובד: ימים כולל + לפי חודש
 function calcWorkerPayroll(worker, reports) {
-  const myReports = reports.filter(r => !r._paymentRecord && !r.pendingApproval && (String(r.workerId) === String(worker.id) || r.workerName === worker.name));
+  const myReports = reports.filter(r => !r._paymentRecord && !r._summary && !r.pendingApproval && (String(r.workerId) === String(worker.id) || r.workerName === worker.name));
+  // אוכל ליום: הסכום שנשמר בדיווח (מרגע שהופעל), ובדיווחים ישנים — לפי ההגדרה של העובד
+  const foodOf = (r, dv) => dv * (r.foodAmt != null ? Number(r.foodAmt)||0 : (worker.showFood ? Number(worker.foodAmount||0) : 0));
   const payType = worker.payType || "daily";
   const rate = Number(worker.dailyRate || 0);
   const hRate = Number(worker.hourlyRate || 0);
@@ -1265,7 +1289,7 @@ function calcWorkerPayroll(worker, reports) {
   myReports.forEach(r => {
     if (!r.date) return;
     const month = r.date.slice(0, 7);
-    if (!byMonth[month]) byMonth[month] = { days: 0, hours: 0, reg: 0, ot125: 0, ot150: 0, fuel: 0, pay: 0, projects: new Set(), byProject: {} };
+    if (!byMonth[month]) byMonth[month] = { days: 0, hours: 0, reg: 0, ot125: 0, ot150: 0, fuel: 0, food: 0, pay: 0, projects: new Set(), byProject: {} };
     const m = byMonth[month];
     const dv = r._shift ? ((r.hours||0) > 0 ? 1 : 0) : Number(r.days||1);
     m.days += dv;
@@ -1276,11 +1300,13 @@ function calcWorkerPayroll(worker, reports) {
     }
     m.pay += rowValue(r);
     if (r.fuel) m.fuel += Number(r.fuelAmt||50);
+    const fd = foodOf(r, dv); m.food += fd;
     const pName = r.projectName || String(r.projectId || "ללא פרויקט");
     m.projects.add(pName);
-    if (!m.byProject[pName]) m.byProject[pName] = { days: 0, fuel: 0, pay: 0 };
+    if (!m.byProject[pName]) m.byProject[pName] = { days: 0, fuel: 0, food: 0, pay: 0 };
     m.byProject[pName].days += dv;
     m.byProject[pName].pay += rowValue(r);
+    m.byProject[pName].food += fd;
     if (r.fuel) m.byProject[pName].fuel += Number(r.fuelAmt||50);
   });
 
@@ -1293,14 +1319,16 @@ function calcWorkerPayroll(worker, reports) {
   const totalByProject = {};
   myReports.forEach(r => {
     const pName = r.projectName || String(r.projectId || "ללא פרויקט");
-    if (!totalByProject[pName]) totalByProject[pName] = { days: 0, fuel: 0, pay: 0 };
-    totalByProject[pName].days += r._shift ? ((r.hours||0) > 0 ? 1 : 0) : Number(r.days||1);
+    if (!totalByProject[pName]) totalByProject[pName] = { days: 0, fuel: 0, food: 0, pay: 0 };
+    const tdv = r._shift ? ((r.hours||0) > 0 ? 1 : 0) : Number(r.days||1);
+    totalByProject[pName].days += tdv;
     totalByProject[pName].pay += rowValue(r);
+    totalByProject[pName].food += foodOf(r, tdv);
     if (r.fuel) totalByProject[pName].fuel += Number(r.fuelAmt||50);
   });
   const projectBreakdown = Object.entries(totalByProject)
     .sort((a,b) => b[1].days - a[1].days)
-    .map(([name, v]) => ({ name, days: Math.round(v.days*100)/100, fuel: v.fuel, pay: Math.round(v.pay + v.fuel) }));
+    .map(([name, v]) => ({ name, days: Math.round(v.days*100)/100, fuel: v.fuel, food: Math.round(v.food), pay: Math.round(v.pay + v.fuel + v.food) }));
 
   const months = Object.entries(byMonth)
     .sort((a, b) => b[0].localeCompare(a[0]))
@@ -1313,11 +1341,13 @@ function calcWorkerPayroll(worker, reports) {
       ot125: Math.round(v.ot125*100)/100,
       ot150: Math.round(v.ot150*100)/100,
       fuel: v.fuel||0,
-      pay: Math.round(v.pay + (v.fuel||0)),
+      food: Math.round(v.food||0),
+      gross: Math.round(v.pay),
+      pay: Math.round(v.pay) + Math.round(v.fuel||0) + Math.round(v.food||0),
       projects: [...v.projects].join(", "),
       projectRows: Object.entries(v.byProject)
         .sort((a,b) => b[1].days - a[1].days)
-        .map(([name, pv]) => ({ name, days: Math.round(pv.days*100)/100, fuel: pv.fuel, pay: Math.round(pv.pay + pv.fuel) })),
+        .map(([name, pv]) => ({ name, days: Math.round(pv.days*100)/100, fuel: pv.fuel, food: Math.round(pv.food), pay: Math.round(pv.pay + pv.fuel + pv.food) })),
     }));
 
   const totalPay = months.reduce((s,m)=>s+m.pay,0);
@@ -1349,6 +1379,11 @@ export default function App() {
   const [quoteM, setQuoteM] = useState(false);
   const [editQuote, setEditQuote] = useState({ clientName:"", clientPhone:"", title:"", desc:"", amount:"", items:[] });
   const [helpSearch, setHelpSearch] = useState("");
+  const [sendYm, setSendYm] = useState(() => shiftYm(todayStr().slice(0,7), -1)); // החודש לשליחה לרואה החשבון
+  const [sendTo, setSendTo] = useState("both");
+  const [sendBusy, setSendBusy] = useState("");
+  const [sendOpen, setSendOpen] = useState(false);
+  const [accForm, setAccForm] = useState(null); // עריכת פרטי רואה החשבון
   const [helpOpen, setHelpOpen] = useState(null);
 
   const [screen,       setScreen]       = useState("home");
@@ -1732,7 +1767,7 @@ export default function App() {
     const proj = projects.find(p => String(p.id) === String(repProject));
     const rec = { _shift:true, workerId: loggedWorker.id, workerName: loggedWorker.name,
       projectId: repProject, projectName: proj?.name||"", date: todayStr(),
-      clockIn: Date.now(), clockOut: null, fuel: repFuel, fuelAmt: repFuel ? Number(loggedWorker.fuelAmount||50) : 0, id: Date.now() };
+      clockIn: Date.now(), clockOut: null, fuel: repFuel, fuelAmt: repFuel ? Number(loggedWorker.fuelAmount||50) : 0, foodAmt: loggedWorker.showFood ? Number(loggedWorker.foodAmount||0) : 0, id: Date.now() };
 
     // ===== אימות מיקום (אם מוגדר בפרויקט) =====
     const mode = proj?.locationMode || "off";
@@ -1802,7 +1837,7 @@ export default function App() {
       clockIn: new Date(`${manDate}T${manIn}:00`).getTime(),
       clockOut: new Date(`${manDate}T${manOut}:00`).getTime(),
       hours: manHours, note: manNote,
-      fuel: repFuel, fuelAmt: repFuel ? Number(loggedWorker.fuelAmount||50) : 0, id: Date.now() };
+      fuel: repFuel, fuelAmt: repFuel ? Number(loggedWorker.fuelAmount||50) : 0, foodAmt: loggedWorker.showFood ? Number(loggedWorker.foodAmount||0) : 0, id: Date.now() };
     try {
       const saved = await dbInsert("reports", rec);
       setPendingReports(prev => [...prev, saved]);
@@ -1894,7 +1929,7 @@ export default function App() {
       const proj = projects.find(p => String(p.id) === String(repProject));
       const today = todayStr();
       const isPast = repDate < today; // only strictly BEFORE today
-      const newRep = { workerId: loggedWorker.id, workerName: loggedWorker.name, projectId: repProject, projectName: proj?.name || "", date: repDate, note: repNote, days: dayType==="half" ? 0.5 : 1, dayType, fuel: repFuel, fuelAmt: repFuel ? Number(loggedWorker.fuelAmount||50) : 0, id: Date.now(), pendingApproval: isPast };
+      const newRep = { workerId: loggedWorker.id, workerName: loggedWorker.name, projectId: repProject, projectName: proj?.name || "", date: repDate, note: repNote, days: dayType==="half" ? 0.5 : 1, dayType, fuel: repFuel, fuelAmt: repFuel ? Number(loggedWorker.fuelAmount||50) : 0, foodAmt: loggedWorker.showFood ? Number(loggedWorker.foodAmount||0) : 0, id: Date.now(), pendingApproval: isPast };
       let saved;
       try {
         saved = await dbInsert("reports", newRep);
@@ -2440,6 +2475,94 @@ async function shareImg() {
     }
   };
 
+  // ===== התראות ושליחה לרואה החשבון =====
+  const saveCfgPatch = async (patch) => {
+    const next = { ...cfgData, _isConfig: true, ...patch };
+    try { await saveCfgChecked(next); setCfgData(next); return true; } catch (e) { alert("השמירה נכשלה: " + e.message); return false; }
+  };
+  const saveAlert = (k, patch) => saveCfgPatch({ _alerts: { ...(cfgData._alerts || {}), [k]: { ...alertOf(cfgData, k), ...patch } } });
+  const alertsApi = (body) => fetch(`${SUPABASE_URL}/functions/v1/daily-alerts`, { method: "POST", headers: hdrs(), body: JSON.stringify(body) });
+  const markSent = (k, ym) => saveCfgPatch({ _alertsSent: { ...(cfgData._alertsSent || {}), [k]: ym } });
+  const monthInvoices = (ym) => projects.flatMap(p => (p.invoices || []).filter(x => x.path && x.scanStatus !== "dup" && ymOf(x.scanDate || x.date) === ym).map(x => ({ ...x, _proj: p.name })));
+  const payrollOfMonth = (ym) => {
+    const rows = workers.map(w => ({ w, m: (calcWorkerPayroll(w, reports).months || []).find(m => m.month === ym) })).filter(x => x.m);
+    return { rows, count: rows.length, gross: rows.reduce((s, x) => s + (x.m.gross || 0), 0), food: rows.reduce((s, x) => s + (x.m.food || 0), 0), fuel: rows.reduce((s, x) => s + (x.m.fuel || 0), 0) };
+  };
+  const toLabel = (to) => to === "me" ? "אליך" : to === "acc" ? "לרואה החשבון" : "אליך ולרואה החשבון";
+  const sendReport = async (kind, ym, to) => {
+    if (!cfgData._email) { alert("קודם הגדר את מייל העסק בטאב ⚙️ הגדרות"); return; }
+    if (to !== "me" && !cfgData._accEmail && !window.confirm("לא הוגדר מייל של רואה החשבון — לשלוח רק אליך?")) return;
+    const what = kind === "payroll_pdf" ? `דוח השכר של ${monthLabel(ym)}` : `החשבוניות של ${monthLabel(ym)}`;
+    if (!window.confirm(`לשלוח במייל את ${what} ${toLabel(to)}?`)) return;
+    setSendBusy(kind + "_mail");
+    try {
+      const r = await alertsApi({ action: kind, ym, send: true, to });
+      const res = await r.json().catch(() => ({}));
+      if (!r.ok || !res.ok) throw new Error(res.error || ("שגיאה " + r.status));
+      await markSent(kind, ym);
+      alert(`✅ נשלח ל: ${(res.to || []).join(", ")}${res.mails > 1 ? `\n(ב-${res.mails} מיילים — הקבצים גדולים)` : ""}`);
+    } catch (e) { alert("השליחה נכשלה: " + e.message); }
+    setSendBusy("");
+  };
+  const getPayrollPdf = async (ym) => {
+    const r = await alertsApi({ action: "payroll_pdf", ym });
+    if (!r.ok) { const j = await r.json().catch(() => ({})); throw new Error(j.error || ("שגיאה " + r.status)); }
+    return new File([await r.blob()], `דוח שכר ברוטו - ${monthLabel(ym)}.pdf`, { type: "application/pdf" });
+  };
+  const downloadFile = (file) => {
+    const u = URL.createObjectURL(file); const a = document.createElement("a");
+    a.href = u; a.download = file.name; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(u), 8000);
+  };
+  // שיתוף קבצים (בטלפון — נפתח חלון השיתוף, בוחרים ווטסאפ ואת רואה החשבון)
+  const shareFiles = async (files, text) => {
+    try { if (navigator.canShare && navigator.canShare({ files })) { await navigator.share({ files, text }); return "ok"; } }
+    catch (e) { if (e && e.name === "AbortError") return "cancel"; }
+    return "no";
+  };
+  const accSummaryText = (ym) => {
+    const pr = payrollOfMonth(ym), inv = monthInvoices(ym);
+    const invTot = inv.reduce((s, x) => s + Math.abs(Number(x.scanTotal) || 0) * (x.isCredit || Number(x.scanTotal) < 0 ? -1 : 1), 0);
+    const lines = [`שלום, סיכום ${monthLabel(ym)} — ${org?.name || ""}:`];
+    if (pr.count) lines.push(`• שכר ברוטו: ₪${fmtNum(pr.gross)} (${pr.count} עובדים)${pr.food ? ` + אוכל ₪${fmtNum(pr.food)}` : ""}${pr.fuel ? ` + דלק ₪${fmtNum(pr.fuel)}` : ""}`);
+    if (inv.length) lines.push(`• חשבוניות: ${inv.length} (סה"כ ₪${fmtNum(Math.round(invTot))} לפני מע"מ)`);
+    if (finOn && finDoc) {
+      const v = finLines(finDoc, ym, vatEstimate(finDoc, projects, ym).net).find(l => l.kind === "vat")?.amount || 0;
+      lines.push(`• מע"מ משוער לחודש: ${v < 0 ? "החזר " : ""}₪${fmtNum(Math.abs(Math.round(v)))}`);
+    }
+    lines.push("הקבצים נשלחים בנפרד. תודה!");
+    return lines.join("\n");
+  };
+  const openWa = (text) => { const ph = waPhone(cfgData._accPhone); window.open(`https://wa.me/${ph}?text=${encodeURIComponent(text)}`, "_blank"); };
+  const sharePayroll = async (ym) => {
+    setSendBusy("payroll_pdf_wa");
+    try {
+      const f = await getPayrollPdf(ym);
+      const r = await shareFiles([f], `דוח שכר ברוטו — ${monthLabel(ym)}`);
+      if (r === "ok") await markSent("payroll_pdf", ym);
+      if (r === "no") { downloadFile(f); alert("במחשב אי אפשר לשתף קובץ ישירות לווטסאפ — הקובץ ירד למחשב.\nאפשר לגרור אותו לשיחה עם רואה החשבון בווטסאפ ווב, או לשלוח במייל."); openWa(accSummaryText(ym)); }
+    } catch (e) { alert("שגיאה: " + e.message); }
+    setSendBusy("");
+  };
+  const shareInvoices = async (ym) => {
+    const list = monthInvoices(ym);
+    if (!list.length) { alert(`אין חשבוניות ב${monthLabel(ym)}`); return; }
+    if (list.length > 60 && !window.confirm(`${list.length} קבצים — ייתכן שהטלפון לא יצליח לשתף כל כך הרבה. להמשיך? (אפשרות אחרת: לשלוח במייל)`)) return;
+    setSendBusy("invoices_wa");
+    try {
+      const files = [];
+      for (const x of list) {
+        const r = await fetch(x.url || `${SUPABASE_URL}/storage/v1/object/public/plans/${encodeURIComponent(x.path)}`); if (!r.ok) continue;
+        const b = await r.blob();
+        files.push(new File([b], x.name || "חשבונית", { type: b.type || (/\.pdf$/i.test(x.name || "") ? "application/pdf" : "image/jpeg") }));
+      }
+      const r = await shareFiles(files, `חשבוניות ${monthLabel(ym)} — ${org?.name || ""}`);
+      if (r === "ok") await markSent("invoices", ym);
+      if (r === "no") alert("שיתוף קבצים לווטסאפ עובד מהטלפון. במחשב — שלח את החשבוניות במייל (📧).");
+    } catch (e) { alert("שגיאה: " + e.message); }
+    setSendBusy("");
+  };
+
   // ===== מודול כספים: שמירת שורת ההוצאות החודשיות =====
   const finDbidRef = useRef(null), finLatestRef = useRef(null), finInsertRef = useRef(null);
   if (finDoc?._dbid) finDbidRef.current = finDoc._dbid;
@@ -2653,6 +2776,24 @@ async function shareImg() {
               style={{ flex:1, border:"1.5px solid #DDD", borderRadius:8, padding:"6px 10px", fontSize:13, fontFamily:"Heebo,sans-serif", outline:"none", background:"#fff" }}/>
           </label>
         )}
+      </div>
+      <div style={{ background:"#F9F9F9", borderRadius:9, padding:"9px 12px", marginBottom:11 }}>
+        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+          <span style={{ fontSize:13, fontWeight:600 }}>🍔 תוספת אוכל לכל יום עבודה</span>
+          <button type="button" onClick={()=>setObj({...obj, showFood: !obj.showFood, foodAmount: obj.foodAmount ?? 40})}
+            style={{ background: obj.showFood ? "#1A1A2E":"#DDD", color: obj.showFood ? "#E8C547":"#777", border:"none", borderRadius:8, padding:"4px 14px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700 }}>
+            {obj.showFood ? "✓ כן" : "לא"}
+          </button>
+        </div>
+        {obj.showFood && (<>
+          <label style={{ display:"flex", alignItems:"center", gap:8, marginTop:8 }}>
+            <span style={{ fontSize:12, color:"#555", whiteSpace:"nowrap" }}>סכום אוכל ליום (₪)</span>
+            <input type="number" value={obj.foodAmount ?? 40} placeholder="40"
+              onChange={e=>setObj({...obj, foodAmount: e.target.value})}
+              style={{ flex:1, border:"1.5px solid #DDD", borderRadius:8, padding:"6px 10px", fontSize:13, fontFamily:"Heebo,sans-serif", outline:"none", background:"#fff" }}/>
+          </label>
+          <p style={{ margin:"5px 0 0", fontSize:11, color:"#888" }}>מתווסף אוטומטית לכל יום עבודה (חצי יום — חצי). בדוח השכר מופיע בנפרד מהברוטו.</p>
+        </>)}
       </div>
     </>
   );
@@ -3360,6 +3501,7 @@ async function shareImg() {
     { key:"calendar", label:"יומן",     emoji:"📅" },
     { key:"equipment",label:"ציוד",     emoji:"🛒" },
     { key:"foremen",  label:"מנהלי עבודה", emoji:"🦺" },
+    { key:"alerts",   label:"התראות",   emoji:"🔔" },
     { key:"help",     label:"עזרה",     emoji:"❓" },
     { key:"settings", label:"הגדרות",   emoji:"⚙️" },
   ];
@@ -3416,6 +3558,131 @@ async function shareImg() {
       detail: `${ps.length === 1 ? "הוצאה אחת שסווגה" : `${ps.length} הוצאות שסווגו`} "אחר" · לחץ לאישור או דחייה`,
       go: () => { setBellOpen(false); reviewCategory(k); } }));
   }
+
+  // ===== התראות מתוזמנות (לפי טאב 🔔 התראות) =====
+  if (!isForeman) {
+    const today = todayStr(), tDay = Number(today.slice(8)), prevYm = shiftYm(today.slice(0,7), -1);
+    const A = (k) => { const a = alertOf(cfgData, k); const d = ALERT_DEFS.find(x => x.k === k); return a.on && (!d.fin || finOn) ? a : null; };
+    const sentLog = cfgData._alertsSent || {};
+    [["payroll_pdf", `📄 דוח השכר של ${monthLabel(prevYm)} — לשלוח לרואה החשבון`], ["invoices", `📎 החשבוניות של ${monthLabel(prevYm)} — לשלוח לרואה החשבון`]].forEach(([k, title]) => {
+      const a = A(k);
+      if (a && a.email === false && tDay >= Math.min(a.day, 28) && sentLog[k] !== prevYm && (k !== "invoices" || monthInvoices(prevYm).length))
+        alerts.push({ key: "send_" + k, icon: k === "invoices" ? "📎" : "📄", color: "#1A1A2E", bg: "#FFF8E1", title, detail: "בחרת לשלוח ידנית · לחץ לשליחה במייל או בווטסאפ",
+          go: () => goTab("alerts", () => setSendYm(prevYm)) });
+    });
+    let a = A("pay_reminder");
+    if (a && tDay >= Math.min(a.day, 28)) {
+      const left = workers.map(w => {
+        const m = (calcWorkerPayroll(w, reports).months || []).find(x => x.month === prevYm);
+        const hasRate = w.payType === "hourly" ? Number(w.hourlyRate) > 0 : w.payType === "global" ? Number(w.monthlySalary) > 0 : Number(w.dailyRate) > 0;
+        return m && hasRate ? m.pay - Number(paidMonths[`${w.id}_${prevYm}`]?.paidAmt || 0) : 0;
+      }).filter(x => x > 0);
+      if (left.length) alerts.push({ key: "payrem", icon: "💸", color: "#1A1A2E", bg: "#F0F0EC", title: `להוציא משכורות של ${monthLabel(prevYm)} — ₪${fmtNum(left.reduce((s, x) => s + x, 0))}`,
+        detail: `${left.length === 1 ? "עובד אחד" : `${left.length} עובדים`} שעוד לא שולם להם`, go: () => goTab("payroll", () => setPayrollView("pending")) });
+    }
+    a = A("vat");
+    if (a && finDoc) {
+      const n = vatPeriodOf(finDoc), em = Number(prevYm.slice(5)), from = 15 - Math.min(14, Number(a.before) || 0);
+      if ((em % n === 0 || em === 12) && tDay >= from && tDay <= 15) {
+        const tot = vatPeriodMonths(finDoc, prevYm).filter(m => !finDoc.startYm || m >= finDoc.startYm)
+          .reduce((s, m) => s + (finLines(finDoc, m, vatEstimate(finDoc, projects, m).net).find(l => l.kind === "vat")?.amount || 0), 0);
+        alerts.push({ key: "vat", icon: "🧾", color: "#B45309", bg: "#FFF8E1", title: `מע"מ — לדווח עד 15.${Number(today.slice(5,7))} · ${tot < 0 ? "החזר" : "לתשלום"} משוער ₪${fmtNum(Math.abs(Math.round(tot)))}`,
+          detail: "הערכה לפי מה שהוזן — הדיווח הרשמי אצל רואה החשבון", go: () => goTab("monthly", () => setFinYm(prevYm)) });
+      }
+    }
+    a = A("approve");
+    if (a && finDoc && tDay >= Math.min(a.day, 28) && (!finDoc.startYm || prevYm >= finDoc.startYm) && !finDoc.months?.[prevYm]?.approved)
+      alerts.push({ key: "approve", icon: "🧮", color: "#3B5BDB", bg: "#E8EEFF", title: `לאשר את ההוצאות החודשיות של ${monthLabel(prevYm)}`, detail: "בדוק את הסכומים ולחץ ✓ אשר", go: () => goTab("monthly", () => setFinYm(prevYm)) });
+    a = A("collect");
+    if (a) {
+      const late = projects.flatMap(p => (p.clientPayments || []).filter(cp => cp.due && !cp.received && cp.dueAt && (Date.parse(today) - Date.parse(cp.dueAt)) / 864e5 >= (Number(a.days) || 14)));
+      if (late.length) alerts.push({ key: "collect", icon: "💵", color: "#2E7D32", bg: "#E8F5E9", title: `${late.length === 1 ? "תשלום אחד ממתין" : `${late.length} תשלומים ממתינים`} לגבייה יותר מ-${a.days} ימים — ₪${fmtNum(late.reduce((s, x) => s + Number(x.amount || 0), 0))}`,
+        detail: "שווה להתקשר ללקוח", go: () => goTab("income") });
+    }
+    a = A("quotes");
+    if (a) {
+      const old = quotes.filter(q => (q.status || "נשלחה") === "נשלחה" && q.date && (Date.parse(today) - Date.parse(q.date)) / 864e5 >= (Number(a.days) || 7));
+      if (old.length) alerts.push({ key: "quotes", icon: "📨", color: "#6D28D9", bg: "#EDE9FE", title: `${old.length === 1 ? "הצעת מחיר בלי תשובה" : `${old.length} הצעות מחיר בלי תשובה`} יותר מ-${a.days} ימים`,
+        detail: old.slice(0, 3).map(q => q.title || q.clientName || "הצעה").join(", "), go: () => goTab("quotes") });
+    }
+    a = A("noreport");
+    if (a) {
+      const active = projects.filter(p => p.status === "בביצוע");
+      const quiet = workers.filter(w => active.some(p => (p.workers || []).map(String).includes(String(w.id)))).filter(w => {
+        const last = reports.filter(r => !r._paymentRecord && !r._summary && r.date && String(r.workerId) === String(w.id)).map(r => String(r.date).slice(0, 10)).sort().pop();
+        return last && last < today && workdaysBetween(last, today) >= (Number(a.days) || 2);
+      });
+      if (quiet.length) alerts.push({ key: "noreport", icon: "👷", color: "#B71C1C", bg: "#FCE4EC", title: `${quiet.length === 1 ? `${quiet[0].name} לא דיווח` : `${quiet.length} עובדים לא דיווחו`} ${a.days}+ ימי עבודה`,
+        detail: quiet.slice(0, 4).map(w => w.name).join(", "), go: () => goTab("reports") });
+    }
+  }
+
+  // ===== שליחה לרואה החשבון (בטאב התראות ובטאב שכר) =====
+  const sendPanel = () => {
+    const pr = payrollOfMonth(sendYm), inv = monthInvoices(sendYm);
+    const thisYm = todayStr().slice(0,7);
+    const busy = (k) => sendBusy === k;
+    const sb = (bg, fg) => ({ background:bg, color:fg, border:"none", borderRadius:8, padding:"7px 10px", fontSize:12.5, fontWeight:700, cursor:"pointer", fontFamily:"Heebo,sans-serif", flex:1, minWidth:0, whiteSpace:"nowrap" });
+    const row = (icon, title, sub, btns) => (
+      <div style={{ borderTop:"1px solid #F0F0EC", padding:"10px 0" }}>
+        <div style={{ fontSize:14, fontWeight:700 }}>{icon} {title}</div>
+        <div style={{ fontSize:12, color:"#888", margin:"2px 0 7px" }}>{sub}</div>
+        <div style={{ display:"flex", gap:6 }}>{btns}</div>
+      </div>
+    );
+    const editing = accForm !== null;
+    return (
+      <div style={{ background:"#fff", borderRadius:14, padding:"14px 16px", marginBottom:14, boxShadow:"0 1px 5px rgba(0,0,0,0.06)" }}>
+        <h3 style={{ margin:"0 0 8px", fontSize:15, fontWeight:800 }}>📤 שליחה לרואה החשבון</h3>
+        {!editing ? (
+          <div style={{ display:"flex", alignItems:"center", gap:8, background:"#F7F7F2", borderRadius:10, padding:"8px 10px", marginBottom:10 }}>
+            <div style={{ flex:1, minWidth:0, fontSize:12.5, lineHeight:1.6 }}>
+              <div>👤 רואה חשבון: {cfgData._accEmail ? <span dir="ltr">{cfgData._accEmail}</span> : <span style={{ color:"#B45309" }}>לא הוגדר מייל</span>}</div>
+              <div>💬 ווטסאפ: {cfgData._accPhone ? <span dir="ltr">{cfgData._accPhone}</span> : <span style={{ color:"#999" }}>לא הוגדר</span>}</div>
+            </div>
+            <button onClick={()=>setAccForm({ email: cfgData._accEmail || "", phone: cfgData._accPhone || "" })} style={{ ...btnG, padding:"6px 12px", fontSize:12.5 }}>✏️ עריכה</button>
+          </div>
+        ) : (
+          <div style={{ background:"#F7F7F2", borderRadius:10, padding:"10px", marginBottom:10 }}>
+            <input value={accForm.email} onChange={e=>setAccForm(f=>({ ...f, email:e.target.value }))} placeholder="המייל של רואה החשבון" dir="ltr" style={{ ...inp, fontSize:14, padding:"8px 10px", marginBottom:7 }}/>
+            <input value={accForm.phone} onChange={e=>setAccForm(f=>({ ...f, phone:e.target.value }))} placeholder="הטלפון של רואה החשבון (לווטסאפ)" dir="ltr" inputMode="tel" style={{ ...inp, fontSize:14, padding:"8px 10px", marginBottom:7 }}/>
+            <div style={{ display:"flex", gap:6 }}>
+              <button onClick={async ()=>{
+                const em = accForm.email.trim(), ph = accForm.phone.trim();
+                if (em && !MAIL_RE.test(em)) { alert("כתובת המייל לא תקינה"); return; }
+                if (ph && !waPhone(ph)) { alert("מספר הטלפון לא תקין (למשל 050-1234567)"); return; }
+                if (await saveCfgPatch({ _accEmail: em, _accPhone: ph })) setAccForm(null);
+              }} style={{ ...btnD, flex:1, padding:"8px" }}>שמור</button>
+              <button onClick={()=>setAccForm(null)} style={{ ...btnG, padding:"8px 14px" }}>ביטול</button>
+            </div>
+          </div>
+        )}
+        <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:6, marginBottom:6 }}>
+          <button onClick={()=>setSendYm(shiftYm(sendYm,-1))} style={{ ...btnG, padding:"5px 12px" }}>→</button>
+          <b style={{ fontSize:14 }}>{monthLabel(sendYm)}</b>
+          <button onClick={()=>setSendYm(shiftYm(sendYm,1))} disabled={sendYm >= thisYm} style={{ ...btnG, padding:"5px 12px", opacity: sendYm >= thisYm ? 0.35 : 1 }}>←</button>
+        </div>
+        <div style={{ display:"flex", gap:3, background:"#F0F0EC", borderRadius:9, padding:2, marginBottom:4 }}>
+          {[{k:"acc",l:"לרואה החשבון"},{k:"me",l:"אליי"},{k:"both",l:"לשנינו"}].map(o => (
+            <button key={o.k} onClick={()=>setSendTo(o.k)} style={{ flex:1, background:sendTo===o.k?"#1A1A2E":"transparent", color:sendTo===o.k?"#E8C547":"#777", border:"none", borderRadius:7, padding:"6px 0", fontSize:12, fontWeight:700, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>📧 {o.l}</button>
+          ))}
+        </div>
+        {row("📄", "דוח שכר ברוטו (PDF)", pr.count ? `${pr.count} עובדים · ברוטו ₪${fmtNum(pr.gross)}${pr.food ? ` · אוכל ₪${fmtNum(pr.food)}` : ""}${pr.fuel ? ` · דלק ₪${fmtNum(pr.fuel)}` : ""}` : "אין דיווחי עבודה בחודש הזה", (<>
+          <button disabled={!pr.count || !!sendBusy} onClick={()=>sendReport("payroll_pdf", sendYm, sendTo)} style={{ ...sb("#1A1A2E","#E8C547"), opacity:(!pr.count||sendBusy)?0.5:1 }}>{busy("payroll_pdf_mail") ? "שולח…" : "📧 במייל"}</button>
+          <button disabled={!pr.count || !!sendBusy} onClick={()=>sharePayroll(sendYm)} style={{ ...sb("#25D366","#fff"), opacity:(!pr.count||sendBusy)?0.5:1 }}>{busy("payroll_pdf_wa") ? "מכין…" : "💬 ווטסאפ"}</button>
+          <button disabled={!pr.count || !!sendBusy} onClick={async ()=>{ setSendBusy("pdf"); try { downloadFile(await getPayrollPdf(sendYm)); } catch(e) { alert("שגיאה: " + e.message); } setSendBusy(""); }} style={{ ...sb("#F0F0EC","#555"), opacity:(!pr.count||sendBusy)?0.5:1 }}>{busy("pdf") ? "מכין…" : "⬇️ PDF"}</button>
+        </>))}
+        {row("📎", "חשבוניות", inv.length ? `${inv.length} קבצים מכל הפרויקטים` : "אין חשבוניות בחודש הזה", (<>
+          <button disabled={!inv.length || !!sendBusy} onClick={()=>sendReport("invoices", sendYm, sendTo)} style={{ ...sb("#1A1A2E","#E8C547"), opacity:(!inv.length||sendBusy)?0.5:1 }}>{busy("invoices_mail") ? "שולח…" : "📧 במייל"}</button>
+          <button disabled={!inv.length || !!sendBusy} onClick={()=>shareInvoices(sendYm)} style={{ ...sb("#25D366","#fff"), opacity:(!inv.length||sendBusy)?0.5:1 }}>{busy("invoices_wa") ? "מכין…" : "💬 ווטסאפ"}</button>
+        </>))}
+        {row("💬", "הודעת סיכום בווטסאפ", "נפתח ווטסאפ עם הודעה מוכנה: שכר, חשבוניות" + (finOn ? " ומע\"מ משוער" : "") + " — רק ללחוץ שלח", (
+          <button onClick={()=>openWa(accSummaryText(sendYm))} style={sb("#25D366","#fff")}>💬 פתח בווטסאפ{cfgData._accPhone ? "" : " (בחירת איש קשר)"}</button>
+        ))}
+        <p style={{ margin:"4px 0 0", fontSize:11, color:"#999" }}>💬 ווטסאפ עם קבצים עובד מהטלפון: נפתח חלון השיתוף ← ווטסאפ ← רואה החשבון.</p>
+      </div>
+    );
+  };
 
   return (
     <div style={{ ...base, background:"#F5F5F0" }}>
@@ -3477,6 +3744,14 @@ async function shareImg() {
       </div>
 
       <main className={"bt-main" + ((["reports","workers","quotes","equipment","calendar"].includes(mgTab) || (mgTab==="projects" && !detailProject)) ? " bt-wide" : "")} style={{ maxWidth:880, margin:"0 auto", padding:"20px 14px" }}>
+        {!isForeman && cfgLoaded && !cfgData._alertsSeen && mgTab !== "alerts" && (
+          <div style={{ display:"flex", alignItems:"center", gap:10, background:"#1A1A2E", color:"#fff", borderRadius:14, padding:"12px 14px", marginBottom:14 }}>
+            <span style={{ fontSize:22 }}>🔔</span>
+            <div style={{ flex:1, minWidth:0, fontSize:13, lineHeight:1.5 }}><b style={{ color:"#E8C547" }}>חדש: טאב התראות</b><br/>דוח שכר ברוטו ו/או חשבוניות לרואה החשבון כל חודש, תזכורת להוציא משכורות ועוד — אתה בוחר מה, מתי ולמי.</div>
+            <button onClick={()=>{ setMgTab("alerts"); setDetailId(null); saveCfgPatch({ _alertsSeen: true }); }} style={{ background:"#E8C547", color:"#1A1A2E", border:"none", borderRadius:9, padding:"8px 12px", fontWeight:800, fontSize:13, cursor:"pointer", fontFamily:"Heebo,sans-serif", flexShrink:0 }}>להגדרה</button>
+            <button onClick={()=>saveCfgPatch({ _alertsSeen: true })} aria-label="סגור" style={{ background:"none", border:"none", color:"#888", fontSize:16, cursor:"pointer", padding:0 }}>✕</button>
+          </div>
+        )}
 
         {/* REPORTS */}
         {mgTab==="reports" && (
@@ -5202,6 +5477,12 @@ async function shareImg() {
             <div style={{ marginBottom:14 }}>
               <h1 style={{ margin:0, fontSize:20, fontWeight:800 }}>💰 שכר עובדים</h1>
             </div>
+            {sendOpen ? sendPanel() : (
+              <button onClick={()=>setSendOpen(true)} style={{ width:"100%", display:"flex", alignItems:"center", justifyContent:"space-between", background:"#fff", border:"1.5px solid #EEE", borderRadius:12, padding:"10px 14px", marginBottom:14, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>
+                <span style={{ fontSize:14, fontWeight:700 }}>📤 שליחה לרואה החשבון</span>
+                <span style={{ fontSize:12, color:"#888" }}>דוח שכר ברוטו · חשבוניות · ווטסאפ ‹</span>
+              </button>
+            )}
 
             {/* toggle pending / history */}
             <div style={{ display:"flex", background:"#F0F0EC", borderRadius:12, padding:3, marginBottom:14, gap:3 }}>
@@ -5385,7 +5666,7 @@ async function shareImg() {
                                   {w.payType==="hourly"
                                     ? `${m.hours} שעות (רגילות ${m.reg} · 125% ${m.ot125} · 150% ${m.ot150})`
                                     : w.payType==="global" ? `משכורת גלובלית · ${m.days} ימי נוכחות`
-                                    : `סה"כ ${m.days} ימים`}{m.fuel>0 ? ` · ⛽ ₪${m.fuel} דלק` : ""}
+                                    : `סה"כ ${m.days} ימים`}{(m.food>0 || m.fuel>0) ? ` · ברוטו ₪${fmtNum(m.gross)}` : ""}{m.food>0 ? ` · 🍔 ₪${fmtNum(m.food)} אוכל` : ""}{m.fuel>0 ? ` · ⛽ ₪${m.fuel} דלק` : ""}
                                 </p>
                                 {paidInfo?.partial && !paidInfo.fullyPaid && (
                                   <p style={{ margin:"3px 0 0", fontSize:12, color:"#F57F17" }}>שולם חלקית: ₪{fmtNum(alreadyPaid)} · נותר: ₪{fmtNum(remaining)}</p>
@@ -5404,7 +5685,7 @@ async function shareImg() {
                                   <div key={pi} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"3px 0", fontSize:12 }}>
                                     <span style={{ color:"#555" }}>🏗️ {pr.name}</span>
                                     <span style={{ color:"#888", whiteSpace:"nowrap" }}>
-                                      {pr.days} ימים{pr.fuel>0 ? ` · ⛽₪${pr.fuel}` : ""}{hasRate ? ` · ₪${fmtNum(pr.pay)}` : ""}
+                                      {pr.days} ימים{pr.food>0 ? ` · 🍔₪${pr.food}` : ""}{pr.fuel>0 ? ` · ⛽₪${pr.fuel}` : ""}{hasRate ? ` · ₪${fmtNum(pr.pay)}` : ""}
                                     </span>
                                   </div>
                                 ))}
@@ -5842,6 +6123,77 @@ async function shareImg() {
             </div>
           </>
           );
+        })()}
+
+        {/* ALERTS TAB — מה נשלח, מתי ולמי */}
+        {mgTab==="alerts" && !isForeman && (() => {
+          const seg = (opts, val, onPick) => (
+            <div style={{ display:"flex", gap:3, background:"#F0F0EC", borderRadius:9, padding:2 }}>
+              {opts.map(o => <button key={String(o.v)} onClick={()=>onPick(o.v)} style={{ flex:1, background:val===o.v?"#1A1A2E":"transparent", color:val===o.v?"#E8C547":"#777", border:"none", borderRadius:7, padding:"6px 2px", fontSize:12, fontWeight:700, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>{o.l}</button>)}
+            </div>
+          );
+          const numSel = (val, min, max, onPick, fmt) => (
+            <select value={val} onChange={e=>onPick(Number(e.target.value))} style={{ border:"1.5px solid #DDD", borderRadius:8, padding:"4px 6px", fontSize:13, fontFamily:"Heebo,sans-serif", background:"#fff", fontWeight:700 }}>
+              {Array.from({ length: max - min + 1 }, (_, i) => min + i).map(n => <option key={n} value={n}>{fmt ? fmt(n) : n}</option>)}
+            </select>
+          );
+          const toggle = (on, onClick) => (
+            <button onClick={onClick} aria-label="הפעל/כבה" style={{ width:46, height:26, borderRadius:13, border:"none", background:on?"#2E7D32":"#CCC", position:"relative", cursor:"pointer", flexShrink:0 }}>
+              <span style={{ position:"absolute", top:3, right:on?3:23, width:20, height:20, borderRadius:"50%", background:"#fff", transition:"right .15s" }}/>
+            </button>
+          );
+          const cardS = { background:"#fff", borderRadius:14, padding:"13px 16px", marginBottom:10, boxShadow:"0 1px 5px rgba(0,0,0,0.06)" };
+          const morningOn = cfgData._alertsEmail !== false;
+          return (<>
+            <div style={{ marginBottom:12 }}>
+              <h1 style={{ margin:0, fontSize:20, fontWeight:800 }}>🔔 התראות</h1>
+              <p style={{ margin:"3px 0 0", color:"#777", fontSize:13 }}>מה נשלח, מתי ולמי. המיילים יוצאים בבוקר (6:30–7:30) · יום שיוצא בשבת — נשלח ביום ראשון</p>
+            </div>
+            {!cfgData._email && <div style={{ background:"#FFF3E0", borderRadius:12, padding:"10px 14px", marginBottom:12, fontSize:13, color:"#B45309", fontWeight:600 }}>⚠️ כדי לקבל מיילים צריך להגדיר מייל עסק בטאב ⚙️ הגדרות</div>}
+            {cfgData._email && <p style={{ margin:"0 0 10px", fontSize:12.5, color:"#555" }}>📧 המייל שלך: <span dir="ltr">{cfgData._email}</span> <span style={{ color:"#999" }}>(לשינוי: ⚙️ הגדרות)</span></p>}
+
+            {sendPanel()}
+
+            <h3 style={{ margin:"6px 2px 8px", fontSize:15, fontWeight:800 }}>⏰ שליחה אוטומטית ותזכורות</h3>
+            <div style={cardS}>
+              <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+                <div style={{ flex:1, minWidth:0 }}>
+                  <div style={{ fontSize:14.5, fontWeight:700 }}>🔔 מייל התראות בוקר</div>
+                  <div style={{ fontSize:12, color:"#888", marginTop:2 }}>כל בוקר שיש משהו לטפל בו: דיווחי עבר לאישור, שעונים שנשכחו, קבלנים לתשלום, חשבוניות שלא פוענחו. התזכורות למטה מצטרפות לאותו מייל.</div>
+                </div>
+                {toggle(morningOn, ()=>saveCfgPatch({ _alertsEmail: !morningOn }))}
+              </div>
+            </div>
+            {ALERT_DEFS.filter(d => !d.fin || finOn).map(d => {
+              const a = alertOf(cfgData, d.k);
+              return (
+                <div key={d.k} style={{ ...cardS, opacity: a.on ? 1 : 0.75 }}>
+                  <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+                    <div style={{ flex:1, minWidth:0 }}>
+                      <div style={{ fontSize:14.5, fontWeight:700 }}>{d.icon} {d.title}</div>
+                      <div style={{ fontSize:12, color:"#888", marginTop:2 }}>{d.desc}</div>
+                    </div>
+                    {toggle(a.on, ()=>saveAlert(d.k, { on: !a.on }))}
+                  </div>
+                  {a.on && (
+                    <div style={{ marginTop:10, display:"flex", flexDirection:"column", gap:8 }}>
+                      <div style={{ display:"flex", alignItems:"center", gap:6, fontSize:13, flexWrap:"wrap" }}>
+                        {d.when === "day" && <>מתי: ביום {numSel(a.day, 1, 28, n=>saveAlert(d.k, { day:n }))} בכל חודש</>}
+                        {d.when === "before" && <>מתי: {numSel(a.before, 1, 14, n=>saveAlert(d.k, { before:n }))} ימים לפני ה-15 (בחודש הדיווח)</>}
+                        {d.when === "days" && <>אחרי {numSel(a.days, 1, 60, n=>saveAlert(d.k, { days:n }))} {d.unit || "ימים"}</>}
+                      </div>
+                      {d.who && <div><div style={{ fontSize:12, color:"#888", marginBottom:3 }}>למי:</div>{seg([{v:"me",l:"אליי"},{v:"acc",l:"לרואה החשבון"},{v:"both",l:"לשנינו"}], a.to, v=>saveAlert(d.k, { to:v }))}</div>}
+                      {d.who && a.to !== "me" && !cfgData._accEmail && <div style={{ fontSize:12, color:"#B45309" }}>⚠️ לא הוגדר מייל של רואה החשבון (למעלה ב"📤 שליחה לרואה החשבון") — עד אז יישלח אליך</div>}
+                      <div><div style={{ fontSize:12, color:"#888", marginBottom:3 }}>איך:</div>
+                        {seg(d.manual ? [{v:true,l:"📧 אוטומטי במייל"},{v:false,l:"🔔 תזכורת — אשלח ידנית"}] : [{v:true,l:"🔔 בפעמון + 📧 במייל"},{v:false,l:"🔔 רק בפעמון"}], a.email !== false, v=>saveAlert(d.k, { email:v }))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+            <p style={{ margin:"4px 2px 0", fontSize:11.5, color:"#999" }}>כל השינויים נשמרים מיד. הדוחות נשלחים על החודש הקודם (למשל ב-1 בנובמבר — על אוקטובר).</p>
+          </>);
         })()}
 
         {/* HELP TAB */}
