@@ -93,7 +93,7 @@ const PLANS = {
 const HELP_TOPICS = [
   { icon:"🔑", title:"כניסה למערכת", body:"במסך הפתיחה שלוש כניסות:\n• כניסת עובד — עם הקוד האישי שהמנהל הגדיר לעובד.\n• כניסת מנהל עבודה — עם קוד מנהל העבודה (מוגדר בטאב מנהלי עבודה).\n• כניסת מנהל — עם קוד המנהל של העסק.\nאת הקישור של העסק מוסיפים למסך הבית: פותחים בדפדפן ← שיתוף ← הוספה למסך הבית — ומקבלים אייקון כמו אפליקציה." },
   { icon:"📝", title:"דיווח יומי של עובד", body:"העובד נכנס עם הקוד שלו, בוחר פרויקט (מוצגים רק פרויקטים שהוא משויך אליהם — השיוך בכפתור 'שייך עובדים' בפרויקט), בוחר יום מלא או חצי יום, מסמן דלק אם נסע ברכב, ולוחץ שלח.\n• אי אפשר לדווח פעמיים על אותו תאריך.\n• דיווח על תאריך שעבר נכנס ל'ממתינים לאישור' אצל המנהל ולא נספר בשכר עד שמאושר.\n• אי אפשר לדווח על תאריך עתידי.\n• עובד שמשובץ ביומן יכול לדווח רק על ימים ופרויקטים שהוא שובץ אליהם (רואים ב'היומן שלי'); עובד שלא מנוהל ביומן — מדווח חופשי.\n• בטאב 'היומן שלי' העובד רואה את הימים שהוא משובץ בהם." },
-  { icon:"⏱️", title:"עובד שעתי — שעון נוכחות", body:"עובד שהוגדר כשעתי רואה שעון נוכחות במקום טופס דיווח: בוחר פרויקט ← ▶️ כניסה בתחילת היום ← 🛑 יציאה בסיומו.\nחישוב השכר: 9 שעות ראשונות 100%, שעות 10-11 לפי 125%, משעה 12 לפי 150%.\nשכח לסגור? המנהל רואה 'שעון תקוע' בטאב דיווחים ומתקן עם כפתור '✏️ שעות'.\nאם בפרויקט הוגדר אימות מיקום — בפתיחת השעון הטלפון יבקש אישור גישה למיקום (פעם ראשונה בלבד). במצב 'חסימה' ניתן לפתוח שעון רק בקרבת האתר." },
+  { icon:"⏱️", title:"עובד שעתי — שעון נוכחות", body:"גם עובד יומי יכול לעבוד עם שעון: בעריכת העובד מפעילים '⏱️ שעון נוכחות'. השכר נשאר לפי יום; אם הוא עבד יותר מ-9 שעות — מגיעה התראה (בפעמון ובמייל הבוקר), ובטאב דיווחים מחליטים: '💰 לשלם נוספות' (125% / 150% לפי היומית חלקי 9) או '✓ בלי תוספת'.\nמעבר בין אתרים באותו יום: סוגרים שעון באתר הראשון ופותחים שעון חדש באתר הבא. היום נחשב יום אחד, העלות מתחלקת בין הפרויקטים לפי השעות, שעות נוספות (בשעתי) מחושבות על סך שעות היום, ודלק ואוכל — פעם אחת ביום.\nעובד יומי בלי שעון שעבד בשני פרויקטים: מדווח חצי יום על כל פרויקט.\nעובד שהוגדר כשעתי רואה שעון נוכחות במקום טופס דיווח: בוחר פרויקט ← ▶️ כניסה בתחילת היום ← 🛑 יציאה בסיומו.\nחישוב השכר: 9 שעות ראשונות 100%, שעות 10-11 לפי 125%, משעה 12 לפי 150%.\nשכח לסגור? המנהל רואה 'שעון תקוע' בטאב דיווחים ומתקן עם כפתור '✏️ שעות'.\nאם בפרויקט הוגדר אימות מיקום — בפתיחת השעון הטלפון יבקש אישור גישה למיקום (פעם ראשונה בלבד). במצב 'חסימה' ניתן לפתוח שעון רק בקרבת האתר." },
   { icon:"👷", title:"ניהול עובדים וסוגי העסקה", body:"בטאב עובדים מוסיפים עובד עם שם, קוד אישי ותפקיד, ובוחרים סוג העסקה:\n• יומי — שכר קבוע ליום (עם אפשרות חצי יום).\n• שעתי — שכר לשעה + שעון נוכחות.\n• גלובלי — משכורת חודשית קבועה.\nלכל עובד אפשר להגדיר אם יראה כפתור דלק וכמה ₪ דלק ליום.\nחשוב: כדי שעובד יוכל לדווח, חובה לשייך אותו לפרויקט (כפתור 'שייך עובדים' בתוך הפרויקט)." },
   { icon:"🏗️", title:"פרויקטים", body:"בטאב פרויקטים יוצרים פרויקט חדש ונכנסים אליו לניהול מלא: תיאור (מומלץ לכתוב כמויות — למשל '200 מטר גבס'), שלבי ביצוע עם סטטוס ותאריך יעד, הוצאות וחומרים, קבלני משנה, חשבוניות ותוכניות.\nלכל שלב ביצוע אפשר לתת משקל באחוזים (למשל: ניצבים 30%, גבס צד אחד 20%) — סימון שלב כ'הושלם' מעדכן אוטומטית את גרף ההתקדמות של הפרויקט. בלי משקלים — הגרף לפי הסליידר הידני.\nסטטוס 'הושלם' מסתיר את הפרויקט מהעובדים ומרשימות השיבוץ.\nכרטיס 'סה\"כ הוצאות פרויקט' מסכם הוצאות + קבלני משנה.\nבכרטיס '📍 אימות מיקום' אפשר לחייב עובדים שעתיים לפתוח שעון רק בקרבת האתר: עומדים באתר ← 'קבע את המיקום הנוכחי' ← בוחרים רדיוס ומצב (סימון בלבד / חסימה). חל רק על שעון שעתי — יומיות וגלובלי לא מושפעים." },
   { icon:"📄", title:"הצעות מחיר", body:"בטאב הצעות מחיר יוצרים הצעה עם פרטי לקוח וסכום — או מחולקת לסעיפים (גבס, בטון...) כשלכל סעיף מחיר וסימון כולל/בלי חומר; הסה\"כ מחושב אוטומטית.\nכשהלקוח מאשר לוחצים '✓ נסגרה — צור פרויקט' וההצעה הופכת לפרויקט פעיל: הסעיפים נכתבים לתיאור והסכום (לא כולל מע\"מ) נכנס ל'עלות פרויקט' בנתוני הפרויקט. את שלבי קבלת התשלום מגדירים ידנית.\nהצעה שנדחתה נשארת לתיעוד ואפשר להחזירה.\nכפתור '📤 הצג ללקוח' פותח דף הצעה מעוצב עם הלוגו, הסעיפים, סה\"כ לפני מע\"מ וסה\"כ כולל מע\"מ (18%) — אפשר לשתף, להדפיס או לשמור כ-PDF ולשלוח ללקוח." },
@@ -1120,6 +1120,12 @@ const ymOf = (d) => {
 };
 const shiftYm = (ym, n) => { const [y, m] = ym.split("-").map(Number); const d = new Date(y, m - 1 + n, 1); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`; };
 const repDays = (r) => r._shift ? ((Number(r.hours) || 0) > 0 ? 1 : 0) : (r.dayType === "half" ? 0.5 : Number(r.days || 1));
+// כמה מהיום שייך לדיווח: משמרות של אותו עובד באותו יום מתחלקות לפי השעות (יחד = יום אחד)
+const dayShare = (reports) => {
+  const tot = {};
+  reports.forEach(r => { if (r._shift && r.date && !r._summary) { const k = String(r.workerId ?? r.workerName) + "|" + r.date; tot[k] = (tot[k] || 0) + (Number(r.hours) || 0); } });
+  return (r) => { if (!r._shift) return repDays(r); const t = tot[String(r.workerId ?? r.workerName) + "|" + r.date]; return t > 0 ? (Number(r.hours) || 0) / t : 0; };
+};
 // הסכום של שורה בחודש מסוים: ערך שנקבע לחודש הזה, אחרת הסכום הקבוע (0 לפני שהשורה נוספה / אחרי שהוסרה / לפני תחילת המודול)
 const finActive = (it, ym) => (!it.since || it.since <= ym) && (!it.until || ym < it.until);
 const finVal = (fin, key, def, ym, item) => {
@@ -1208,6 +1214,7 @@ const ALERT_DEFS = [
   { k:"due_new",     icon:"💵", title:"שלב חדש לגבייה", desc:"מייל למחרת בבוקר על כל שלב תשלום של לקוח שסומן ⏳ לגבייה.", when:"next", fin:true, def:{ on:true, email:true } },
   { k:"collect",     icon:"💵", title:"כסף שלא נגבה", desc:"שלב תשלום של לקוח שממתין ב\"לגבייה\" יותר מכמה ימים.", when:"days", fin:true, def:{ on:true, days:14, email:true } },
   { k:"quotes",      icon:"📨", title:"הצעת מחיר בלי תשובה", desc:"הצעה שנשלחה ללקוח ולא נסגרה ולא נדחתה.", when:"days", def:{ on:true, days:7, email:true } },
+  { k:"overtime",    icon:"⏱️", title:"חריגה בשעות של עובד יומי", desc:"עובד יומי עם שעון שעבד יותר מ-9 שעות ביום — אתה מחליט אם לשלם שעות נוספות (בטאב דיווחים).", when:"next", def:{ on:true, email:true } },
   { k:"noreport",    icon:"👷", title:"עובד שלא דיווח", desc:"עובד ששויך לפרויקט בביצוע ולא דיווח כמה ימי עבודה (בלי שבת).", when:"days", unit:"ימי עבודה", def:{ on:false, days:2, email:true } },
 ];
 const alertOf = (cfg, k) => ({ ...(ALERT_DEFS.find(a => a.k === k)?.def || {}), ...((cfg?._alerts || {})[k] || {}) });
@@ -1221,10 +1228,10 @@ const workdaysBetween = (fromIso, toIso) => { // ימי עבודה (בלי שב�
 
 // ימי עבודה לפי פרויקט בחודש
 const daysByProject = (reports, ym) => {
-  const by = {}; let total = 0;
+  const by = {}; let total = 0; const ds = dayShare(reports);
   reports.forEach(r => {
     if (r._paymentRecord || r._summary || r.pendingApproval || !r.projectId || String(r.date || "").slice(0, 7) !== ym) return;
-    const d = repDays(r); if (!d) return;
+    const d = ds(r); if (!d) return;
     by[String(r.projectId)] = (by[String(r.projectId)] || 0) + d; total += d;
   });
   return { by, total };
@@ -1257,10 +1264,10 @@ const finAlloc = (fin, reports, projects, ym) => {
     Object.entries(wc).forEach(([wid, c]) => {
       const amt = (Number(c?.bl) || 0) + (Number(c?.pension) || 0); if (!amt) return;
       workersPool += amt;
-      const wd = {}; let tot = 0;
+      const wd = {}; let tot = 0; const ds = dayShare(reports);
       reports.forEach(r => {
         if (r._paymentRecord || r._summary || r.pendingApproval || !r.projectId || String(r.date || "").slice(0, 7) !== ym || String(r.workerId) !== String(wid)) return;
-        const d = repDays(r); if (!d) return; wd[String(r.projectId)] = (wd[String(r.projectId)] || 0) + d; tot += d;
+        const d = ds(r); if (!d) return; wd[String(r.projectId)] = (wd[String(r.projectId)] || 0) + d; tot += d;
       });
       if (!tot) { byDaysLeft += amt; return; }
       Object.entries(wd).forEach(([pid, d]) => add(pid, amt * d / tot));
@@ -1331,53 +1338,86 @@ function workerDaysForProject(reports, projectId) {
 }
 
 // ✅ חישוב שכר לעובד: ימים כולל + לפי חודש
+// ===== שעון נוכחות =====
+const STD_HOURS = 9; // יום עבודה רגיל
+const usesClock = (w) => (w?.payType || "daily") === "hourly" || ((w?.payType || "daily") === "daily" && !!w?.dailyClock);
+// ערך של כל דיווח של עובד. משמרות באותו יום מקובצות: יום אחד, שעות נוספות לפי סך השעות של היום, דלק ואוכל פעם ביום,
+// והיום מתחלק בין הפרויקטים לפי השעות
+function workerUnits(worker, myReports) {
+  const payType = worker.payType || "daily";
+  const rate = Number(worker.dailyRate || 0), hRate = Number(worker.hourlyRate || 0);
+  const foodDef = worker.showFood ? Number(worker.foodAmount || 0) : 0;
+  const units = new Map(), byDay = {};
+  const zero = { dv:0, pay:0, hours:0, reg:0, ot125:0, ot150:0, fuel:0, food:0, ot:0 };
+  myReports.forEach(r => {
+    if (r._shift) { if (r.date) (byDay[r.date] = byDay[r.date] || []).push(r); else units.set(r, zero); return; }
+    const dv = Number(r.days || 1);
+    let pay = 0, hours = 0, reg = 0, ot125 = 0, ot150 = 0;
+    if (payType === "hourly") { const hp = calcHourlyPay(dv * STD_HOURS, hRate); pay = hp.pay; hours = dv * STD_HOURS; reg = hp.reg; ot125 = hp.ot125; ot150 = hp.ot150; }
+    else if (payType !== "global") pay = dv * rate;
+    units.set(r, { dv, pay, hours, reg, ot125, ot150, fuel: r.fuel ? Number(r.fuelAmt || 50) : 0, food: dv * (r.foodAmt != null ? Number(r.foodAmt) || 0 : foodDef), ot: 0 });
+  });
+  Object.values(byDay).forEach(list => {
+    const tot = list.reduce((s, r) => s + (Number(r.hours) || 0), 0);
+    if (!(tot > 0)) { list.forEach(r => units.set(r, zero)); return; }
+    const hp = calcHourlyPay(tot, payType === "hourly" ? hRate : rate / STD_HOURS);
+    let dayPay = 0, ot = 0;
+    if (payType === "hourly") dayPay = hp.pay;
+    else if (payType !== "global") {
+      dayPay = rate;
+      if (tot > STD_HOURS && list.some(r => r.otDecision === "pay")) { ot = Math.max(0, hp.pay - rate); dayPay += ot; } // שעות נוספות — רק אם המנהל אישר
+    }
+    const fuelR = list.find(r => r.fuel);
+    const first = [...list].sort((a, b) => (a.clockIn || 0) - (b.clockIn || 0))[0];
+    const foodAmt = first.foodAmt != null ? Number(first.foodAmt) || 0 : foodDef;
+    list.forEach(r => {
+      const sh = (Number(r.hours) || 0) / tot;
+      units.set(r, { dv: sh, pay: dayPay * sh, hours: Number(r.hours) || 0, reg: hp.reg * sh, ot125: hp.ot125 * sh, ot150: hp.ot150 * sh,
+        fuel: r === fuelR ? Number(fuelR.fuelAmt || 50) : 0, food: foodAmt * sh, ot: ot * sh });
+    });
+  });
+  return units;
+}
+// ימים של עובד יומי עם שעון שעברו 9 שעות — מחכים להחלטה של המנהל (לשלם שעות נוספות או לא)
+const overtimeDays = (reports, workers) => {
+  const byKey = {};
+  reports.forEach(r => { if (!r._shift || !r.date || r._summary || r._paymentRecord || r.pendingApproval) return; const k = String(r.workerId) + "|" + r.date; (byKey[k] = byKey[k] || []).push(r); });
+  const out = [];
+  Object.entries(byKey).forEach(([k, list]) => {
+    const w = workers.find(x => String(x.id) === String(list[0].workerId));
+    if (!w || (w.payType || "daily") !== "daily") return;
+    const tot = list.reduce((s, r) => s + (Number(r.hours) || 0), 0);
+    if (tot <= STD_HOURS) return;
+    const rate = Number(w.dailyRate || 0);
+    const first = [...list].sort((a, b) => (a.clockIn || 0) - (b.clockIn || 0))[0];
+    out.push({ key: k, w, date: list[0].date, tot: Math.round(tot * 100) / 100, over: Math.round((tot - STD_HOURS) * 100) / 100, first, list,
+      dec: list.find(r => r.otDecision)?.otDecision || "", extra: Math.round(Math.max(0, calcHourlyPay(tot, rate / STD_HOURS).pay - rate)) });
+  });
+  return out.sort((a, b) => String(b.date).localeCompare(String(a.date)));
+};
+
 function calcWorkerPayroll(worker, reports) {
   const myReports = reports.filter(r => !r._paymentRecord && !r._summary && !r.pendingApproval && (String(r.workerId) === String(worker.id) || r.workerName === worker.name));
-  // אוכל ליום: הסכום שנשמר בדיווח (מרגע שהופעל), ובדיווחים ישנים — לפי ההגדרה של העובד
-  const foodOf = (r, dv) => dv * (r.foodAmt != null ? Number(r.foodAmt)||0 : (worker.showFood ? Number(worker.foodAmount||0) : 0));
   const payType = worker.payType || "daily";
-  const rate = Number(worker.dailyRate || 0);
-  const hRate = Number(worker.hourlyRate || 0);
   const monthly = Number(worker.monthlySalary || 0);
-
-  // עלות שורה בודדת לפי סוג העסקה
-  const rowValue = (r) => {
-    if (payType === "hourly") {
-      if (r._shift && r.hours != null) return calcHourlyPay(r.hours, hRate).pay;
-      // דיווח יומי ישן של עובד שהפך לשעתי — 9 שעות ליום
-      return calcHourlyPay(Number(r.days||1) * 9, hRate).pay;
-    }
-    if (payType === "global") return 0; // גלובלי — שכר חודשי קבוע, לא לפי ימים
-    return Number(r.days||1) * rate;
-  };
-
-  const totalDays = myReports.reduce((s, r) => s + (r._shift ? ((r.hours||0) > 0 ? 1 : 0) : Number(r.days||1)), 0);
-  const totalFuel = myReports.reduce((s,r) => s + (r.fuel ? Number(r.fuelAmt||50) : 0), 0);
+  const U = workerUnits(worker, myReports);
+  const totalDays = myReports.reduce((s, r) => s + (U.get(r)?.dv || 0), 0);
 
   // לפי חודש
   const byMonth = {};
   myReports.forEach(r => {
     if (!r.date) return;
+    const u = U.get(r); if (!u) return;
     const month = r.date.slice(0, 7);
-    if (!byMonth[month]) byMonth[month] = { days: 0, hours: 0, reg: 0, ot125: 0, ot150: 0, fuel: 0, food: 0, pay: 0, projects: new Set(), byProject: {} };
+    if (!byMonth[month]) byMonth[month] = { days: 0, hours: 0, reg: 0, ot125: 0, ot150: 0, ot: 0, fuel: 0, food: 0, pay: 0, projects: new Set(), byProject: {} };
     const m = byMonth[month];
-    const dv = r._shift ? ((r.hours||0) > 0 ? 1 : 0) : Number(r.days||1);
-    m.days += dv;
-    if (payType === "hourly") {
-      const hrs = r._shift && r.hours != null ? Number(r.hours) : Number(r.days||1) * 9;
-      const hp = calcHourlyPay(hrs, hRate);
-      m.hours += hrs; m.reg += hp.reg; m.ot125 += hp.ot125; m.ot150 += hp.ot150;
-    }
-    m.pay += rowValue(r);
-    if (r.fuel) m.fuel += Number(r.fuelAmt||50);
-    const fd = foodOf(r, dv); m.food += fd;
+    m.days += u.dv; m.hours += u.hours; m.reg += u.reg; m.ot125 += u.ot125; m.ot150 += u.ot150; m.ot += u.ot;
+    m.pay += u.pay; m.fuel += u.fuel; m.food += u.food;
     const pName = r.projectName || String(r.projectId || "ללא פרויקט");
     m.projects.add(pName);
     if (!m.byProject[pName]) m.byProject[pName] = { days: 0, fuel: 0, food: 0, pay: 0 };
-    m.byProject[pName].days += dv;
-    m.byProject[pName].pay += rowValue(r);
-    m.byProject[pName].food += fd;
-    if (r.fuel) m.byProject[pName].fuel += Number(r.fuelAmt||50);
+    const bp = m.byProject[pName];
+    bp.days += u.dv; bp.pay += u.pay; bp.food += u.food; bp.fuel += u.fuel;
   });
 
   // גלובלי: כל חודש עם פעילות = המשכורת הקבועה
@@ -1388,13 +1428,11 @@ function calcWorkerPayroll(worker, reports) {
   // סה"כ לפי פרויקט (כל הזמנים)
   const totalByProject = {};
   myReports.forEach(r => {
+    const u = U.get(r); if (!u) return;
     const pName = r.projectName || String(r.projectId || "ללא פרויקט");
     if (!totalByProject[pName]) totalByProject[pName] = { days: 0, fuel: 0, food: 0, pay: 0 };
-    const tdv = r._shift ? ((r.hours||0) > 0 ? 1 : 0) : Number(r.days||1);
-    totalByProject[pName].days += tdv;
-    totalByProject[pName].pay += rowValue(r);
-    totalByProject[pName].food += foodOf(r, tdv);
-    if (r.fuel) totalByProject[pName].fuel += Number(r.fuelAmt||50);
+    const t = totalByProject[pName];
+    t.days += u.dv; t.pay += u.pay; t.food += u.food; t.fuel += u.fuel;
   });
   const projectBreakdown = Object.entries(totalByProject)
     .sort((a,b) => b[1].days - a[1].days)
@@ -1410,6 +1448,7 @@ function calcWorkerPayroll(worker, reports) {
       reg: Math.round(v.reg*100)/100,
       ot125: Math.round(v.ot125*100)/100,
       ot150: Math.round(v.ot150*100)/100,
+      ot: Math.round(v.ot||0),
       fuel: v.fuel||0,
       food: Math.round(v.food||0),
       gross: Math.round(v.pay),
@@ -1972,15 +2011,20 @@ export default function App() {
   const submitReport = async () => {
     if (!repProject) return;
     try {
-      // Block duplicate report: same worker, same date
-      const existingReport = [...reports, ...pendingReports].find(r =>
-        !r._paymentRecord &&
+      // אותו יום: אפשר חצי יום בפרויקט אחד + חצי יום בפרויקט אחר — לא יותר מיום אחד
+      const sameDay = [...reports, ...pendingReports].filter(r =>
+        !r._paymentRecord && !r._summary &&
         r.date === repDate &&
         (String(r.workerId) === String(loggedWorker.id) || r.workerName === loggedWorker.name)
       );
-      if (existingReport) {
-        alert("כבר דיווחת על תאריך זה! לא ניתן לדווח פעמיים על אותו יום.");
-        return;
+      if (sameDay.length) {
+        const used = sameDay.reduce((s, r) => s + (r._shift ? 1 : (r.dayType === "half" ? 0.5 : Number(r.days || 1))), 0);
+        const want = dayType === "half" ? 0.5 : 1;
+        if (used + want > 1) {
+          alert(used >= 1 ? "כבר דיווחת על יום מלא בתאריך זה — לא ניתן לדווח פעמיים על אותו יום." : "כבר דיווחת חצי יום בתאריך זה.\nאפשר לדווח עוד חצי יום — בחר 'חצי יום' ופרויקט אחר.");
+          return;
+        }
+        if (sameDay.some(r => String(r.projectId) === String(repProject))) { alert("כבר דיווחת על הפרויקט הזה בתאריך זה — בחר פרויקט אחר לחצי היום השני."); return; }
       }
       // חסימת דיווח על תאריך עתידי
       if (repDate > todayStr()) {
@@ -2909,6 +2953,18 @@ async function shareImg() {
           <input type="number" value={obj.dailyRate||""} placeholder="550" onChange={e=>setObj({...obj, dailyRate:e.target.value})} style={inp}/>
         </label>
       )}
+      {(obj.payType||"daily")==="daily" && (
+        <div style={{ background:"#F9F9F9", borderRadius:9, padding:"9px 12px", marginBottom:11 }}>
+          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", gap:8 }}>
+            <span style={{ fontSize:13, fontWeight:600 }}>⏱️ שעון נוכחות (כניסה ויציאה)</span>
+            <button type="button" onClick={()=>setObj({...obj, dailyClock: !obj.dailyClock})}
+              style={{ background: obj.dailyClock ? "#1A1A2E":"#DDD", color: obj.dailyClock ? "#E8C547":"#777", border:"none", borderRadius:8, padding:"4px 14px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700, flexShrink:0 }}>
+              {obj.dailyClock ? "✓ כן" : "לא"}
+            </button>
+          </div>
+          <p style={{ margin:"5px 0 0", fontSize:11, color:"#888" }}>השכר נשאר לפי יום. העובד פותח וסוגר שעון (ועובר בין אתרים באותו יום), ואם הוא עובד יותר מ-9 שעות — תקבל התראה ותחליט אם לשלם שעות נוספות.</p>
+        </div>
+      )}
       {obj.payType==="hourly" && (
         <label style={{ display:"block", marginBottom:11 }}>
           <LBL t="שכר שעתי (₪)"/>
@@ -3424,7 +3480,7 @@ async function shareImg() {
         })()}
 
         {/* עובד שעתי — שעון נוכחות */}
-        {workerView==="report" && loggedWorker?.payType==="hourly" && (
+        {workerView==="report" && usesClock(loggedWorker) && (
           <div style={{ background:"#fff", borderRadius:16, padding:22, boxShadow:"0 2px 8px rgba(0,0,0,0.07)", marginBottom:16 }}>
             {myOpenShift ? (
               <div style={{ textAlign:"center" }}>
@@ -3556,7 +3612,7 @@ async function shareImg() {
           </div>
         )}
 
-        {workerView==="report" && loggedWorker?.payType!=="hourly" && (repSent ? (
+        {workerView==="report" && !usesClock(loggedWorker) && (repSent ? (
           <div style={{ background:"#fff", borderRadius:16, padding:36, textAlign:"center" }}>
             <div style={{ fontSize:46, marginBottom:10 }}>✅</div>
             <h3 style={{ margin:"0 0 6px", fontWeight:800, fontSize:19 }}>הדיווח נשלח!</h3>
@@ -3587,6 +3643,7 @@ async function shareImg() {
                   </button>
                 ))}
               </div>
+              {dayType === "half" && <p style={{ margin:"6px 0 0", fontSize:12, color:"#888" }}>💡 עבדת היום בשני פרויקטים? שלח חצי יום על הראשון, ואחר כך דווח עוד חצי יום על השני.</p>}
             </label>
 
             {(() => {
@@ -3721,6 +3778,20 @@ async function shareImg() {
       go: () => { setBellOpen(false); reviewCategory(k); } }));
   }
 
+  // ===== חריגה בשעות של עובד יומי — המנהל מחליט אם לשלם שעות נוספות =====
+  const otByFirst = new Map(overtimeDays(reports, workers).map(o => [o.first, o]));
+  const setOtDecision = async (o, dec) => {
+    if (dec === "pay" && !window.confirm(`לשלם ל-${o.w.name} שעות נוספות על ${o.date}?\n${o.tot} שעות (+${o.over}) → ₪${fmtNum(o.extra)} נוספים בשכר (125% / 150% לפי חלק היומית לשעה).`)) return;
+    try {
+      for (const r of o.list) {
+        const { _dbid, otDecision, ...rest } = r;
+        const data = dec ? { ...rest, otDecision: dec } : rest;
+        await dbUpdate("reports", _dbid, data);
+        setReports(prev => prev.map(x => x._dbid === _dbid ? { ...data, _dbid } : x));
+      }
+    } catch (e) { alert("השמירה נכשלה: " + e.message); }
+  };
+
   // ===== התראות מתוזמנות (לפי טאב 🔔 התראות) =====
   if (!isForeman) {
     const today = todayStr(), tDay = Number(today.slice(8)), prevYm = shiftYm(today.slice(0,7), -1);
@@ -3766,6 +3837,15 @@ async function shareImg() {
       const old = quotes.filter(q => (q.status || "נשלחה") === "נשלחה" && q.date && (Date.parse(today) - Date.parse(q.date)) / 864e5 >= (Number(a.days) || 7));
       if (old.length) alerts.push({ key: "quotes", icon: "📨", color: "#6D28D9", bg: "#EDE9FE", title: `${old.length === 1 ? "הצעת מחיר בלי תשובה" : `${old.length} הצעות מחיר בלי תשובה`} יותר מ-${a.days} ימים`,
         detail: old.slice(0, 3).map(q => q.title || q.clientName || "הצעה").join(", "), go: () => goTab("quotes") });
+    }
+    a = A("overtime");
+    if (a) {
+      const since = isoOf(new Date(Date.now() - 45 * 864e5));
+      const pend = overtimeDays(visibleReports, workers).filter(o => !o.dec && o.date >= since);
+      if (pend.length) alerts.push({ key: "overtime", icon: "⏱️", color: "#B71C1C", bg: "#FCE4EC",
+        title: pend.length === 1 ? `${pend[0].w.name} עבד ${pend[0].tot} שעות ב-${fmtIsoShort(pend[0].date)} (+${pend[0].over})` : `${pend.length} ימים עם חריגה בשעות — להחליט על שעות נוספות`,
+        detail: pend.length === 1 ? `לשלם שעות נוספות (₪${fmtNum(pend[0].extra)}) או לא — בטאב דיווחים` : pend.slice(0, 3).map(o => `${o.w.name} ${fmtIsoShort(o.date)}`).join(", "),
+        go: () => goTab("reports") });
     }
     a = A("noreport");
     if (a) {
@@ -3966,7 +4046,7 @@ async function shareImg() {
 
             {visibleReports.length===0 && visiblePending.length===0 && <div style={{ background:"#fff", borderRadius:14, padding:44, textAlign:"center", border:"1.5px dashed #DDD", color:"#AAA" }}><div style={{ fontSize:34, marginBottom:8 }}>📋</div><p style={{ margin:0 }}>אין דיווחים עדיין</p></div>}
             <div className="bt-grid">
-            {[...visibleReports].reverse().map(r => (
+            {[...visibleReports].reverse().map(r => { const otd = otByFirst.get(r); return (
               <div key={r._dbid} style={{ background:"#fff", borderRadius:12, padding:"13px 18px", marginBottom:9, borderRight:"4px solid #E8C547", boxShadow:"0 1px 5px rgba(0,0,0,0.06)", display:"flex", justifyContent:"space-between", alignItems:"flex-start", gap:10 }}>
                 <div style={{ flex:1 }}>
                   <div style={{ display:"flex", gap:8, flexWrap:"wrap", alignItems:"center", marginBottom:3 }}>
@@ -3997,10 +4077,21 @@ async function shareImg() {
                   </div>
                   {r.note && <p style={{ margin:0, fontSize:13, color:"#666", lineHeight:1.5 }}>{r.note}</p>}
                   {r.fuel && <span style={{ background:"#FFF8E1", color:"#B26A00", borderRadius:6, padding:"2px 7px", fontSize:11, fontWeight:600 }}>⛽ +₪{r.fuelAmt||50} דלק</span>}
+                  {otd && (
+                    <div style={{ display:"flex", gap:6, alignItems:"center", flexWrap:"wrap", marginTop:5, background:"#FCE4EC", borderRadius:8, padding:"5px 8px" }}>
+                      <span style={{ fontSize:12, color:"#B71C1C", fontWeight:700 }}>⚠️ {otd.tot} שעות ביום (+{otd.over}){otd.list.length > 1 ? ` · ${otd.list.length} משמרות` : ""}</span>
+                      {otd.dec === "pay" ? <span style={{ fontSize:11.5, color:"#2E7D32", fontWeight:700 }}>💰 שולמו שעות נוספות ₪{fmtNum(otd.extra)}</span>
+                        : otd.dec === "none" ? <span style={{ fontSize:11.5, color:"#666", fontWeight:700 }}>✓ בלי תוספת</span> : null}
+                      {!otd.dec ? (<>
+                        <button onClick={()=>setOtDecision(otd, "pay")} style={{ background:"#2E7D32", color:"#fff", border:"none", borderRadius:6, padding:"3px 9px", fontSize:11.5, fontWeight:700, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>💰 לשלם נוספות (₪{fmtNum(otd.extra)})</button>
+                        <button onClick={()=>setOtDecision(otd, "none")} style={{ background:"#fff", color:"#555", border:"1px solid #DDD", borderRadius:6, padding:"3px 9px", fontSize:11.5, fontWeight:700, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>✓ בלי תוספת</button>
+                      </>) : <button onClick={()=>setOtDecision(otd, "")} style={{ background:"none", border:"none", color:"#3B5BDB", fontSize:11, cursor:"pointer", padding:0, fontFamily:"Heebo,sans-serif" }}>שנה</button>}
+                    </div>
+                  )}
                 </div>
                 <button onClick={()=>delReport(r)} style={{ background:"none", border:"none", cursor:"pointer", color:"#CCC", fontSize:15, padding:0, flexShrink:0 }}>✕</button>
               </div>
-            ))}
+            ); })}
             </div>
           </>
         )}
@@ -4302,8 +4393,8 @@ async function shareImg() {
 
             {/* עלות מעסיק לכל עובד — ביטוח לאומי ופנסיה, מתחלקים לפי איפה שהעובד עבד */}
             {(() => {
-              const wDays = {};
-              reports.forEach(r => { if (r._paymentRecord || r._summary || r.pendingApproval || String(r.date||"").slice(0,7) !== ym) return; const d = repDays(r); if (d) wDays[String(r.workerId)] = (wDays[String(r.workerId)] || 0) + d; });
+              const wDays = {}; const ds = dayShare(reports);
+              reports.forEach(r => { if (r._paymentRecord || r._summary || r.pendingApproval || String(r.date||"").slice(0,7) !== ym) return; const d = ds(r); if (d) wDays[String(r.workerId)] = (wDays[String(r.workerId)] || 0) + d; });
               const wcm = mo.workers || {};
               const list = workers.filter(w => wDays[String(w.id)] || wcm[w.id] || wcm[String(w.id)]);
               const cOf = (w) => wcm[w.id] || wcm[String(w.id)] || {};
@@ -5967,7 +6058,7 @@ async function shareImg() {
                                   {w.payType==="hourly"
                                     ? `${m.hours} שעות (רגילות ${m.reg} · 125% ${m.ot125} · 150% ${m.ot150})`
                                     : w.payType==="global" ? `משכורת גלובלית · ${m.days} ימי נוכחות`
-                                    : `סה"כ ${m.days} ימים`}{(m.food>0 || m.fuel>0) ? ` · ברוטו ₪${fmtNum(m.gross)}` : ""}{m.food>0 ? ` · 🍔 ₪${fmtNum(m.food)} אוכל` : ""}{m.fuel>0 ? ` · ⛽ ₪${m.fuel} דלק` : ""}
+                                    : `סה"כ ${m.days} ימים${m.hours>0 ? ` · ${m.hours} שעות` : ""}${m.ot>0 ? ` · 💰 שעות נוספות ₪${fmtNum(m.ot)}` : ""}`}{(m.food>0 || m.fuel>0) ? ` · ברוטו ₪${fmtNum(m.gross)}` : ""}{m.food>0 ? ` · 🍔 ₪${fmtNum(m.food)} אוכל` : ""}{m.fuel>0 ? ` · ⛽ ₪${m.fuel} דלק` : ""}
                                 </p>
                                 {paidInfo?.partial && !paidInfo.fullyPaid && (
                                   <p style={{ margin:"3px 0 0", fontSize:12, color:"#F57F17" }}>שולם חלקית: ₪{fmtNum(alreadyPaid)} · נותר: ₪{fmtNum(remaining)}</p>
