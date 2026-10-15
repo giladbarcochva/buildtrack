@@ -110,6 +110,7 @@ const HELP_TOPICS = [
   { icon:"🧮", fin:true, title:"הוצאות חודשיות קבועות", body:"בטאב 🧮 הוצאות חודשיות רושמים את מה שמשלמים כל חודש — כל הסכומים לפני מע\"מ:\n• תקורות — בקבוצות (רכב, משרד, ביטוחים...) עם '+ שורה'.\n• ספקים בתשלום חודשי. אם החודש נקלטו בפרויקטים חשבוניות מאותו ספק — תופיע אזהרה כדי שלא ייספר פעמיים.\n• מיסים וביטוחים — ביטוח לאומי ופנסיה של העובדים (סכום כולל), ושל הבעלים, ומס הכנסה.\nלכל שורה יש סכום קבוע (🔁) שחוזר כל חודש, ואפשר לשנות בשדה רק לחודש הנוכחי. בסוף החודש לוחצים '✓ אשר' — הסכומים ננעלים.\n• 📎 חשבונית לספק — מעלים את החשבונית של החודש (נקראת אוטומטית); הסכום שלה (או סכום כמה חשבוניות) מחליף את הסכום הקבוע של אותו חודש. החשבוניות נשלחות גם לרואה החשבון, ויש בדיקת כפילות מול החשבוניות בפרויקטים.\n• 👷 עלות מעסיק לפי עובד — ביטוח לאומי, ופנסיה + פיצויים + קרן השתלמות של המעסיק, לכל עובד. אפשר להעלות '📄 ריכוז שכר' (או דוח עלות מעסיק / תלושים) והמערכת ממלאת לפי שמות העובדים, או להקליד ידנית. כל עובד מתחלק לפרויקטים לפי איפה שהוא עבד.\n• 📊 חלוקה לפרויקטים — לכל חודש בוחרים: לפי ימי עבודה, או לפי גודל הפרויקט ('עלות פרויקט') בין הפרויקטים שהיו פעילים בחודש (עובדים, קבלנים, הוצאות או תשלומים). ביטוח לאומי ופנסיה של עובדים תמיד לפי איפה שעבדו. הסכום מופיע בדף הפרויקט כ'חלק מהוצאות קבועות'. של הבעלים — רק בסיכום העסק." },
   { icon:"💼", fin:true, title:"מע\"מ — הערכה אוטומטית", body:"בטאב 🧮 הוצאות חודשיות, בכרטיס 💼 מע\"מ, המערכת מעריכה כמה מע\"מ תשלם:\nמע\"מ עסקאות (18% מההכנסות שהתקבלו בחודש) פחות מע\"מ תשומות (18% מההוצאות בפרויקטים, מהתשלומים לקבלני משנה ומהספקים והתקורות).\nלכן חשוב שכל הסכומים יירשמו לפני מע\"מ.\n• תקופת דיווח — בוחרים 'כל חודש', 'כל חודשיים' או מספר חודשים אחר. כשהתקופה ארוכה מחודש מוצג גם סה\"כ לדוח של כל התקופה.\n• מה לא נכלל: שכר, ביטוח לאומי, פנסיה ומס הכנסה (אין עליהם מע\"מ), הוצאות מסוג אוכל (עליהן לא מזדכים, ולכן הן נרשמות בסכום המלא כולל מע\"מ), וכל מה שסומן 'בלי מע\"מ' — קבלן משנה עוסק פטור (בכרטיס הקבלן), ספק או תקורה (ליד השורה), או הוצאה (ליד ההוצאה). חשבונית שנקראה בלי מע\"מ מסומנת כך אוטומטית.\n• אפשר להקליד סכום אחר ידנית; '↺ חזור לחישוב' מחזיר להערכה. סכום במינוס = החזר משוער.\n• המע\"מ לא יורד מהרווח בסיכום העסק — הוא כסף שגובים מהלקוח ומעבירים למדינה.\nזו הערכה בלבד — הדיווח הרשמי נעשה מול רואה החשבון." },
   { icon:"🔔", title:"טאב התראות ושליחה לרואה החשבון", body:"בטאב 🔔 התראות מחליטים מה נשלח, מתי ולמי. המיילים יוצאים בבוקר (6:30–7:30); יום שיוצא בשבת — נשלח ביום ראשון.\n• 📤 שליחה לרואה החשבון — מגדירים את המייל והטלפון שלו, בוחרים חודש ושולחים: דוח שכר ברוטו (PDF) ו/או את כל החשבוניות של החודש — במייל, או בווטסאפ (מהטלפון נפתח חלון השיתוף עם הקבצים). '💬 הודעת סיכום' פותח ווטסאפ עם הודעה מוכנה.\n• דוח השכר: לכל עובד ימים, שעות, תעריף ושכר ברוטו, ובנפרד תוספות אוכל ודלק, ו'שולם עד כה' — מה שכבר שולם לעובד על החודש (כולל מקדמות).\n• לכל התראה: מתג פעיל/כבוי, יום בחודש או מספר ימים, למי (דוח שכר וחשבוניות), ואיך — אוטומטי במייל או רק תזכורת בפעמון ושליחה ידנית.\n• התראות: דוח שכר, חשבוניות, להוציא משכורות (ב-7 לחודש), מע\"מ, אישור הוצאות חודשיות, כסף שלא נגבה, הצעת מחיר בלי תשובה, עובד שלא דיווח.\n• מייל התראות בוקר — הדיווחים לאישור, שעונים שנשכחו וכו'. התזכורות מצטרפות אליו." },
+  { icon:"💼", title:"עובד שמשולם בחשבונית", body:"עובד קבוע שיש לו עסק ומוציא לך חשבונית: בעריכת העובד בוחרים 'אופן תשלום' ← '💼 חשבונית (עוסק)', ועוסק מורשה (+מע\"מ) או פטור. התעריף לפני מע\"מ.\nהעובד מדווח כרגיל (ימים או שעון) והעלות נכנסת לפרויקטים, אבל הוא לא מופיע בדוח השכר ברוטו לרואה החשבון ולא בעלות מעסיק.\nהתשלום שלו נמצא בטאב שכר ← 🔨 קבלנים ← '💼 עובדים בחשבונית': כמה מגיע לכל חודש (+מע\"מ), '✓ שולם', ו'📎 חשבונית' — החשבונית נשלחת לרואה החשבון עם שאר החשבוניות של החודש. אצל עוסק מורשה המע\"מ נכנס להערכת המע\"מ." },
   { icon:"🍔", title:"תוספת אוכל לעובד", body:"בעריכת עובד (טאב עובדים) מפעילים '🍔 תוספת אוכל לכל יום עבודה' וקובעים סכום ליום. הסכום מתווסף אוטומטית לכל יום עבודה (חצי יום — חצי), כמו הדלק.\nבטאב שכר ובדוח לרואה החשבון האוכל והדלק מופיעים בנפרד מהשכר ברוטו. שינוי הסכום חל מהדיווחים הבאים — חודשים קודמים לא משתנים." },
   { icon:"🛠️", title:"תקלות נפוצות", body:"• 'קוד שגוי' למרות קוד נכון — ודאו שנכנסתם דרך הקישור הנכון של העסק שלכם.\n• נתונים לא מתעדכנים — צאו והתחברו מחדש, או משכו לרענון.\n• המסך נראה ישן אחרי עדכון — סגרו את האפליקציה לגמרי ופתחו שוב.\n• ההתחברות תקפה 12 שעות — אחריהן פשוט מתחברים שוב.\n• 'לא ניתן לאמת מיקום' — יש לאשר גישה למיקום: הגדרות הטלפון ← ספארי/כרום ← מיקום ← אפשר.\nלכל בעיה אחרת — פנו לספק המערכת." },
 ];
@@ -1193,16 +1194,21 @@ const vatPeriodMonths = (fin, ym) => {
   for (let k = start; k < start + n && k <= 12; k++) out.push(`${y}-${String(k).padStart(2, "0")}`);
   return out;
 };
-const vatEstimate = (fin, projects, ym) => {
-  let income = 0, exp = 0, subs = 0, fixed = 0;
+// עובד שמקבל תשלום בחשבונית (עוסק) — לא בתלוש: לא בדוח השכר ברוטו, משולם כמו קבלן
+const isInvoiceW = (w) => w?.payMode === "invoice";
+const vatEstimate = (fin, projects, ym, workers, reports) => {
+  let income = 0, exp = 0, subs = 0, fixed = 0, wInv = 0;
+  (workers || []).filter(w => isInvoiceW(w) && w.vatType !== "exempt").forEach(w => {
+    const m = (calcWorkerPayroll(w, reports || []).months || []).find(x => x.month === ym); if (m) wInv += m.pay;
+  });
   (projects || []).forEach(p => {
     (p.clientPayments || []).forEach(c => { if (c.received && ymOf(c.receivedIso || c.receivedAt) === ym) income += Number(c.amount) || 0; });
     (p.expenses || []).forEach(e => { if (ymOf(e.date) === ym && !e.noVat && !NO_VAT_CATS.includes(expCat(e))) exp += Number(e.amount) || 0; });
     (p.subcontractors || []).forEach(sc => { if (sc.noVat) return; (sc.payments || []).forEach(pm => { if (pm.paid && ymOf(pm.paidAt) === ym) subs += Number(pm.amount) || 0; }); });
   });
   if (fin && !(fin.startYm && ym < fin.startYm)) finLines(fin, ym).forEach(l => { if ((l.kind === "overhead" || l.kind === "supplier") && !l.noVat) fixed += l.amount; });
-  const outV = income * VAT_RATE, inV = (exp + subs + fixed) * VAT_RATE;
-  return { income, exp, subs, fixed, outV, inV, net: outV - inV };
+  const outV = income * VAT_RATE, inV = (exp + subs + fixed + wInv) * VAT_RATE;
+  return { income, exp, subs, fixed, wInv, outV, inV, net: outV - inV };
 };
 // ===== טאב התראות — מה נשלח, מתי ולמי (נשמר בשורת ההגדרות: _alerts). חייב להתאים לפונקציה daily-alerts =====
 const ALERT_DEFS = [
@@ -1497,6 +1503,8 @@ export default function App() {
   const [supTarget, setSupTarget] = useState(null);
   const [finBusy, setFinBusy] = useState("");
   const [bankForm, setBankForm] = useState(null); // פרטי בנק לדרישת תשלום
+  const wInvRef = useRef(null); // העלאת חשבונית של עובד בחשבונית
+  const [wInvTarget, setWInvTarget] = useState(null);
   const [helpOpen, setHelpOpen] = useState(null);
 
   const [screen,       setScreen]       = useState("home");
@@ -2598,15 +2606,33 @@ async function shareImg() {
     const next = { ...cfgData, _isConfig: true, ...patch };
     try { await saveCfgChecked(next); setCfgData(next); return true; } catch (e) { alert("השמירה נכשלה: " + e.message); return false; }
   };
+  // חשבונית של עובד בחשבונית לחודש — נשמרת בשורת ההגדרות (רק המנהל רואה)
+  const uploadWorkerInvoice = async (w, ym, file) => {
+    try {
+      const path = `${CURRENT_ORG?.slug || "default"}/_workers/invoices/${Date.now()}_${safeFileName(file.name)}`;
+      const url = await withTimeout(storageUpload(file, path), 60000, "העלאת הקובץ לקחה יותר מדי זמן");
+      const all = { ...(cfgData._wInvoices || {}) }; const mine = { ...(all[w.id] || {}) };
+      mine[ym] = [...(mine[ym] || []), { name: file.name, url, path, date: todayStr() }];
+      all[w.id] = mine;
+      await saveCfgPatch({ _wInvoices: all });
+    } catch (e) { alert("ההעלאה נכשלה: " + e.message); }
+  };
+  const removeWorkerInvoice = async (w, ym, f) => {
+    if (!window.confirm(`למחוק את "${f.name}"?`)) return;
+    const all = { ...(cfgData._wInvoices || {}) }; const mine = { ...(all[w.id] || {}) };
+    mine[ym] = (mine[ym] || []).filter(x => x.path !== f.path); all[w.id] = mine;
+    if (await saveCfgPatch({ _wInvoices: all })) { try { await storageDelete(f.path); } catch (e) {} }
+  };
   const saveAlert = (k, patch) => saveCfgPatch({ _alerts: { ...(cfgData._alerts || {}), [k]: { ...alertOf(cfgData, k), ...patch } } });
   const alertsApi = (body) => fetch(`${SUPABASE_URL}/functions/v1/daily-alerts`, { method: "POST", headers: hdrs(), body: JSON.stringify(body) });
   const markSent = (k, ym) => saveCfgPatch({ _alertsSent: { ...(cfgData._alertsSent || {}), [k]: ym } });
   const monthInvoices = (ym) => [
     ...projects.flatMap(p => (p.invoices || []).filter(x => x.path && x.scanStatus !== "dup" && ymOf(x.scanDate || x.date) === ym).map(x => ({ ...x, _proj: p.name }))),
     ...((finOn && finDoc?.months?.[ym]?.supInv) || []).filter(x => x.path && x.scanStatus !== "dup").map(x => ({ ...x, _proj: "ספק חודשי" })),
+    ...Object.entries(cfgData._wInvoices || {}).flatMap(([wid, mm]) => ((mm || {})[ym] || []).map(x => ({ ...x, _proj: `עובד בחשבונית · ${workers.find(w => String(w.id) === wid)?.name || ""}` }))),
   ];
   const payrollOfMonth = (ym) => {
-    const rows = workers.map(w => ({ w, m: (calcWorkerPayroll(w, reports).months || []).find(m => m.month === ym) })).filter(x => x.m);
+    const rows = workers.filter(w => !isInvoiceW(w)).map(w => ({ w, m: (calcWorkerPayroll(w, reports).months || []).find(m => m.month === ym) })).filter(x => x.m);
     return { rows, count: rows.length, gross: rows.reduce((s, x) => s + (x.m.gross || 0), 0), food: rows.reduce((s, x) => s + (x.m.food || 0), 0), fuel: rows.reduce((s, x) => s + (x.m.fuel || 0), 0) };
   };
   const toLabel = (to) => to === "me" ? "אליך" : to === "acc" ? "לרואה החשבון" : "אליך ולרואה החשבון";
@@ -2651,7 +2677,7 @@ async function shareImg() {
     if (pr.count) lines.push(`• שכר ברוטו: ₪${fmtNum(pr.gross)} (${pr.count} עובדים)${pr.food ? ` + אוכל ₪${fmtNum(pr.food)}` : ""}${pr.fuel ? ` + דלק ₪${fmtNum(pr.fuel)}` : ""}`);
     if (inv.length) lines.push(`• חשבוניות: ${inv.length} (סה"כ ₪${fmtNum(Math.round(invTot))} לפני מע"מ)`);
     if (finOn && finDoc) {
-      const v = finLines(finDoc, ym, vatEstimate(finDoc, projects, ym).net).find(l => l.kind === "vat")?.amount || 0;
+      const v = finLines(finDoc, ym, vatEstimate(finDoc, projects, ym, workers, reports).net).find(l => l.kind === "vat")?.amount || 0;
       lines.push(`• מע"מ משוער לחודש: ${v < 0 ? "החזר " : ""}₪${fmtNum(Math.abs(Math.round(v)))}`);
     }
     lines.push("הקבצים נשלחים בנפרד. תודה!");
@@ -2953,6 +2979,24 @@ async function shareImg() {
           <input type="number" value={obj.dailyRate||""} placeholder="550" onChange={e=>setObj({...obj, dailyRate:e.target.value})} style={inp}/>
         </label>
       )}
+      <div style={{ background:"#F9F9F9", borderRadius:9, padding:"9px 12px", marginBottom:11 }}>
+        <span style={{ fontSize:13, fontWeight:600, display:"block", marginBottom:6 }}>אופן תשלום</span>
+        <div style={{ display:"flex", gap:6 }}>
+          {[{v:"slip",l:"🧾 תלוש שכר"},{v:"invoice",l:"💼 חשבונית (עוסק)"}].map(o => (
+            <button key={o.v} type="button" onClick={()=>setObj({...obj, payMode:o.v})}
+              style={{ flex:1, background:(obj.payMode||"slip")===o.v?"#1A1A2E":"#EEE", color:(obj.payMode||"slip")===o.v?"#E8C547":"#777", border:"none", borderRadius:8, padding:"7px 0", fontSize:12.5, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700 }}>{o.l}</button>
+          ))}
+        </div>
+        {obj.payMode === "invoice" && (<>
+          <div style={{ display:"flex", gap:6, marginTop:6 }}>
+            {[{v:"licensed",l:"עוסק מורשה (+מע\"מ)"},{v:"exempt",l:"עוסק פטור"}].map(o => (
+              <button key={o.v} type="button" onClick={()=>setObj({...obj, vatType:o.v})}
+                style={{ flex:1, background:(obj.vatType||"licensed")===o.v?"#6D28D9":"#EDE9FE", color:(obj.vatType||"licensed")===o.v?"#fff":"#6D28D9", border:"none", borderRadius:8, padding:"6px 0", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700 }}>{o.l}</button>
+            ))}
+          </div>
+          <p style={{ margin:"5px 0 0", fontSize:11, color:"#888" }}>התעריף לפני מע"מ. העובד מדווח כרגיל, אבל לא נכנס לדוח השכר ברוטו — התשלום שלו מופיע בטאב שכר ← 🔨 קבלנים, ושם מעלים את החשבונית שלו.</p>
+        </>)}
+      </div>
       {(obj.payType||"daily")==="daily" && (
         <div style={{ background:"#F9F9F9", borderRadius:9, padding:"9px 12px", marginBottom:11 }}>
           <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", gap:8 }}>
@@ -3805,7 +3849,7 @@ async function shareImg() {
     });
     let a = A("pay_reminder");
     if (a && tDay >= Math.min(a.day, 28)) {
-      const left = workers.map(w => {
+      const left = workers.filter(w => !isInvoiceW(w)).map(w => {
         const m = (calcWorkerPayroll(w, reports).months || []).find(x => x.month === prevYm);
         const hasRate = w.payType === "hourly" ? Number(w.hourlyRate) > 0 : w.payType === "global" ? Number(w.monthlySalary) > 0 : Number(w.dailyRate) > 0;
         return m && hasRate ? m.pay - Number(paidMonths[`${w.id}_${prevYm}`]?.paidAmt || 0) : 0;
@@ -3813,12 +3857,20 @@ async function shareImg() {
       if (left.length) alerts.push({ key: "payrem", icon: "💸", color: "#1A1A2E", bg: "#F0F0EC", title: `להוציא משכורות של ${monthLabel(prevYm)} — ₪${fmtNum(left.reduce((s, x) => s + x, 0))}`,
         detail: `${left.length === 1 ? "עובד אחד" : `${left.length} עובדים`} שעוד לא שולם להם`, go: () => goTab("payroll", () => setPayrollView("pending")) });
     }
+    if (a && tDay >= Math.min(a.day, 28)) {
+      const invLeft = workers.filter(isInvoiceW).map(w => {
+        const m = (calcWorkerPayroll(w, reports).months || []).find(x => x.month === prevYm);
+        return m ? m.pay - Number(paidMonths[`${w.id}_${prevYm}`]?.paidAmt || 0) : 0;
+      }).filter(x => x > 0);
+      if (invLeft.length) alerts.push({ key: "payinv", icon: "💼", color: "#6D28D9", bg: "#EDE9FE", title: `לשלם לעובדים בחשבונית — ${monthLabel(prevYm)} · ₪${fmtNum(invLeft.reduce((s, x) => s + x, 0))} + מע"מ`,
+        detail: "בטאב שכר ← 🔨 קבלנים · אפשר להעלות שם את החשבונית שלהם", go: () => goTab("payroll", () => setPayrollView("subs")) });
+    }
     a = A("vat");
     if (a && finDoc) {
       const n = vatPeriodOf(finDoc), em = Number(prevYm.slice(5)), from = 15 - Math.min(14, Number(a.before) || 0);
       if ((em % n === 0 || em === 12) && tDay >= from && tDay <= 15) {
         const tot = vatPeriodMonths(finDoc, prevYm).filter(m => !finDoc.startYm || m >= finDoc.startYm)
-          .reduce((s, m) => s + (finLines(finDoc, m, vatEstimate(finDoc, projects, m).net).find(l => l.kind === "vat")?.amount || 0), 0);
+          .reduce((s, m) => s + (finLines(finDoc, m, vatEstimate(finDoc, projects, m, workers, reports).net).find(l => l.kind === "vat")?.amount || 0), 0);
         alerts.push({ key: "vat", icon: "🧾", color: "#B45309", bg: "#FFF8E1", title: `מע"מ — לדווח עד 15.${Number(today.slice(5,7))} · ${tot < 0 ? "החזר" : "לתשלום"} משוער ₪${fmtNum(Math.abs(Math.round(tot)))}`,
           detail: "הערכה לפי מה שהוזן — הדיווח הרשמי אצל רואה החשבון", go: () => goTab("monthly", () => setFinYm(prevYm)) });
       }
@@ -4229,7 +4281,7 @@ async function shareImg() {
           const ym = finYm, thisYm = todayStr().slice(0,7);
           const mo = fin.months?.[ym] || {};
           const locked = !!mo.approved;
-          const vat = vatEstimate(fin, projects, ym);
+          const vat = vatEstimate(fin, projects, ym, workers, reports);
           const lines = finLines(fin, ym, vat.net);
           const vOf = (key, def) => { const v = mo.vals?.[key]; return v !== undefined && v !== null ? v : (def ?? ""); };
           const setVal = (key, val) => saveFin(f => ({ ...f, months: { ...(f.months||{}), [ym]: { ...(f.months?.[ym]||{}), vals: { ...(f.months?.[ym]?.vals||{}), [key]: val } } } }));
@@ -4302,7 +4354,7 @@ async function shareImg() {
           const vatManual = mo.vals?.["f:vat"] !== undefined && mo.vals?.["f:vat"] !== null && mo.vals?.["f:vat"] !== "";
           const vatN = vatPeriodOf(fin);
           const perMonths = vatPeriodMonths(fin, ym);
-          const vatOfMonth = (m) => m === ym ? (vatLine?.amount || 0) : (finLines(fin, m, vatEstimate(fin, projects, m).net).find(l => l.kind === "vat")?.amount || 0);
+          const vatOfMonth = (m) => m === ym ? (vatLine?.amount || 0) : (finLines(fin, m, vatEstimate(fin, projects, m, workers, reports).net).find(l => l.kind === "vat")?.amount || 0);
           const perTot = perMonths.filter(m => m <= thisYm).reduce((s, m) => s + vatOfMonth(m), 0);
           const shortM = (m) => HE_MONTHS[Number(m.slice(5)) - 1];
           const perLabel = perMonths.length > 1 ? `${shortM(perMonths[0])}–${shortM(perMonths[perMonths.length-1])} ${ym.slice(0,4)}` : monthLabel(ym);
@@ -4396,7 +4448,7 @@ async function shareImg() {
               const wDays = {}; const ds = dayShare(reports);
               reports.forEach(r => { if (r._paymentRecord || r._summary || r.pendingApproval || String(r.date||"").slice(0,7) !== ym) return; const d = ds(r); if (d) wDays[String(r.workerId)] = (wDays[String(r.workerId)] || 0) + d; });
               const wcm = mo.workers || {};
-              const list = workers.filter(w => wDays[String(w.id)] || wcm[w.id] || wcm[String(w.id)]);
+              const list = workers.filter(w => !isInvoiceW(w) && (wDays[String(w.id)] || wcm[w.id] || wcm[String(w.id)]));
               const cOf = (w) => wcm[w.id] || wcm[String(w.id)] || {};
               const setWC = (w, fld, v) => saveFin(f => { const m2 = f.months?.[ym] || {}; const cur = (m2.workers || {})[w.id] || {}; return { ...f, months: { ...(f.months||{}), [ym]: { ...m2, workers: { ...(m2.workers||{}), [w.id]: { ...cur, [fld]: v } } } } }; });
               const prevW = fin.months?.[shiftYm(ym,-1)]?.workers;
@@ -4440,7 +4492,7 @@ async function shareImg() {
                 })}
               </div>
               {[[`עסקאות — 18% מהכנסות ₪${fmtNum(Math.round(vat.income))}`, vat.outV, "#2E7D32"],
-                [`תשומות — 18% מהוצאות ₪${fmtNum(Math.round(vat.exp))}, קבלנים ₪${fmtNum(Math.round(vat.subs))}, ספקים ותקורות ₪${fmtNum(Math.round(vat.fixed))}`, -vat.inV, "#C62828"]].map(([l, v, c]) => (
+                [`תשומות — 18% מהוצאות ₪${fmtNum(Math.round(vat.exp))}, קבלנים ₪${fmtNum(Math.round(vat.subs))}${vat.wInv ? `, עובדים בחשבונית ₪${fmtNum(Math.round(vat.wInv))}` : ""}, ספקים ותקורות ₪${fmtNum(Math.round(vat.fixed))}`, -vat.inV, "#C62828"]].map(([l, v, c]) => (
                 <div key={l} style={{ display:"flex", justifyContent:"space-between", gap:8, fontSize:12, color:"#666", marginBottom:4 }}><span>{l}</span><span dir="ltr" style={{ color:c, fontWeight:700, flexShrink:0 }}>{nis(v)}</span></div>
               ))}
               <div style={{ display:"flex", alignItems:"center", gap:8, paddingTop:8, marginTop:4, borderTop:"1px solid #F3F3EF" }}>
@@ -5818,6 +5870,7 @@ async function shareImg() {
                     {w.payType==="hourly" ? <p style={{ margin:"0 0 4px", fontSize:12, color:"#555" }}>⏱️ ₪{fmtNum(w.hourlyRate)} לשעה</p>
                      : w.payType==="global" ? <p style={{ margin:"0 0 4px", fontSize:12, color:"#555" }}>📅 ₪{fmtNum(w.monthlySalary)} לחודש</p>
                      : w.dailyRate ? <p style={{ margin:"0 0 4px", fontSize:12, color:"#555" }}>💵 ₪{fmtNum(w.dailyRate)} ליום</p> : null}
+                    {!isForeman && (isInvoiceW(w) || w.dailyClock) && <p style={{ margin:"0 0 4px", fontSize:11.5, color:"#6D28D9", fontWeight:600 }}>{isInvoiceW(w) ? `💼 בחשבונית · ${w.vatType === "exempt" ? "פטור" : "+מע\"מ"}` : ""}{isInvoiceW(w) && w.dailyClock ? " · " : ""}{w.dailyClock ? "⏱️ שעון" : ""}</p>}
                     <p style={{ margin:0, fontSize:12, color:"#999" }}>💬 {wr.length} דיווחים</p>
                   </div>
                 );
@@ -5829,7 +5882,7 @@ async function shareImg() {
         {/* PAYROLL TAB */}
         {mgTab==="payroll" && !isForeman && (() => {
           // calc pending/paid per worker
-          const allWorkerData = workers.map(w => {
+          const allWorkerData = workers.filter(w => !isInvoiceW(w)).map(w => {
             const { totalDays, totalPay, months, projectBreakdown } = calcWorkerPayroll(w, reports);
             const hasRate = (w.payType==="hourly") ? Number(w.hourlyRate||0)>0
                           : (w.payType==="global") ? Number(w.monthlySalary||0)>0
@@ -5878,7 +5931,7 @@ async function shareImg() {
 
             {/* toggle pending / history */}
             <div style={{ display:"flex", background:"#F0F0EC", borderRadius:12, padding:3, marginBottom:14, gap:3 }}>
-              {[{k:"pending",l:"לתשלום"},{k:"history",l:"היסטוריה"},...(plan.subs?[{k:"subs",l:"🔨 קבלנים"}]:[])].map(t=>(
+              {[{k:"pending",l:"לתשלום"},{k:"history",l:"היסטוריה"},...((plan.subs || workers.some(isInvoiceW))?[{k:"subs",l:"🔨 קבלנים"}]:[])].map(t=>(
                 <button key={t.k} onClick={()=>setPayrollView(t.k)}
                   style={{ flex:1, background:payrollView===t.k?"#1A1A2E":"transparent", color:payrollView===t.k?"#E8C547":"#888", border:"none", borderRadius:10, padding:"8px 0", fontWeight:700, fontSize:13, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>
                   {t.l}
@@ -5925,8 +5978,53 @@ async function shareImg() {
               const shown = cards.filter(c => subsView==="pending" ? c.due.length>0 : c.paid.length>0);
               const grandDue  = cards.reduce((s,c)=>s+c.dueSum,0);
               const grandPaid = cards.reduce((s,c)=>s+c.paidSum,0);
+              // עובדים שמשולמים בחשבונית — כמו קבלנים
+              const invW = workers.filter(isInvoiceW).map(w => {
+                const { months } = calcWorkerPayroll(w, reports);
+                const lic = w.vatType !== "exempt";
+                const rows = months.slice(0, 4).map(m => {
+                  const info = paidMonths[`${w.id}_${m.month}`];
+                  const paid = Number(info?.paidAmt || 0), left = Math.max(0, m.pay - paid);
+                  return { m, info, paid, left, vat: lic ? Math.round(m.pay * VAT_RATE) : 0, files: (cfgData._wInvoices?.[w.id]?.[m.month]) || [] };
+                });
+                return { w, lic, rows };
+              }).filter(x => x.rows.length);
+              const invCard = invW.length > 0 && (
+                <div style={{ background:"#fff", borderRadius:14, padding:"14px 16px", marginBottom:14, boxShadow:"0 1px 5px rgba(0,0,0,0.06)", borderRight:"4px solid #6D28D9" }}>
+                  <input ref={wInvRef} type="file" accept="image/*,application/pdf" style={{ display:"none" }} onChange={e=>{ const f = e.target.files?.[0]; e.target.value = ""; if (f && wInvTarget) uploadWorkerInvoice(wInvTarget.w, wInvTarget.ym, f); }}/>
+                  <h3 style={{ margin:"0 0 2px", fontSize:15, fontWeight:800 }}>💼 עובדים בחשבונית</h3>
+                  <p style={{ margin:"0 0 8px", fontSize:11.5, color:"#888" }}>לפי ימי העבודה שדווחו · התעריף לפני מע"מ · לא נכנסים לדוח השכר ברוטו</p>
+                  {invW.map(({ w, lic, rows }) => (
+                    <div key={w.id} style={{ borderTop:"1px solid #F0F0EC", padding:"8px 0" }}>
+                      <div style={{ fontSize:14, fontWeight:700, marginBottom:4 }}>{w.name} <span style={{ fontSize:11, color:"#6D28D9", fontWeight:600 }}>· {lic ? "עוסק מורשה" : "עוסק פטור"}</span></div>
+                      {rows.map(({ m, info, paid, left, vat, files }) => (
+                        <div key={m.month} style={{ background:"#F9F9F9", borderRadius:9, padding:"7px 10px", marginBottom:5 }}>
+                          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", gap:8 }}>
+                            <span style={{ fontSize:12.5 }}><b>{m.label}</b> · {m.days} ימים</span>
+                            <span style={{ fontSize:13, fontWeight:800, color: left ? "#1A1A2E" : "#2E7D32" }}>₪{fmtNum(m.pay)}{lic ? ` + מע"מ ₪${fmtNum(vat)}` : ""}</span>
+                          </div>
+                          <div style={{ display:"flex", gap:6, alignItems:"center", flexWrap:"wrap", marginTop:5 }}>
+                            {left > 0
+                              ? <button onClick={()=>{ if (window.confirm(`לסמן ששולם ל-${w.name} על ${m.label}?\n₪${fmtNum(left)}${lic ? ` + מע"מ ₪${fmtNum(Math.round(left * VAT_RATE))} = ₪${fmtNum(Math.round(left * (1 + VAT_RATE)))}` : ""}`)) markPaid(w.id, m.month, m.pay); }} style={{ background:"#2E7D32", color:"#fff", border:"none", borderRadius:7, padding:"4px 10px", fontSize:12, fontWeight:700, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>✓ שולם{paid ? ` (נשאר ₪${fmtNum(left)})` : ""}</button>
+                              : <span style={{ fontSize:12, color:"#2E7D32", fontWeight:700 }}>✓ שולם{info?.paidAt ? ` ${info.paidAt}` : ""} <button onClick={()=>{ if (window.confirm("לבטל את הסימון 'שולם'?")) unmarkPaid(w.id, m.month); }} style={{ background:"none", border:"none", color:"#999", cursor:"pointer", fontSize:12, padding:0 }}>↩</button></span>}
+                            <button onClick={()=>{ setWInvTarget({ w, ym: m.month }); wInvRef.current?.click(); }} style={{ background:"#EDE9FE", color:"#6D28D9", border:"none", borderRadius:7, padding:"4px 10px", fontSize:12, fontWeight:700, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>📎 חשבונית</button>
+                            {files.map(f => (
+                              <span key={f.path} style={{ fontSize:11.5, display:"inline-flex", gap:4, alignItems:"center" }}>
+                                <a href={f.url} target="_blank" rel="noreferrer" style={{ color:"#3B5BDB", maxWidth:120, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>📄 {f.name}</a>
+                                <button onClick={()=>removeWorkerInvoice(w, m.month, f)} style={{ background:"none", border:"none", color:"#CCC", cursor:"pointer", fontSize:11, padding:0 }}>✕</button>
+                              </span>
+                            ))}
+                            {!files.length && left === 0 && <span style={{ fontSize:11, color:"#B45309" }}>⚠️ אין חשבונית</span>}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              );
               return (
                 <>
+                  {invCard}
                   <div style={{ display:"flex", gap:6, marginBottom:12 }}>
                     {[{k:"pending",l:`⏳ לתשלום${cards.some(c=>c.due.length) ? ` (${cards.reduce((n,c)=>n+c.due.length,0)})` : ""}`},{k:"history",l:"✅ היסטוריה"}].map(t=>(
                       <button key={t.k} onClick={()=>setSubsView(t.k)}
