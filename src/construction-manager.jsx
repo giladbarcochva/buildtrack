@@ -4374,14 +4374,25 @@ async function shareImg() {
               <p style={{ margin:"3px 0 0", color:"#777", fontSize:13 }}>תקורות, ספקים, מיסים וביטוחים — מתחלקים לפרויקטים לפי ימי עבודה</p>
             </div>
             <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", background:"#fff", borderRadius:12, padding:"8px 10px", marginBottom:12, boxShadow:"0 1px 5px rgba(0,0,0,0.06)", gap:6 }}>
-              <button onClick={()=>setFinYm(shiftYm(ym,-1))} disabled={!!fin.startYm && ym <= fin.startYm} style={{ ...btnG, padding:"6px 12px", opacity:(fin.startYm && ym <= fin.startYm)?0.35:1 }}>→</button>
+              <button onClick={()=>setFinYm(shiftYm(ym,-1))} disabled={ym <= shiftYm(thisYm,-24)} style={{ ...btnG, padding:"6px 12px", opacity: ym <= shiftYm(thisYm,-24) ? 0.35 : 1 }}>→</button>
               <div style={{ textAlign:"center" }}>
                 <div style={{ fontWeight:800, fontSize:15 }}>{monthLabel(ym)}</div>
                 <div style={{ fontSize:11.5, fontWeight:700, color: locked ? "#2E7D32" : "#B45309" }}>{locked ? `✓ אושר${mo.approvedAt ? " " + fmtIsoShort(mo.approvedAt) : ""}` : "טרם אושר"}</div>
               </div>
-              <button onClick={()=>setFinYm(shiftYm(ym,1))} disabled={ym >= thisYm} style={{ ...btnG, padding:"6px 12px", opacity:ym>=thisYm?0.35:1 }}>←</button>
+              <button onClick={()=>setFinYm(shiftYm(ym,1))} disabled={ym >= shiftYm(thisYm,3)} style={{ ...btnG, padding:"6px 12px", opacity: ym >= shiftYm(thisYm,3) ? 0.35 : 1 }}>←</button>
             </div>
-            {fin.startYm && ym < fin.startYm && <p style={{ fontSize:12, color:"#999" }}>המודול התחיל ב{monthLabel(fin.startYm)}.</p>}
+            {fin.startYm && ym < fin.startYm && (
+              <div style={{ background:"#FFF8E1", borderRadius:12, padding:"10px 14px", marginBottom:12, fontSize:13, lineHeight:1.6 }}>
+                החודש הזה לפני תחילת המודול ({monthLabel(fin.startYm)}) — הסכומים שלו לא נספרים.
+                <button onClick={()=>{
+                  if (!window.confirm(`להתחיל את מודול הכספים מ${monthLabel(ym)}?\nהשורות הקבועות (תקורות, ספקים) יחולו גם על החודשים מ${monthLabel(ym)} ועד ${monthLabel(fin.startYm)}.`)) return;
+                  const old = fin.startYm;
+                  const back = (it) => (!it.since || it.since === old) ? { ...it, since: ym } : it;
+                  saveFin(f => ({ ...f, startYm: ym, suppliers: (f.suppliers||[]).map(back), overhead: (f.overhead||[]).map(g => ({ ...g, items: (g.items||[]).map(back) })) }), true);
+                }} style={{ display:"block", marginTop:6, background:"#1A1A2E", color:"#E8C547", border:"none", borderRadius:8, padding:"7px 12px", fontSize:12.5, fontWeight:700, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>📅 להתחיל את המודול מ{monthLabel(ym)}</button>
+              </div>
+            )}
+            {ym > thisYm && <div style={{ background:"#E8EEFF", borderRadius:12, padding:"10px 14px", marginBottom:12, fontSize:13, color:"#3B5BDB" }}>📅 חודש עתידי — לתכנון. אפשר לעדכן סכומים מראש; אישור החודש — אחרי שהוא נגמר.</div>}
 
             {(fin.overhead||[]).map(g => <div key={g.id}>{card(`🏢 ${g.name}`, (<>
               {(g.items||[]).filter(it => finActive(it, ym) || mo.vals?.["o:"+it.id] !== undefined).map(it => lineRow("o:"+it.id, it.name, it.amount, ()=>setItemDefault("overhead", g.id, it), ()=>removeItem("overhead", g.id, it), vatChip("overhead", g.id, it)))}
@@ -4576,7 +4587,7 @@ async function shareImg() {
             {locked ? (
               <button onClick={()=>{ if (window.confirm(`לפתוח את ${monthLabel(ym)} לעריכה?`)) saveFin(f => ({ ...f, months:{ ...(f.months||{}), [ym]:{ ...(f.months?.[ym]||{}), approved:false } } }), true); }}
                 style={{ ...btnG, width:"100%", padding:12 }}>🔓 פתח את החודש לעריכה</button>
-            ) : (
+            ) : ym > thisYm || (fin.startYm && ym < fin.startYm) ? null : (
               <button onClick={()=>{
                 if (!window.confirm(`לאשר את ${monthLabel(ym)}?\nהסכומים של החודש יינעלו — שינוי עתידי בסכום הקבוע לא ישנה אותם.`)) return;
                 const vals = {}; lines.forEach(l => { vals[l.key] = l.amount; });
