@@ -92,7 +92,7 @@ const PLANS = {
 // ===== תוכן מסך העזרה =====
 const HELP_TOPICS = [
   { icon:"🔑", title:"כניסה למערכת", body:"במסך הפתיחה שלוש כניסות:\n• כניסת עובד — עם הקוד האישי שהמנהל הגדיר לעובד.\n• כניסת מנהל עבודה — עם קוד מנהל העבודה (מוגדר בטאב מנהלי עבודה).\n• כניסת מנהל — עם קוד המנהל של העסק.\nאת הקישור של העסק מוסיפים למסך הבית: פותחים בדפדפן ← שיתוף ← הוספה למסך הבית — ומקבלים אייקון כמו אפליקציה." },
-  { icon:"📝", title:"דיווח יומי של עובד", body:"העובד נכנס עם הקוד שלו, בוחר פרויקט (מוצגים רק פרויקטים שהוא משויך אליהם — השיוך בכפתור 'שייך עובדים' בפרויקט), בוחר יום מלא או חצי יום, מסמן דלק אם נסע ברכב, ולוחץ שלח.\n• אי אפשר לדווח פעמיים על אותו תאריך.\n• דיווח על תאריך שעבר נכנס ל'ממתינים לאישור' אצל המנהל ולא נספר בשכר עד שמאושר.\n• אי אפשר לדווח על תאריך עתידי.\n• עובד שמשובץ ביומן יכול לדווח רק על ימים ופרויקטים שהוא שובץ אליהם (רואים ב'היומן שלי'); עובד שלא מנוהל ביומן — מדווח חופשי.\n• בטאב 'היומן שלי' העובד רואה את הימים שהוא משובץ בהם." },
+  { icon:"📝", title:"דיווח יומי של עובד", body:"העובד נכנס עם הקוד שלו, בוחר פרויקט (מוצגים רק פרויקטים שהוא משויך אליהם — השיוך בכפתור 'שייך עובדים' בפרויקט; אפשר לבטל את חובת השיוך בטאב עובדים ← ⚙️ הגדרות דיווח, ואז כל עובד רואה את כל הפרויקטים הפעילים), בוחר יום מלא או חצי יום, מסמן דלק אם נסע ברכב, ולוחץ שלח.\n• אי אפשר לדווח פעמיים על אותו תאריך.\n• דיווח על תאריך שעבר נכנס ל'ממתינים לאישור' אצל המנהל ולא נספר בשכר עד שמאושר.\n• אי אפשר לדווח על תאריך עתידי.\n• שיבוץ ביומן — נקבע בטאב עובדים ← ⚙️ הגדרות דיווח: 'חובה לכולם' (מדווחים רק ביום ובפרויקט ששובצו), 'רק למי שמשובץ ביומן' (ברירת מחדל: עובד שלא מנוהל ביומן מדווח חופשי), או 'לא מחייב' (היומן לתכנון בלבד).\n• בטאב 'היומן שלי' העובד רואה את הימים שהוא משובץ בהם." },
   { icon:"⏱️", title:"עובד שעתי — שעון נוכחות", body:"גם עובד יומי יכול לעבוד עם שעון: בעריכת העובד מפעילים '⏱️ שעון נוכחות'. השכר נשאר לפי יום; אם הוא עבד יותר מ-9 שעות — מגיעה התראה (בפעמון ובמייל הבוקר), ובטאב דיווחים מחליטים: '💰 לשלם נוספות' (125% / 150% לפי היומית חלקי 9) או '✓ בלי תוספת'.\nמעבר בין אתרים באותו יום: סוגרים שעון באתר הראשון ופותחים שעון חדש באתר הבא. היום נחשב יום אחד, העלות מתחלקת בין הפרויקטים לפי השעות, שעות נוספות (בשעתי) מחושבות על סך שעות היום, ודלק ואוכל — פעם אחת ביום.\nעובד יומי בלי שעון שעבד בשני פרויקטים: מדווח חצי יום על כל פרויקט.\nעובד שהוגדר כשעתי רואה שעון נוכחות במקום טופס דיווח: בוחר פרויקט ← ▶️ כניסה בתחילת היום ← 🛑 יציאה בסיומו.\nחישוב השכר: 9 שעות ראשונות 100%, שעות 10-11 לפי 125%, משעה 12 לפי 150%.\nשכח לסגור? המנהל רואה 'שעון תקוע' בטאב דיווחים ומתקן עם כפתור '✏️ שעות'.\nאם בפרויקט הוגדר אימות מיקום — בפתיחת השעון הטלפון יבקש אישור גישה למיקום (פעם ראשונה בלבד). במצב 'חסימה' ניתן לפתוח שעון רק בקרבת האתר." },
   { icon:"👷", title:"ניהול עובדים וסוגי העסקה", body:"בטאב עובדים מוסיפים עובד עם שם, קוד אישי ותפקיד, ובוחרים סוג העסקה:\n• יומי — שכר קבוע ליום (עם אפשרות חצי יום).\n• שעתי — שכר לשעה + שעון נוכחות.\n• גלובלי — משכורת חודשית קבועה.\nלכל עובד אפשר להגדיר אם יראה כפתור דלק וכמה ₪ דלק ליום.\nחשוב: כדי שעובד יוכל לדווח, חובה לשייך אותו לפרויקט (כפתור 'שייך עובדים' בתוך הפרויקט)." },
   { icon:"🏗️", title:"פרויקטים", body:"בטאב פרויקטים יוצרים פרויקט חדש ונכנסים אליו לניהול מלא: תיאור (מומלץ לכתוב כמויות — למשל '200 מטר גבס'), שלבי ביצוע עם סטטוס ותאריך יעד, הוצאות וחומרים, קבלני משנה, חשבוניות ותוכניות.\nלכל שלב ביצוע אפשר לתת משקל באחוזים (למשל: ניצבים 30%, גבס צד אחד 20%) — סימון שלב כ'הושלם' מעדכן אוטומטית את גרף ההתקדמות של הפרויקט. בלי משקלים — הגרף לפי הסליידר הידני.\nסטטוס 'הושלם' מסתיר את הפרויקט מהעובדים ומרשימות השיבוץ.\nכרטיס 'סה\"כ הוצאות פרויקט' מסכם הוצאות + קבלני משנה.\nבכרטיס '📍 אימות מיקום' אפשר לחייב עובדים שעתיים לפתוח שעון רק בקרבת האתר: עומדים באתר ← 'קבע את המיקום הנוכחי' ← בוחרים רדיוס ומצב (סימון בלבד / חסימה). חל רק על שעון שעתי — יומיות וגלובלי לא מושפעים." },
@@ -388,7 +388,7 @@ function backupSheets(bk) {
   const projects = projAll.filter(p => !p._quote), quotes = projAll.filter(p => p._quote);
   const projName = (id) => (projAll.find(p => String(p.id) === String(id)) || {}).name || "";
   const wk = D("workers");
-  const workers = wk.filter(w => !w._isConfig && !w._termsRecord && !w._secret && !w._finance);
+  const workers = wk.filter(w => !w._isConfig && !w._termsRecord && !w._secret && !w._finance && !w._workPolicy);
   const wName = (id) => (workers.find(w => String(w.id) === String(id)) || {}).name || "";
   const reps = D("reports");
   const t = (ms) => ms ? new Date(ms).toLocaleString("he-IL") : "";
@@ -513,7 +513,7 @@ function BackupOpener({ onOpenFile, onRestored }) {
   const counts = bk?.kind === "data" ? (() => {
     const T = bk.tables || {}; const d = (t) => (T[t]||[]).map(r => r.data||{});
     return [["פרויקטים", d("projects").filter(p=>!p._quote).length], ["הצעות מחיר", d("projects").filter(p=>p._quote).length],
-            ["עובדים", d("workers").filter(w=>!w._isConfig && !w._termsRecord && !w._secret && !w._finance).length], ["דיווחים", d("reports").filter(r=>!r._paymentRecord && !r._summary).length],
+            ["עובדים", d("workers").filter(w=>!w._isConfig && !w._termsRecord && !w._secret && !w._finance && !w._workPolicy).length], ["דיווחים", d("reports").filter(r=>!r._paymentRecord && !r._summary).length],
             ["ימי יומן", d("calendar").length], ["פריטי ציוד", d("equipment").length]];
   })() : [];
   const btn = { border:"none", borderRadius:9, padding:"9px 12px", fontSize:13, fontWeight:700, cursor:"pointer", fontFamily:"Heebo,sans-serif" };
@@ -1557,6 +1557,7 @@ export default function App() {
   const [payrollView, setPayrollView] = useState("pending");
   const [subsView,    setSubsView]    = useState("pending"); // קבלנים: לתשלום / היסטוריה
   // התראות + סיכומים
+  const [workPolicy, setWorkPolicy] = useState(null);    // הגדרות דיווח לכל העובדים (שורת _workPolicy — גלויה לעובדים)
   const [finDoc, setFinDoc] = useState(null);            // מודול כספים — הוצאות חודשיות (שורת _finance)
   const [finYm, setFinYm] = useState(todayStr().slice(0,7));
   const [incView, setIncView] = useState("due");         // הכנסות: due | received | months
@@ -1701,8 +1702,9 @@ export default function App() {
       w.filter(x => x._secret).forEach(x => { secMap[String(x.workerId)] = x; });
       secretsRef.current = secMap;
       const isMgr = tokenRole() === "manager";
-      const rawWorkers = w.filter(x => !x._isConfig && !x._termsRecord && !x._secret && !x._finance);
+      const rawWorkers = w.filter(x => !x._isConfig && !x._termsRecord && !x._secret && !x._finance && !x._workPolicy);
       setFinDoc(w.find(x => x._finance) || null);
+      setWorkPolicy(w.find(x => x._workPolicy) || null);
       const realWorkers = rawWorkers.map(x => {
         const s = secMap[String(x.id)];
         if (isMgr) return { ...x, code: s?.code ?? x.code ?? "", foremanCode: s?.foremanCode ?? x.foremanCode ?? "" };
@@ -1875,16 +1877,8 @@ export default function App() {
 
   const clockIn = async () => {
     if (!repProject) { alert("בחר פרויקט לפני הפעלת השעון"); return; }
-    // אכיפת שיבוץ יומן גם על שעון נוכחות
-    {
-      const ai = workerAssignInfo(loggedWorker.id, todayStr());
-      if (ai.hasAny) {
-        if (ai.dayProjects.length === 0) { alert("אינך משובץ לעבודה היום.\nפנה למנהל."); return; }
-        if (!(ai.dayProjects.includes(String(repProject)) || ai.dayProjects.includes(""))) {
-          alert("היום אתה משובץ לפרויקט אחר.\nבחר את הפרויקט שאליו שובצת."); return;
-        }
-      }
-    }
+    // אכיפת שיבוץ יומן גם על שעון נוכחות (לפי הגדרת הקבלן)
+    { const err = calBlock(loggedWorker.id, todayStr(), repProject, true); if (err) { alert(err); return; } }
     const proj = projects.find(p => String(p.id) === String(repProject));
     const rec = { _shift:true, workerId: loggedWorker.id, workerName: loggedWorker.name,
       projectId: repProject, projectName: proj?.name||"", date: todayStr(),
@@ -1940,13 +1934,7 @@ export default function App() {
     if (!repProject) { alert("בחר פרויקט"); return; }
     if (manHours == null) { alert("שעת היציאה חייבת להיות אחרי שעת הכניסה"); return; }
     if (manHours > 16) { alert("יותר מ-16 שעות ביום — בדוק את השעות שהזנת"); return; }
-    const ai = workerAssignInfo(loggedWorker.id, manDate);
-    if (ai.hasAny) {
-      if (ai.dayProjects.length === 0) { alert("אינך משובץ לעבודה בתאריך זה.\nבדוק בטאב 'היומן שלי', או פנה למנהל."); return; }
-      if (!(ai.dayProjects.includes(String(repProject)) || ai.dayProjects.includes(""))) {
-        alert("בתאריך זה אתה משובץ לפרויקט אחר.\nבחר את הפרויקט שאליו שובצת."); return;
-      }
-    }
+    { const err = calBlock(loggedWorker.id, manDate, repProject, manDate === todayStr()); if (err) { alert(err); return; } }
     const mine = (r) => String(r.workerId)===String(loggedWorker.id) || r.workerName===loggedWorker.name;
     const dup = [...reports, ...pendingReports].some(r => !r._paymentRecord && mine(r) && r.date === manDate);
     if (dup && !window.confirm(`כבר קיים דיווח שלך בתאריך ${manDate}.\nלשלוח דיווח נוסף בכל זאת?`)) return;
@@ -2015,6 +2003,26 @@ export default function App() {
     const mine = toAssigns(calEvents[date]).filter(a => (a.workers||[]).map(String).includes(String(workerId)));
     return { hasAny, dayProjects: mine.map(a => String(a.projectId)) };
   };
+  // מדיניות דיווח של הקבלן: allProjects — כל הפרויקטים הפעילים בלי שיוך; calMode — auto | required | off
+  const wpAll = !!workPolicy?.allProjects;
+  const wpCal = workPolicy?.calMode || "auto";
+  const projectsForWorker = (wk) => projects.filter(p => p.status !== "הושלם" && (wpAll || (p.workers||[]).map(String).includes(String(wk?.id))));
+  // בדיקת שיבוץ ביומן לפני רישום יום עבודה — מחזיר הודעת שגיאה או null
+  const calBlock = (workerId, date, projectId, isToday) => {
+    if (wpCal === "off") return null;
+    const ai = workerAssignInfo(workerId, date);
+    if (wpCal === "auto" && !ai.hasAny) return null;
+    if (ai.dayProjects.length === 0) return isToday ? "אינך משובץ ביומן לעבודה היום.\nפנה למנהל." : "אינך משובץ ביומן לעבודה בתאריך זה.\nבדוק בטאב 'היומן שלי', או פנה למנהל.";
+    if (!(ai.dayProjects.includes(String(projectId)) || ai.dayProjects.includes(""))) return (isToday ? "היום" : "בתאריך זה") + " אתה משובץ לפרויקט אחר.\nבחר את הפרויקט שאליו שובצת (מופיע ב'היומן שלי').";
+    return null;
+  };
+  const saveWorkPolicy = async (patch) => {
+    const next = { _workPolicy: true, id: workPolicy?.id || Date.now(), allProjects: wpAll, calMode: wpCal, ...patch };
+    try {
+      if (workPolicy?._dbid) { const { _dbid, ...data } = next; await dbUpdate("workers", workPolicy._dbid, data); setWorkPolicy({ ...next, _dbid: workPolicy._dbid }); }
+      else { const saved = await dbInsert("workers", next); setWorkPolicy(saved); }
+    } catch(e) { alert("שגיאה בשמירה: " + e.message); }
+  };
 
   const submitReport = async () => {
     if (!repProject) return;
@@ -2039,19 +2047,8 @@ export default function App() {
         alert("לא ניתן לדווח על יום שעוד לא היה 🙂");
         return;
       }
-      // אכיפת שיבוץ: עובד שמנוהל ביומן מדווח רק על ימים ופרויקטים שהוא משובץ אליהם
-      const ai = workerAssignInfo(loggedWorker.id, repDate);
-      if (ai.hasAny) {
-        if (ai.dayProjects.length === 0) {
-          alert("אינך משובץ לעבודה בתאריך זה.\nבדוק בטאב 'היומן שלי', או פנה למנהל.");
-          return;
-        }
-        const okProj = ai.dayProjects.includes(String(repProject)) || ai.dayProjects.includes("");
-        if (!okProj) {
-          alert("בתאריך זה אתה משובץ לפרויקט אחר.\nבחר את הפרויקט שאליו שובצת (מופיע ב'היומן שלי').");
-          return;
-        }
-      }
+      // אכיפת שיבוץ ביומן — לפי הגדרת הקבלן בטאב עובדים
+      { const err = calBlock(loggedWorker.id, repDate, repProject, repDate === todayStr()); if (err) { alert(err); return; } }
       const proj = projects.find(p => String(p.id) === String(repProject));
       const today = todayStr();
       const isPast = repDate < today; // only strictly BEFORE today
@@ -3578,7 +3575,7 @@ async function shareImg() {
                     {manHours==null ? "⚠️ שעת היציאה חייבת להיות אחרי שעת הכניסה" : `סה"כ: ${manHours} שעות`}
                   </p>
                   {(() => {
-                    const myProjects = projects.filter(p => p.status !== "הושלם" && (p.workers||[]).map(String).includes(String(loggedWorker?.id)));
+                    const myProjects = projectsForWorker(loggedWorker);
                     return (
                       <label style={{ display:"block", marginBottom:12 }}>
                         <LBL t="🏗️ באיזה אתר עבדת?"/>
@@ -3617,7 +3614,7 @@ async function shareImg() {
               <>
                 <h3 style={{ margin:"0 0 12px", fontWeight:800, fontSize:16, textAlign:"center" }}>⏱️ שעון נוכחות</h3>
                 {(() => {
-                  const myProjects = projects.filter(p => p.status !== "הושלם" && (p.workers||[]).map(String).includes(String(loggedWorker?.id)));
+                  const myProjects = projectsForWorker(loggedWorker);
                   return myProjects.length > 0 ? (
                     <>
                       <label style={{ display:"block", marginBottom:14 }}>
@@ -3647,7 +3644,7 @@ async function shareImg() {
                     </>
                   ) : (
                     <div style={{ background:"#FFF8E1", border:"1.5px solid #FFD54F", borderRadius:10, padding:"12px 14px" }}>
-                      <p style={{ margin:0, fontSize:13, color:"#B26A00", fontWeight:600 }}>⚠️ אינך משויך לאף פרויקט פעיל</p>
+                      <p style={{ margin:0, fontSize:13, color:"#B26A00", fontWeight:600 }}>⚠️ {wpAll ? "אין כרגע פרויקטים פעילים" : "אינך משויך לאף פרויקט פעיל"}</p>
                     </div>
                   );
                 })()}
@@ -3691,11 +3688,8 @@ async function shareImg() {
             </label>
 
             {(() => {
-              // רק פרויקטים פעילים שהעובד משויך אליהם (שיוך קבוע בפרויקט)
-              const myProjects = projects.filter(p =>
-                p.status !== "הושלם" &&
-                (p.workers||[]).map(String).includes(String(loggedWorker?.id))
-              );
+              // פרויקטים פעילים שהעובד משויך אליהם — או כולם, אם הקבלן ביטל את חובת השיוך
+              const myProjects = projectsForWorker(loggedWorker);
               return (
                 <label style={{ display:"block", marginBottom:14 }}>
                   <LBL t="🏗️ באיזה אתר עבדת?"/>
@@ -3709,8 +3703,8 @@ async function shareImg() {
                     </>
                   ) : (
                     <div style={{ background:"#FFF8E1", border:"1.5px solid #FFD54F", borderRadius:10, padding:"12px 14px" }}>
-                      <p style={{ margin:0, fontSize:13, color:"#B26A00", fontWeight:600 }}>⚠️ אינך משויך לאף פרויקט פעיל</p>
-                      <p style={{ margin:"4px 0 0", fontSize:12, color:"#B26A00" }}>פנה למנהל כדי שישייך אותך לפרויקט</p>
+                      <p style={{ margin:0, fontSize:13, color:"#B26A00", fontWeight:600 }}>⚠️ {wpAll ? "אין כרגע פרויקטים פעילים" : "אינך משויך לאף פרויקט פעיל"}</p>
+                      <p style={{ margin:"4px 0 0", fontSize:12, color:"#B26A00" }}>{wpAll ? "פנה למנהל" : "פנה למנהל כדי שישייך אותך לפרויקט"}</p>
                     </div>
                   )}
                 </label>
@@ -5858,6 +5852,27 @@ async function shareImg() {
               </div>
               {!isForeman && <button onClick={()=>setNewWM(true)} style={btnY}>+ עובד חדש</button>}
             </div>
+            {!isForeman && (() => {
+              const opt = (on) => ({ flex:1, background:on?"#1A1A2E":"#F0F0EC", color:on?"#E8C547":"#666", border:"none", borderRadius:9, padding:"8px 4px", fontWeight:700, fontSize:12.5, cursor:"pointer", fontFamily:"Heebo,sans-serif" });
+              return (
+                <div style={{ background:"#fff", borderRadius:14, padding:"14px 16px", marginBottom:14, boxShadow:"0 2px 8px rgba(0,0,0,0.07)" }}>
+                  <p style={{ margin:"0 0 10px", fontWeight:800, fontSize:14 }}>⚙️ הגדרות דיווח לכל העובדים</p>
+                  <p style={{ margin:"0 0 6px", fontSize:12.5, fontWeight:700, color:"#555" }}>🏗️ אילו פרויקטים העובד רואה בדיווח?</p>
+                  <div style={{ display:"flex", gap:6, marginBottom:4 }}>
+                    <button onClick={()=>saveWorkPolicy({ allProjects:false })} style={opt(!wpAll)}>רק פרויקטים שהוא משויך אליהם</button>
+                    <button onClick={()=>saveWorkPolicy({ allProjects:true })} style={opt(wpAll)}>כל הפרויקטים הפעילים</button>
+                  </div>
+                  <p style={{ margin:"0 0 12px", fontSize:11.5, color:"#888" }}>{wpAll ? "אין צורך לשייך עובדים לפרויקטים — כל עובד בוחר מכל הפרויקטים הפעילים." : "השיוך נעשה בכפתור 'שייך עובדים' בכרטיס הפרויקט."}</p>
+                  <p style={{ margin:"0 0 6px", fontSize:12.5, fontWeight:700, color:"#555" }}>📅 האם שיבוץ ביומן חובה כדי לרשום יום עבודה?</p>
+                  <div style={{ display:"flex", gap:6, marginBottom:4 }}>
+                    <button onClick={()=>saveWorkPolicy({ calMode:"required" })} style={opt(wpCal==="required")}>חובה לכולם</button>
+                    <button onClick={()=>saveWorkPolicy({ calMode:"auto" })} style={opt(wpCal==="auto")}>רק למי שמשובץ ביומן</button>
+                    <button onClick={()=>saveWorkPolicy({ calMode:"off" })} style={opt(wpCal==="off")}>לא מחייב</button>
+                  </div>
+                  <p style={{ margin:0, fontSize:11.5, color:"#888" }}>{wpCal==="required" ? "עובד יכול לדווח (או לפתוח שעון) רק ביום ובפרויקט שהוא שובץ אליהם ביומן." : wpCal==="off" ? "היומן לתכנון בלבד — העובד מדווח חופשי, גם בלי שיבוץ." : "עובד שמשובץ ביומן מדווח רק לפי השיבוץ; עובד שאף פעם לא שובץ — מדווח חופשי."}</p>
+                </div>
+              );
+            })()}
             {workers.length===0 && <div style={{ background:"#fff", borderRadius:14, padding:44, textAlign:"center", border:"1.5px dashed #DDD", color:"#AAA" }}><div style={{ fontSize:34, marginBottom:8 }}>👷</div><p style={{ margin:0 }}>אין עובדים — הוסף את הצוות</p></div>}
             <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(220px,1fr))", gap:11 }}>
               {workers.map(w => {
