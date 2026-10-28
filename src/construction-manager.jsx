@@ -96,7 +96,7 @@ const HELP_TOPICS = [
   { icon:"⏱️", title:"עובד שעתי — שעון נוכחות", body:"גם עובד יומי יכול לעבוד עם שעון: בעריכת העובד מפעילים '⏱️ שעון נוכחות'. השכר נשאר לפי יום; אם הוא עבד יותר מ-9 שעות — מגיעה התראה (בפעמון ובמייל הבוקר), ובטאב דיווחים מחליטים: '💰 לשלם נוספות' (125% / 150% לפי היומית חלקי 9) או '✓ בלי תוספת'.\nמעבר בין אתרים באותו יום: סוגרים שעון באתר הראשון ופותחים שעון חדש באתר הבא. היום נחשב יום אחד, העלות מתחלקת בין הפרויקטים לפי השעות, שעות נוספות (בשעתי) מחושבות על סך שעות היום, ודלק ואוכל — פעם אחת ביום.\nעובד יומי בלי שעון שעבד בשני פרויקטים: מדווח חצי יום על כל פרויקט.\nעובד שהוגדר כשעתי רואה שעון נוכחות במקום טופס דיווח: בוחר פרויקט ← ▶️ כניסה בתחילת היום ← 🛑 יציאה בסיומו.\nחישוב השכר: 9 שעות ראשונות 100%, שעות 10-11 לפי 125%, משעה 12 לפי 150%.\nשכח לסגור? המנהל רואה 'שעון תקוע' בטאב דיווחים ומתקן עם כפתור '✏️ שעות'.\nאם בפרויקט הוגדר אימות מיקום — בפתיחת השעון הטלפון יבקש אישור גישה למיקום (פעם ראשונה בלבד). במצב 'חסימה' ניתן לפתוח שעון רק בקרבת האתר." },
   { icon:"👷", title:"ניהול עובדים וסוגי העסקה", body:"בטאב עובדים מוסיפים עובד עם שם, קוד אישי ותפקיד, ובוחרים סוג העסקה:\n• יומי — שכר קבוע ליום (עם אפשרות חצי יום).\n• שעתי — שכר לשעה + שעון נוכחות.\n• גלובלי — משכורת חודשית קבועה.\nלכל עובד אפשר להגדיר אם יראה כפתור דלק וכמה ₪ דלק ליום.\nחשוב: כדי שעובד יוכל לדווח, חובה לשייך אותו לפרויקט (כפתור 'שייך עובדים' בתוך הפרויקט)." },
   { icon:"🏗️", title:"פרויקטים", body:"בטאב פרויקטים יוצרים פרויקט חדש ונכנסים אליו לניהול מלא: תיאור (מומלץ לכתוב כמויות — למשל '200 מטר גבס'), שלבי ביצוע עם סטטוס ותאריך יעד, הוצאות וחומרים, קבלני משנה, חשבוניות ותוכניות.\nלכל שלב ביצוע אפשר לתת משקל באחוזים (למשל: ניצבים 30%, גבס צד אחד 20%) — סימון שלב כ'הושלם' מעדכן אוטומטית את גרף ההתקדמות של הפרויקט. בלי משקלים — הגרף לפי הסליידר הידני.\nסטטוס 'הושלם' מסתיר את הפרויקט מהעובדים ומרשימות השיבוץ.\nכרטיס 'סה\"כ הוצאות פרויקט' מסכם הוצאות + קבלני משנה.\nבכרטיס '📍 אימות מיקום' אפשר לחייב עובדים שעתיים לפתוח שעון רק בקרבת האתר: עומדים באתר ← 'קבע את המיקום הנוכחי' ← בוחרים רדיוס ומצב (סימון בלבד / חסימה). חל רק על שעון שעתי — יומיות וגלובלי לא מושפעים." },
-  { icon:"📄", title:"הצעות מחיר", body:"בטאב הצעות מחיר יוצרים הצעה עם פרטי לקוח וסכום — או מחולקת לסעיפים (גבס, בטון...) כשלכל סעיף מחיר וסימון כולל/בלי חומר; הסה\"כ מחושב אוטומטית.\nכשהלקוח מאשר לוחצים '✓ נסגרה — צור פרויקט' וההצעה הופכת לפרויקט פעיל: הסעיפים נכתבים לתיאור והסכום (לא כולל מע\"מ) נכנס ל'עלות פרויקט' בנתוני הפרויקט. את שלבי קבלת התשלום מגדירים ידנית.\nהצעה שנדחתה נשארת לתיעוד ואפשר להחזירה.\nכפתור '📤 הצג ללקוח' פותח דף הצעה מעוצב עם הלוגו, הסעיפים, סה\"כ לפני מע\"מ וסה\"כ כולל מע\"מ (18%) — אפשר לשתף, להדפיס או לשמור כ-PDF ולשלוח ללקוח." },
+  { icon:"📄", title:"הצעות מחיר", body:"בטאב הצעות מחיר יוצרים הצעה עם פרטי לקוח וסכום — או מחולקת לסעיפים (גבס, בטון...) כשלכל סעיף מחיר וסימון כולל/בלי חומר; הסה\"כ מחושב אוטומטית.\n📒 מחירון: לכל פריט מחיר ליחידה (נקודה, מ\"ר, מ\"א, קוב, יום...) — כולל ובלי חומר. בסעיף מקלידים את שם הפריט, בוחרים מההצעות וכותבים כמות — המחיר מחושב לבד (למשל 6 × ₪180). אפשר לשנות מחיר בהצעה ספציפית; בשמירה המערכת שואלת אם לעדכן את המחירון (ביטול = רק להצעה הזו), ופריט חדש עם מחיר ליחידה — אם להוסיף אותו. בכפתור '📒 מחירון' עורכים את הפריטים ובוחרים אם הלקוח רואה פירוט כמות × מחיר (ניתן לשנות גם בכל הצעה).\nכשהלקוח מאשר לוחצים '✓ נסגרה — צור פרויקט' וההצעה הופכת לפרויקט פעיל: הסעיפים נכתבים לתיאור והסכום (לא כולל מע\"מ) נכנס ל'עלות פרויקט' בנתוני הפרויקט. את שלבי קבלת התשלום מגדירים ידנית.\nהצעה שנדחתה נשארת לתיעוד ואפשר להחזירה.\nכפתור '📤 הצג ללקוח' פותח דף הצעה מעוצב עם הלוגו, הסעיפים, סה\"כ לפני מע\"מ וסה\"כ כולל מע\"מ (18%) — אפשר לשתף, להדפיס או לשמור כ-PDF ולשלוח ללקוח." },
   { icon:"🔨", title:"קבלני משנה", body:"בתוך דף פרויקט, בקטע קבלני משנה, מוסיפים קבלן עם תיאור עבודה, מחיר, ימים מתוכננים וסימון כולל/בלי חומר.\nמגדירים שלבי תשלום (מתי וכמה). כשהקבלן מסיים שלב — לוחצים על העיגול ומאשרים ⏳, והסכום עובר לתשלום.\nבטאב שכר ← '🔨 קבלנים' ← 'לתשלום' מסמנים ✓ שולם (נשמר תאריך), והתשלום עובר ל'היסטוריה'. ביטול תשלום — מההיסטוריה." },
   { icon:"💵", title:"קבלת תשלומים מהלקוח", body:"בכל פרויקט יש קטע 'שלבי קבלת תשלום': מגדירים שלבים (מקדמה, אחרי שלד, מסירה...) עם סכומים, ומסמנים ✓ כשכסף התקבל.\nשורת הסיכום מציגה סה\"כ / התקבל / נותר — כך רואים בכל רגע כמה הלקוח עוד חייב." },
   { icon:"📅", title:"יומן ושיבוץ עובדים", body:"לוחצים על יום ← '+ הוסף פרויקט' ← בוחרים פרויקט ומסמנים עובדים. אפשר כמה פרויקטים באותו יום.\nעובד שכבר משובץ לפרויקט אחר באותו יום — המערכת מתריעה ומציגה מי שיבץ; מנהל ראשי יכול לאשר בכל זאת, מנהל עבודה חסום.\nהעובד רואה את השיבוצים שלו בטאב 'היומן שלי'." },
@@ -816,9 +816,26 @@ function projProgress(p) {
 }
 
 const VAT_RATE = 0.18; // מע"מ — לשינוי בעתיד רק כאן
+// ===== מחירון + סעיפים לפי כמות × מחיר ליחידה =====
+const Q_UNITS = ["מ\"ר", "מ\"א", "נקודה", "יחידה", "קוב", "יום", "קומפלט"];
+const qNum = (n) => Number(n).toLocaleString("he-IL");
+// התווית שהלקוח רואה — עם פירוט כמות × מחיר רק אם בחרו להציג
+function qItemLabel(it, units) {
+  const d = it.desc || "סעיף";
+  if (units && it.unit && it.unit !== "קומפלט" && Number(it.qty) > 0 && Number(it.unitPrice) > 0) return `${d} — ${qNum(it.qty)} ${it.unit} × ₪${qNum(it.unitPrice)}`;
+  return d;
+}
+// עותק של ההצעה שבו תיאור כל סעיף כבר כולל את הפירוט (למסמך / PDF / ווטסאפ)
+function labeledQuote(q) {
+  const units = q.showUnits !== false;
+  return { ...q, items: (q.items || []).map(it => ({ ...it, desc: qItemLabel(it, units) })) };
+}
+const qLineAmount = (it) => Math.round(Number(it.qty || 0) * Number(it.unitPrice || 0) * 100) / 100;
+const normName = (x) => String(x || "").trim().replace(/\s+/g, " ").toLowerCase();
+
 function quoteTotal(q) {
   return (q.items && q.items.length)
-    ? q.items.reduce((s,it) => s + Number(it.amount||0), 0)
+    ? q.items.reduce((s,it) => s + (it.unit ? qLineAmount(it) : Number(it.amount||0)), 0)
     : Number(q.amount||0);
 }
 const WHATSAPP_QUOTE = "https://wa.me/972543276493?text=" + encodeURIComponent("היי, אשמח לקבל הצעת מחיר למערכת BuildTrack לניהול אתרי בנייה 🏗️");
@@ -1492,6 +1509,9 @@ export default function App() {
   const [termsAccepted, setTermsAccepted] = useState(true); // עד שנטען — לא חוסמים
   const [quotes, setQuotes] = useState([]);
   const [quoteM, setQuoteM] = useState(false);
+  const [plM, setPlM] = useState(false);          // מחירון — חלון ניהול
+  const [plNew, setPlNew] = useState({ name:"", unit:"נקודה", price:"", priceNoMat:"" });
+  const [plFocus, setPlFocus] = useState(null);   // סעיף שמקלידים בו כרגע — להצעות מהמחירון
   const [editQuote, setEditQuote] = useState({ clientName:"", clientPhone:"", title:"", desc:"", amount:"", items:[] });
   const [helpSearch, setHelpSearch] = useState("");
   const [sendYm, setSendYm] = useState(() => shiftYm(todayStr().slice(0,7), -1)); // החודש לשליחה לרואה החשבון
@@ -2428,9 +2448,48 @@ export default function App() {
     return Object.values(map).sort((a,b) => String(b.last).localeCompare(String(a.last)));
   })();
 
+  // מחירון הקבלן — נשמר בשורת ההגדרות (רק המנהל רואה)
+  const priceList = Array.isArray(cfgData._priceList) ? cfgData._priceList : [];
+  const quoteUnitsDefault = cfgData._quoteShowUnits !== false;
+  const savePriceList = (list) => saveCfgPatch({ _priceList: list });
+  const plPriceFor = (pl, withMat) => {
+    const a = Number(pl.price || 0), b = Number(pl.priceNoMat || 0);
+    return withMat === false ? (b > 0 ? b : a) : (a > 0 ? a : b);
+  };
+  // לומד מההצעה: סעיף לפי יחידה שלא קיים במחירון / במחיר אחר — שואל אם להוסיף / לעדכן
+  const learnFromQuote = async (items) => {
+    let list = [...priceList], changed = false;
+    for (const it of items) {
+      const name = String(it.desc || "").trim(), price = Number(it.unitPrice);
+      if (!name || !it.unit || !(price > 0)) continue;
+      const noMat = it.withMaterial === false;
+      const idx = list.findIndex(x => (it.plId && String(x.id) === String(it.plId)) || normName(x.name) === normName(name));
+      if (idx < 0) {
+        if (window.confirm(`להוסיף למחירון?\n\n"${name}" — ₪${qNum(price)} ל${it.unit}${noMat ? " (בלי חומר)" : ""}\n\nבפעם הבאה שתכתוב את הפריט, המחיר ייכנס לבד.`)) {
+          list.push({ id: Date.now() + list.length, name, unit: it.unit, price: noMat ? 0 : price, priceNoMat: noMat ? price : 0 });
+          changed = true;
+        }
+      } else {
+        const pl = list[idx];
+        const field = noMat ? "priceNoMat" : "price";
+        const cur = plPriceFor(pl, !noMat);
+        if (pl.unit === it.unit && cur === price) continue;
+        const what = (pl.unit !== it.unit ? `יחידה: ${pl.unit} ← ${it.unit}\n` : "") + (Number(pl[field] || 0) > 0 ? `מחיר: ₪${qNum(cur)} ← ₪${qNum(price)} ל${it.unit}` : `מחיר ${noMat ? "בלי" : "כולל"} חומר: ₪${qNum(price)} ל${it.unit}`);
+        if (window.confirm(`לעדכן את המחירון?\n\n"${pl.name}"${noMat ? " (בלי חומר)" : ""}: ${what}\n\nאישור — המחיר החדש יהיה ברירת המחדל.\nביטול — רק בהצעה הזו (למשל עבודה מורכבת יותר).`)) {
+          list[idx] = { ...pl, unit: it.unit, [field]: price };
+          changed = true;
+        }
+      }
+    }
+    if (changed) await savePriceList(list);
+  };
+
   const saveQuote = async () => {
     if (!editQuote.title.trim()) { alert("יש למלא שם פרויקט/עבודה"); return; }
-    const eq = { ...editQuote, clientName: String(editQuote.clientName||"").trim(), clientPhone: String(editQuote.clientPhone||"").trim(), clientEmail: String(editQuote.clientEmail||"").trim() };
+    // סעיף לפי יחידה — הסכום תמיד כמות × מחיר
+    const items = (editQuote.items || []).map(it => it.unit ? { ...it, amount: String(qLineAmount(it)) } : it);
+    const eq = { ...editQuote, items, showUnits: editQuote.showUnits ?? quoteUnitsDefault, clientName: String(editQuote.clientName||"").trim(), clientPhone: String(editQuote.clientPhone||"").trim(), clientEmail: String(editQuote.clientEmail||"").trim() };
+    await learnFromQuote(items);
     try {
       if (eq._dbid) {
         const { _dbid, ...data } = eq;
@@ -2459,7 +2518,8 @@ export default function App() {
     setQuotes(prev => prev.map(x => x._dbid===q._dbid ? updated : x));
   };
 
-  const openQuoteDoc = (q) => {
+  const openQuoteDoc = (q0) => {
+    const q = labeledQuote(q0);
     const total = quoteTotal(q);
     const logo = org?.logo || (org?.slug==="gne" ? LOGO_URL : "");
     const phoneDigits = String(q.clientPhone||"").replace(/[^0-9]/g,"").replace(/^0/,"");
@@ -2560,7 +2620,7 @@ async function shareImg() {
     if (!window.confirm(`ההצעה "${q.title}" נסגרה? 🎉\nהיא תהפוך לפרויקט פעיל.`)) return;
     try {
       const total = quoteTotal(q);
-      const itemsTxt = (q.items||[]).map(it =>
+      const itemsTxt = labeledQuote(q).items.map(it =>
         `${it.desc||"סעיף"} — ₪${Number(it.amount||0).toLocaleString("he-IL")} (${it.withMaterial!==false?"כולל חומר":"בלי חומר"})`
       ).join("\n");
       const proj = { ...q, status:"בתהליך", name: q.title,
@@ -2936,7 +2996,7 @@ async function shareImg() {
     setQuoteSending(q._dbid);
     try {
       let pdf = null;
-      try { pdf = await quotePdfBase64(q, org, org?.logo || (org?.slug==="gne" ? LOGO_URL : "")); }
+      try { pdf = await quotePdfBase64(labeledQuote(q), org, org?.logo || (org?.slug==="gne" ? LOGO_URL : "")); }
       catch (e) { if (!window.confirm("לא הצלחתי ליצור קובץ PDF. לשלוח את ההצעה בלי קובץ מצורף? (ההצעה מופיעה בגוף המייל)")) { setQuoteSending(null); return; } }
       const r = await fetch(`${SUPABASE_URL}/functions/v1/send-quote`, { method:"POST", headers: hdrs(),
         body: JSON.stringify({ quoteDbid: q._dbid, pdf, pdfName: `הצעת מחיר - ${String(q.title||"").slice(0,50)}.pdf` }) });
@@ -6572,7 +6632,10 @@ async function shareImg() {
                 <h1 style={{ margin:0, fontSize:20, fontWeight:800 }}>📄 הצעות מחיר</h1>
                 <p style={{ margin:"3px 0 0", color:"#777", fontSize:13 }}>{quotes.length} הצעות · פתוחות בשווי ₪{fmtNum(openSum)}</p>
               </div>
-              <button onClick={()=>{ setEditQuote({ clientName:"", clientPhone:"", title:"", desc:"", amount:"", items:[] }); setQuoteM(true); }} style={btnY}>+ הצעת מחיר</button>
+              <div style={{ display:"flex", gap:6 }}>
+                <button onClick={()=>setPlM(true)} style={{ ...btnG, padding:"10px 12px", whiteSpace:"nowrap" }}>📒 מחירון{priceList.length ? ` (${priceList.length})` : ""}</button>
+                <button onClick={()=>{ setEditQuote({ clientName:"", clientPhone:"", title:"", desc:"", amount:"", items:[] }); setQuoteM(true); }} style={{ ...btnY, padding:"10px 14px", whiteSpace:"nowrap" }}>+ הצעה</button>
+              </div>
             </div>
 
             {quotes.length===0 && (
@@ -6597,7 +6660,7 @@ async function shareImg() {
                       <div style={{ marginTop:7, background:"#F9F9F9", borderRadius:8, padding:"7px 10px" }}>
                         {(q.items||[]).map((it,ii)=>(
                           <div key={ii} style={{ display:"flex", justifyContent:"space-between", padding:"2px 0", fontSize:12 }}>
-                            <span style={{ color:"#555" }}>{it.withMaterial!==false?"🧱":"🚫"} {it.desc||"סעיף"}</span>
+                            <span style={{ color:"#555" }}>{it.withMaterial!==false?"🧱":"🚫"} {qItemLabel(it, true)}</span>
                             <span style={{ fontWeight:700, color:"#333", whiteSpace:"nowrap" }}>₪{fmtNum(it.amount||0)}</span>
                           </div>
                         ))}
@@ -6967,6 +7030,58 @@ async function shareImg() {
       )}
 
       {/* MODAL: הצעת מחיר */}
+      {plM && (
+        <div onClick={()=>setPlM(false)} style={OVL}>
+          <div onClick={e=>e.stopPropagation()} style={MOD}>
+            <h3 style={{ margin:"0 0 4px", fontWeight:800, fontSize:17 }}>📒 המחירון שלי</h3>
+            <p style={{ margin:"0 0 12px", fontSize:12.5, color:"#777" }}>מחיר ליחידה לכל פריט. בהצעת מחיר כותבים את שם הפריט וכמות — והמחיר מחושב לבד. פריטים חדשים מההצעות נוספים לכאן אחרי אישור.</p>
+            <label style={{ display:"flex", gap:8, alignItems:"center", marginBottom:14, fontSize:13, fontWeight:600, background:"#F7F7F4", borderRadius:10, padding:"9px 11px", cursor:"pointer" }}>
+              <input type="checkbox" checked={quoteUnitsDefault} onChange={e=>saveCfgPatch({ _quoteShowUnits: e.target.checked })} style={{ width:17, height:17, accentColor:"#1A1A2E" }}/>
+              ברירת מחדל: הלקוח רואה פירוט כמות × מחיר ליחידה
+            </label>
+            {priceList.length > 0 && <div style={{ display:"flex", gap:5, fontSize:11, color:"#999", padding:"0 10px 3px" }}><span style={{ flex:"0 0 84px" }}>יחידה</span><span style={{ flex:1, paddingRight:18 }}>🧱 כולל חומר</span><span style={{ flex:1, paddingRight:18 }}>🚫 בלי חומר</span></div>}
+            {priceList.length === 0 && <p style={{ margin:"0 0 12px", fontSize:13, color:"#AAA", textAlign:"center" }}>המחירון ריק — הוסף פריט למטה, או פשוט כתוב סעיף לפי יחידה בהצעת מחיר</p>}
+            {priceList.map((pl, i) => {
+              const upd = (ch) => savePriceList(priceList.map((x, j) => j === i ? { ...x, ...ch } : x));
+              const ci = { border:"1.5px solid #DDD", borderRadius:8, padding:"6px 7px", fontSize:13, fontFamily:"Heebo,sans-serif", outline:"none", minWidth:0, boxSizing:"border-box" };
+              return (
+                <div key={pl.id} style={{ border:"1px solid #EEE", borderRadius:10, padding:"8px 9px", marginBottom:7 }}>
+                  <div style={{ display:"flex", gap:6, alignItems:"center", marginBottom:5 }}>
+                    <input defaultValue={pl.name} onBlur={e=>{ const v = e.target.value.trim(); if (v && v !== pl.name) upd({ name:v }); }} style={{ ...ci, flex:1, fontWeight:700 }}/>
+                    <button onClick={()=>{ if (window.confirm(`למחוק את "${pl.name}" מהמחירון?`)) savePriceList(priceList.filter((_, j) => j !== i)); }} style={{ background:"none", border:"none", cursor:"pointer", color:"#CCC", fontSize:14 }}>✕</button>
+                  </div>
+                  <div style={{ display:"flex", gap:5, alignItems:"center", fontSize:12, color:"#777" }}>
+                    <select value={pl.unit} onChange={e=>upd({ unit:e.target.value })} style={{ ...ci, flex:"0 0 84px", padding:"6px 3px" }}>
+                      {Q_UNITS.map(u => <option key={u} value={u}>{u==="יום" ? "יום עבודה" : u}</option>)}
+                    </select>
+                    <span>🧱</span><input type="number" defaultValue={pl.price||""} placeholder="כולל חומר" onBlur={e=>{ const v = Number(e.target.value)||0; if (v !== Number(pl.price||0)) upd({ price:v }); }} style={{ ...ci, flex:1 }}/>
+                    <span>🚫</span><input type="number" defaultValue={pl.priceNoMat||""} placeholder="בלי חומר" onBlur={e=>{ const v = Number(e.target.value)||0; if (v !== Number(pl.priceNoMat||0)) upd({ priceNoMat:v }); }} style={{ ...ci, flex:1 }}/>
+                  </div>
+                </div>
+              );
+            })}
+            <div style={{ background:"#F9F9F9", borderRadius:10, padding:"10px", marginTop:10 }}>
+              <p style={{ margin:"0 0 6px", fontSize:12.5, fontWeight:700 }}>+ פריט חדש</p>
+              <input value={plNew.name} placeholder="שם הפריט — למשל: נקודת חשמל" onChange={e=>setPlNew({ ...plNew, name:e.target.value })} style={{ ...inp, fontSize:14, padding:"8px 11px", marginBottom:6 }}/>
+              <div style={{ display:"flex", gap:5 }}>
+                <select value={plNew.unit} onChange={e=>setPlNew({ ...plNew, unit:e.target.value })} style={{ ...inp, fontSize:13, padding:"8px 4px", flex:"0 0 90px", width:"auto" }}>
+                  {Q_UNITS.map(u => <option key={u} value={u}>{u==="יום" ? "יום עבודה" : u}</option>)}
+                </select>
+                <input type="number" value={plNew.price} placeholder="₪ כולל חומר" onChange={e=>setPlNew({ ...plNew, price:e.target.value })} style={{ ...inp, fontSize:13, padding:"8px 8px", flex:1, width:"auto", minWidth:0 }}/>
+                <input type="number" value={plNew.priceNoMat} placeholder="₪ בלי חומר" onChange={e=>setPlNew({ ...plNew, priceNoMat:e.target.value })} style={{ ...inp, fontSize:13, padding:"8px 8px", flex:1, width:"auto", minWidth:0 }}/>
+              </div>
+              <button onClick={async ()=>{
+                const name = plNew.name.trim();
+                if (!name || !(Number(plNew.price) > 0 || Number(plNew.priceNoMat) > 0)) { alert("מלא שם פריט ומחיר"); return; }
+                if (priceList.some(x => normName(x.name) === normName(name))) { alert("הפריט כבר קיים במחירון"); return; }
+                if (await savePriceList([...priceList, { id: Date.now(), name, unit: plNew.unit, price: Number(plNew.price)||0, priceNoMat: Number(plNew.priceNoMat)||0 }])) setPlNew({ name:"", unit:plNew.unit, price:"", priceNoMat:"" });
+              }} style={{ ...btnD, width:"100%", marginTop:8 }}>הוסף למחירון</button>
+            </div>
+            <button onClick={()=>setPlM(false)} style={{ ...btnG, width:"100%", marginTop:10 }}>סגור</button>
+          </div>
+        </div>
+      )}
+
       {quoteM && (
         <div onClick={()=>setQuoteM(false)} style={OVL}>
           <div onClick={e=>e.stopPropagation()} style={MOD}>
@@ -7016,19 +7131,64 @@ async function shareImg() {
               )}
               {(editQuote.items||[]).map((it,ii) => {
                 const updIt = (changes) => setEditQuote(prev=>({...prev, items:(prev.items||[]).map((x,i)=>i===ii?{...x,...changes}:x)}));
+                const fin = { border:"1.5px solid #DDD", borderRadius:8, padding:"7px 8px", fontSize:13, fontFamily:"Heebo,sans-serif", outline:"none", background:"#fff", minWidth:0, boxSizing:"border-box" };
+                const typed = normName(it.desc);
+                const exactPl = priceList.find(x => normName(x.name) === typed);
+                const sugg = plFocus === it.id && typed && !exactPl ? priceList.filter(x => normName(x.name).includes(typed) || typed.split(" ").some(w => w.length > 1 && normName(x.name).includes(w))).slice(0, 6) : [];
+                const pickPl = (pl) => { updIt({ desc: pl.name, unit: pl.unit, unitPrice: String(plPriceFor(pl, it.withMaterial)), plId: pl.id, qty: it.qty || "" }); setPlFocus(null); };
                 return (
-                  <div key={it.id} style={{ marginBottom:8 }}>
+                  <div key={it.id} style={{ marginBottom:10, background:"#fff", border:"1px solid #EEE", borderRadius:10, padding:"8px 8px 7px" }}>
                     <div style={{ display:"flex", gap:6, alignItems:"center", marginBottom:5 }}>
-                      <input value={it.desc} placeholder="לדוגמה: עבודות גבס" onChange={e=>updIt({desc:e.target.value})}
-                        style={{ flex:2, border:"1.5px solid #DDD", borderRadius:8, padding:"7px 10px", fontSize:13, fontFamily:"Heebo,sans-serif", outline:"none", background:"#fff" }}/>
-                      <input type="number" value={it.amount} placeholder="₪" onChange={e=>updIt({amount:e.target.value})}
-                        style={{ flex:1, border:"1.5px solid #DDD", borderRadius:8, padding:"7px 10px", fontSize:13, fontFamily:"Heebo,sans-serif", outline:"none", background:"#fff" }}/>
+                      <input value={it.desc} placeholder={priceList.length ? "הקלד פריט — למשל: נקודת חשמל" : "לדוגמה: עבודות גבס"} onFocus={()=>setPlFocus(it.id)}
+                        onChange={e=>{ const v = e.target.value; const pl = priceList.find(x => normName(x.name) === normName(v)); updIt(pl && !it.unit ? { desc:v, unit:pl.unit, unitPrice:String(plPriceFor(pl, it.withMaterial)), plId:pl.id } : { desc:v }); }}
+                        style={{ ...fin, flex:1 }}/>
                       <button type="button" onClick={()=>setEditQuote(prev=>({...prev, items:(prev.items||[]).filter((_,i)=>i!==ii)}))}
                         style={{ background:"none", border:"none", cursor:"pointer", color:"#CCC", fontSize:14, padding:0, flexShrink:0 }}>✕</button>
                     </div>
+                    {sugg.length > 0 && (
+                      <div style={{ display:"flex", flexWrap:"wrap", gap:5, marginBottom:6 }}>
+                        {sugg.map(pl => (
+                          <button key={pl.id} type="button" onMouseDown={e=>e.preventDefault()} onClick={()=>pickPl(pl)}
+                            style={{ background:"#FFF8E1", color:"#7A5B00", border:"1px solid #F3D67A", borderRadius:14, padding:"3px 10px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>
+                            📒 {pl.name} · ₪{qNum(plPriceFor(pl, it.withMaterial))}/{pl.unit}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                    <div style={{ display:"flex", gap:5, alignItems:"center", marginBottom:5 }}>
+                      <select value={it.unit||""} onChange={e=>{ const u = e.target.value; updIt(u ? { unit:u, qty: it.qty || (u==="קומפלט" ? "1" : ""), unitPrice: it.unitPrice || (it.amount && !it.unit ? String(it.amount) : "") } : { unit:"", amount: it.unit ? String(qLineAmount(it) || "") : it.amount }); }}
+                        style={{ ...fin, flex:"0 0 92px", padding:"7px 4px" }}>
+                        <option value="">סכום כולל</option>
+                        {Q_UNITS.map(u => <option key={u} value={u}>{u==="יום" ? "יום עבודה" : u}</option>)}
+                      </select>
+                      {it.unit ? (
+                        <>
+                          <input type="number" inputMode="decimal" value={it.qty||""} placeholder="כמות" onChange={e=>updIt({qty:e.target.value})} style={{ ...fin, flex:1 }}/>
+                          <span style={{ color:"#999", fontSize:13 }}>×</span>
+                          <input type="number" inputMode="decimal" value={it.unitPrice||""} placeholder="₪ ליחידה" onChange={e=>updIt({unitPrice:e.target.value})} style={{ ...fin, flex:1.2 }}/>
+                        </>
+                      ) : (
+                        <input type="number" value={it.amount} placeholder="₪" onChange={e=>updIt({amount:e.target.value})} style={{ ...fin, flex:1 }}/>
+                      )}
+                    </div>
+                    {it.unit && (() => {
+                      const pl = priceList.find(x => (it.plId && String(x.id)===String(it.plId)) || normName(x.name)===typed);
+                      const plP = pl ? plPriceFor(pl, it.withMaterial) : null;
+                      return (
+                        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", fontSize:12, marginBottom:5, color:"#666" }}>
+                          <span>{pl && plP !== Number(it.unitPrice) && Number(it.unitPrice) > 0 ? <span style={{ color:"#B26A00" }}>✏️ שונה מהמחירון (₪{qNum(plP)})</span> : pl ? <span style={{ color:"#2E7D32" }}>📒 מהמחירון</span> : <span style={{ color:"#999" }}>פריט חדש — יוצע להוסיף למחירון בשמירה</span>}</span>
+                          <b style={{ color:"#1A1A2E", fontSize:13 }}>= ₪{qNum(qLineAmount(it))}</b>
+                        </div>
+                      );
+                    })()}
                     <div style={{ display:"flex", gap:5 }}>
                       {[{v:true,l:"🧱 כולל חומר"},{v:false,l:"🚫 בלי חומר"}].map(opt=>(
-                        <button key={String(opt.v)} type="button" onClick={()=>updIt({withMaterial:opt.v})}
+                        <button key={String(opt.v)} type="button" onClick={()=>{
+                          const pl = it.unit && priceList.find(x => (it.plId && String(x.id)===String(it.plId)) || normName(x.name)===typed);
+                          // מעבר כולל/בלי חומר — אם המחיר הוא של המחירון, מתעדכן למחיר המתאים
+                          if (pl && Number(it.unitPrice) === plPriceFor(pl, it.withMaterial)) updIt({ withMaterial:opt.v, unitPrice:String(plPriceFor(pl, opt.v)) });
+                          else updIt({withMaterial:opt.v});
+                        }}
                           style={{ flex:1, background:(it.withMaterial!==false)===opt.v?"#1A1A2E":"#EEE", color:(it.withMaterial!==false)===opt.v?"#E8C547":"#999", border:"none", borderRadius:7, padding:"4px 0", fontSize:11, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:(it.withMaterial!==false)===opt.v?700:400 }}>
                           {opt.l}
                         </button>
@@ -7042,6 +7202,12 @@ async function shareImg() {
                   <span style={{ fontSize:13, fontWeight:700 }}>סה"כ הצעה</span>
                   <span style={{ fontSize:15, fontWeight:800, color:"#1A1A2E" }}>₪{fmtNum(quoteTotal(editQuote))}</span>
                 </div>
+              )}
+              {(editQuote.items||[]).some(it => it.unit && it.unit !== "קומפלט") && (
+                <label style={{ display:"flex", gap:7, alignItems:"center", marginTop:8, fontSize:12.5, color:"#555", cursor:"pointer" }}>
+                  <input type="checkbox" checked={editQuote.showUnits ?? quoteUnitsDefault} onChange={e=>setEditQuote(prev=>({...prev, showUnits:e.target.checked}))} style={{ width:16, height:16, accentColor:"#1A1A2E" }}/>
+                  הלקוח רואה פירוט (כמות × מחיר ליחידה)
+                </label>
               )}
             </div>
 
