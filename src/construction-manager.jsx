@@ -92,12 +92,13 @@ const PLANS = {
 // ===== תוכן מסך העזרה =====
 const HELP_TOPICS = [
   { icon:"🔑", title:"כניסה למערכת", body:"במסך הפתיחה שלוש כניסות:\n• כניסת עובד — עם הקוד האישי שהמנהל הגדיר לעובד.\n• כניסת מנהל עבודה — עם קוד מנהל העבודה (מוגדר בטאב מנהלי עבודה).\n• כניסת מנהל — עם קוד המנהל של העסק.\nאת הקישור של העסק מוסיפים למסך הבית: פותחים בדפדפן ← שיתוף ← הוספה למסך הבית — ומקבלים אייקון כמו אפליקציה." },
+  { icon:"🧭", title:"איך מתמצאים במערכת", body:"בתחתית המסך יש סרגל עם 5 אזורים:\n• היום — מסך הבית: מי בשטח, מה ממתין לאישור, כמה לגבות, ורשימת 'דורש טיפול' עם מעבר ישיר לכל דבר.\n• פרויקטים — כל הפרויקטים ודף כל פרויקט.\n• צוות — דיווחים, יומן, עובדים, שכר, קבלני משנה ומנהלי עבודה (בחירה בשורת הכפתורים למעלה).\n• כספים — הכנסות, הוצאות חודשיות והצעות מחיר.\n• עוד — ציוד, סיכומי יום, התראות ודוחות, הגדרות ועזרה.\nהמספר האדום על 'צוות' = דיווחים שממתינים לאישור." },
   { icon:"📝", title:"דיווח יומי של עובד", body:"העובד נכנס עם הקוד שלו, בוחר פרויקט (מוצגים רק פרויקטים שהוא משויך אליהם — השיוך בכפתור 'שייך עובדים' בפרויקט; אפשר לבטל את חובת השיוך בטאב עובדים ← ⚙️ הגדרות דיווח, ואז כל עובד רואה את כל הפרויקטים הפעילים), בוחר יום מלא או חצי יום, מסמן דלק אם נסע ברכב, ולוחץ שלח.\n• אי אפשר לדווח פעמיים על אותו תאריך.\n• דיווח על תאריך שעבר נכנס ל'ממתינים לאישור' אצל המנהל ולא נספר בשכר עד שמאושר.\n• אי אפשר לדווח על תאריך עתידי.\n• שיבוץ ביומן — נקבע בטאב עובדים ← ⚙️ הגדרות דיווח: 'חובה לכולם' (מדווחים רק ביום ובפרויקט ששובצו), 'רק למי שמשובץ ביומן' (ברירת מחדל: עובד שלא מנוהל ביומן מדווח חופשי), או 'לא מחייב' (היומן לתכנון בלבד).\n• בטאב 'היומן שלי' העובד רואה את הימים שהוא משובץ בהם." },
   { icon:"⏱️", title:"עובד שעתי — שעון נוכחות", body:"גם עובד יומי יכול לעבוד עם שעון: בעריכת העובד מפעילים '⏱️ שעון נוכחות'. השכר נשאר לפי יום; אם הוא עבד יותר מ-9 שעות — מגיעה התראה (בפעמון ובמייל הבוקר), ובטאב דיווחים מחליטים: '💰 לשלם נוספות' (125% / 150% לפי היומית חלקי 9) או '✓ בלי תוספת'.\nמעבר בין אתרים באותו יום: סוגרים שעון באתר הראשון ופותחים שעון חדש באתר הבא. היום נחשב יום אחד, העלות מתחלקת בין הפרויקטים לפי השעות, שעות נוספות (בשעתי) מחושבות על סך שעות היום, ודלק ואוכל — פעם אחת ביום.\nעובד יומי בלי שעון שעבד בשני פרויקטים: מדווח חצי יום על כל פרויקט.\nעובד שהוגדר כשעתי רואה שעון נוכחות במקום טופס דיווח: בוחר פרויקט ← ▶️ כניסה בתחילת היום ← 🛑 יציאה בסיומו.\nחישוב השכר: 9 שעות ראשונות 100%, שעות 10-11 לפי 125%, משעה 12 לפי 150%.\nשכח לסגור? המנהל רואה 'שעון תקוע' בטאב דיווחים ומתקן עם כפתור '✏️ שעות'.\nאם בפרויקט הוגדר אימות מיקום — בפתיחת השעון הטלפון יבקש אישור גישה למיקום (פעם ראשונה בלבד). במצב 'חסימה' ניתן לפתוח שעון רק בקרבת האתר." },
   { icon:"👷", title:"ניהול עובדים וסוגי העסקה", body:"בטאב עובדים מוסיפים עובד עם שם, קוד אישי ותפקיד, ובוחרים סוג העסקה:\n• יומי — שכר קבוע ליום (עם אפשרות חצי יום).\n• שעתי — שכר לשעה + שעון נוכחות.\n• גלובלי — משכורת חודשית קבועה.\nלכל עובד אפשר להגדיר אם יראה כפתור דלק וכמה ₪ דלק ליום.\nחשוב: כדי שעובד יוכל לדווח, חובה לשייך אותו לפרויקט (כפתור 'שייך עובדים' בתוך הפרויקט)." },
   { icon:"🏗️", title:"פרויקטים", body:"בטאב פרויקטים יוצרים פרויקט חדש ונכנסים אליו לניהול מלא: תיאור (מומלץ לכתוב כמויות — למשל '200 מטר גבס'), שלבי ביצוע עם סטטוס ותאריך יעד, הוצאות וחומרים, קבלני משנה, חשבוניות ותוכניות.\nלכל שלב ביצוע אפשר לתת משקל באחוזים (למשל: ניצבים 30%, גבס צד אחד 20%) — סימון שלב כ'הושלם' מעדכן אוטומטית את גרף ההתקדמות של הפרויקט. בלי משקלים — הגרף לפי הסליידר הידני.\nסטטוס 'הושלם' מסתיר את הפרויקט מהעובדים ומרשימות השיבוץ.\nכרטיס 'סה\"כ הוצאות פרויקט' מסכם הוצאות + קבלני משנה.\nבכרטיס '📍 אימות מיקום' אפשר לחייב עובדים שעתיים לפתוח שעון רק בקרבת האתר: עומדים באתר ← 'קבע את המיקום הנוכחי' ← בוחרים רדיוס ומצב (סימון בלבד / חסימה). חל רק על שעון שעתי — יומיות וגלובלי לא מושפעים." },
   { icon:"📄", title:"הצעות מחיר", body:"בטאב הצעות מחיר יוצרים הצעה עם פרטי לקוח וסכום — או מחולקת לסעיפים (גבס, בטון...) כשלכל סעיף מחיר וסימון כולל/בלי חומר; הסה\"כ מחושב אוטומטית.\n📒 מחירון: לכל פריט מחיר ליחידה (נקודה, מ\"ר, מ\"א, קוב, יום...) — כולל ובלי חומר. בסעיף מקלידים את שם הפריט, בוחרים מההצעות וכותבים כמות — המחיר מחושב לבד (למשל 6 × ₪180). אפשר לשנות מחיר בהצעה ספציפית; בשמירה המערכת שואלת אם לעדכן את המחירון (ביטול = רק להצעה הזו), ופריט חדש עם מחיר ליחידה — אם להוסיף אותו. בכפתור '📒 מחירון' עורכים את הפריטים ובוחרים אם הלקוח רואה פירוט כמות × מחיר (ניתן לשנות גם בכל הצעה).\nכשהלקוח מאשר לוחצים '✓ נסגרה — צור פרויקט' וההצעה הופכת לפרויקט פעיל: הסעיפים נכתבים לתיאור והסכום (לא כולל מע\"מ) נכנס ל'עלות פרויקט' בנתוני הפרויקט. את שלבי קבלת התשלום מגדירים ידנית.\nהצעה שנדחתה נשארת לתיעוד ואפשר להחזירה.\nכפתור '📤 הצג ללקוח' פותח דף הצעה מעוצב עם הלוגו, הסעיפים, סה\"כ לפני מע\"מ וסה\"כ כולל מע\"מ (18%) — אפשר לשתף, להדפיס או לשמור כ-PDF ולשלוח ללקוח." },
-  { icon:"🔨", title:"קבלני משנה", body:"בתוך דף פרויקט, בקטע קבלני משנה, מוסיפים קבלן עם תיאור עבודה, מחיר, ימים מתוכננים וסימון כולל/בלי חומר.\nמגדירים שלבי תשלום (מתי וכמה). כשהקבלן מסיים שלב — לוחצים על העיגול ומאשרים ⏳, והסכום עובר לתשלום.\nבטאב שכר ← '🔨 קבלנים' ← 'לתשלום' מסמנים ✓ שולם (נשמר תאריך), והתשלום עובר ל'היסטוריה'. ביטול תשלום — מההיסטוריה." },
+  { icon:"🔨", title:"קבלני משנה", body:"בתוך דף פרויקט, בקטע קבלני משנה, מוסיפים קבלן עם תיאור עבודה, מחיר, ימים מתוכננים וסימון כולל/בלי חומר.\nמגדירים שלבי תשלום (מתי וכמה). כשהקבלן מסיים שלב — לוחצים על העיגול ומאשרים ⏳, והסכום עובר לתשלום.\nבצוות ← 'קבלני משנה' ← 'לתשלום' מסמנים ✓ שולם (נשמר תאריך), והתשלום עובר ל'היסטוריה'. ביטול תשלום — מההיסטוריה." },
   { icon:"💵", title:"קבלת תשלומים מהלקוח", body:"בכל פרויקט יש קטע 'שלבי קבלת תשלום': מגדירים שלבים (מקדמה, אחרי שלד, מסירה...) עם סכומים, ומסמנים ✓ כשכסף התקבל.\nשורת הסיכום מציגה סה\"כ / התקבל / נותר — כך רואים בכל רגע כמה הלקוח עוד חייב." },
   { icon:"📅", title:"יומן ושיבוץ עובדים", body:"לוחצים על יום ← '+ הוסף פרויקט' ← בוחרים פרויקט ומסמנים עובדים. אפשר כמה פרויקטים באותו יום.\nעובד שכבר משובץ לפרויקט אחר באותו יום — המערכת מתריעה ומציגה מי שיבץ; מנהל ראשי יכול לאשר בכל זאת, מנהל עבודה חסום.\nהעובד רואה את השיבוצים שלו בטאב 'היומן שלי'." },
   { icon:"💰", title:"שכר עובדים", body:"בטאב שכר: 'לתשלום' מציג כמה מגיע לכל עובד, עם פירוט לפי חודש ולפי פרויקט.\n• 'שולם במלואו' סוגר את החודש, 'שולם חלקית' מזין סכום ומשאיר יתרה.\n• 'היסטוריה' מציגה תשלומים שבוצעו + סה\"כ ימים לפי פרויקט, ומאפשרת עריכה או ביטול.\nשעתי מוצג עם פירוט שעות רגילות/נוספות; גלובלי מופיע עם המשכורת הקבועה בכל חודש פעיל." },
@@ -110,7 +111,7 @@ const HELP_TOPICS = [
   { icon:"🧮", fin:true, title:"הוצאות חודשיות קבועות", body:"בטאב 🧮 הוצאות חודשיות רושמים את מה שמשלמים כל חודש — כל הסכומים לפני מע\"מ:\n• תקורות — בקבוצות (רכב, משרד, ביטוחים...) עם '+ שורה'.\n• ספקים בתשלום חודשי. אם החודש נקלטו בפרויקטים חשבוניות מאותו ספק — תופיע אזהרה כדי שלא ייספר פעמיים.\n• מיסים וביטוחים — ביטוח לאומי ופנסיה של העובדים (סכום כולל), ושל הבעלים, ומס הכנסה.\nלכל שורה יש סכום קבוע (🔁) שחוזר כל חודש, ואפשר לשנות בשדה רק לחודש הנוכחי. בסוף החודש לוחצים '✓ אשר' — הסכומים ננעלים.\n• 📎 חשבונית לספק — מעלים את החשבונית של החודש (נקראת אוטומטית); הסכום שלה (או סכום כמה חשבוניות) מחליף את הסכום הקבוע של אותו חודש. החשבוניות נשלחות גם לרואה החשבון, ויש בדיקת כפילות מול החשבוניות בפרויקטים.\n• 👷 עלות מעסיק לפי עובד — ביטוח לאומי, ופנסיה + פיצויים + קרן השתלמות של המעסיק, לכל עובד. אפשר להעלות '📄 ריכוז שכר' (או דוח עלות מעסיק / תלושים) והמערכת ממלאת לפי שמות העובדים, או להקליד ידנית. כל עובד מתחלק לפרויקטים לפי איפה שהוא עבד.\n• 📊 חלוקה לפרויקטים — לכל חודש בוחרים: לפי ימי עבודה, או לפי גודל הפרויקט ('עלות פרויקט') בין הפרויקטים שהיו פעילים בחודש (עובדים, קבלנים, הוצאות או תשלומים). ביטוח לאומי ופנסיה של עובדים תמיד לפי איפה שעבדו. הסכום מופיע בדף הפרויקט כ'חלק מהוצאות קבועות'. של הבעלים — רק בסיכום העסק." },
   { icon:"💼", fin:true, title:"מע\"מ — הערכה אוטומטית", body:"בטאב 🧮 הוצאות חודשיות, בכרטיס 💼 מע\"מ, המערכת מעריכה כמה מע\"מ תשלם:\nמע\"מ עסקאות (18% מההכנסות שהתקבלו בחודש) פחות מע\"מ תשומות (18% מההוצאות בפרויקטים, מהתשלומים לקבלני משנה ומהספקים והתקורות).\nלכן חשוב שכל הסכומים יירשמו לפני מע\"מ.\n• תקופת דיווח — בוחרים 'כל חודש', 'כל חודשיים' או מספר חודשים אחר. כשהתקופה ארוכה מחודש מוצג גם סה\"כ לדוח של כל התקופה.\n• מה לא נכלל: שכר, ביטוח לאומי, פנסיה ומס הכנסה (אין עליהם מע\"מ), הוצאות מסוג אוכל (עליהן לא מזדכים, ולכן הן נרשמות בסכום המלא כולל מע\"מ), וכל מה שסומן 'בלי מע\"מ' — קבלן משנה עוסק פטור (בכרטיס הקבלן), ספק או תקורה (ליד השורה), או הוצאה (ליד ההוצאה). חשבונית שנקראה בלי מע\"מ מסומנת כך אוטומטית.\n• אפשר להקליד סכום אחר ידנית; '↺ חזור לחישוב' מחזיר להערכה. סכום במינוס = החזר משוער.\n• המע\"מ לא יורד מהרווח בסיכום העסק — הוא כסף שגובים מהלקוח ומעבירים למדינה.\nזו הערכה בלבד — הדיווח הרשמי נעשה מול רואה החשבון." },
   { icon:"🔔", title:"טאב התראות ושליחה לרואה החשבון", body:"בטאב 🔔 התראות מחליטים מה נשלח, מתי ולמי. המיילים יוצאים בבוקר (6:30–7:30); יום שיוצא בשבת — נשלח ביום ראשון.\n• 📤 שליחה לרואה החשבון — מגדירים את המייל והטלפון שלו, בוחרים חודש ושולחים: דוח שכר ברוטו (PDF) ו/או את כל החשבוניות של החודש — במייל, או בווטסאפ (מהטלפון נפתח חלון השיתוף עם הקבצים). '💬 הודעת סיכום' פותח ווטסאפ עם הודעה מוכנה.\n• דוח השכר: לכל עובד ימים, שעות, תעריף ושכר ברוטו, ובנפרד תוספות אוכל ודלק, ו'שולם עד כה' — מה שכבר שולם לעובד על החודש (כולל מקדמות).\n• לכל התראה: מתג פעיל/כבוי, יום בחודש או מספר ימים, למי (דוח שכר וחשבוניות), ואיך — אוטומטי במייל או רק תזכורת בפעמון ושליחה ידנית.\n• התראות: דוח שכר, חשבוניות, להוציא משכורות (ב-7 לחודש), מע\"מ, אישור הוצאות חודשיות, כסף שלא נגבה, הצעת מחיר בלי תשובה, עובד שלא דיווח.\n• מייל התראות בוקר — הדיווחים לאישור, שעונים שנשכחו וכו'. התזכורות מצטרפות אליו." },
-  { icon:"💼", title:"עובד שמשולם בחשבונית", body:"עובד קבוע שיש לו עסק ומוציא לך חשבונית: בעריכת העובד בוחרים 'אופן תשלום' ← '💼 חשבונית (עוסק)', ועוסק מורשה (+מע\"מ) או פטור. התעריף לפני מע\"מ.\nהעובד מדווח כרגיל (ימים או שעון) והעלות נכנסת לפרויקטים, אבל הוא לא מופיע בדוח השכר ברוטו לרואה החשבון ולא בעלות מעסיק.\nהתשלום שלו נמצא בטאב שכר ← 🔨 קבלנים ← '💼 עובדים בחשבונית': כמה מגיע לכל חודש (+מע\"מ), '✓ שולם', ו'📎 חשבונית' — החשבונית נשלחת לרואה החשבון עם שאר החשבוניות של החודש. אצל עוסק מורשה המע\"מ נכנס להערכת המע\"מ." },
+  { icon:"💼", title:"עובד שמשולם בחשבונית", body:"עובד קבוע שיש לו עסק ומוציא לך חשבונית: בעריכת העובד בוחרים 'אופן תשלום' ← '💼 חשבונית (עוסק)', ועוסק מורשה (+מע\"מ) או פטור. התעריף לפני מע\"מ.\nהעובד מדווח כרגיל (ימים או שעון) והעלות נכנסת לפרויקטים, אבל הוא לא מופיע בדוח השכר ברוטו לרואה החשבון ולא בעלות מעסיק.\nהתשלום שלו נמצא בצוות ← קבלני משנה ← '💼 עובדים בחשבונית': כמה מגיע לכל חודש (+מע\"מ), '✓ שולם', ו'📎 חשבונית' — החשבונית נשלחת לרואה החשבון עם שאר החשבוניות של החודש. אצל עוסק מורשה המע\"מ נכנס להערכת המע\"מ." },
   { icon:"🍔", title:"תוספת אוכל לעובד", body:"בעריכת עובד (טאב עובדים) מפעילים '🍔 תוספת אוכל לכל יום עבודה' וקובעים סכום ליום. הסכום מתווסף אוטומטית לכל יום עבודה (חצי יום — חצי), כמו הדלק.\nבטאב שכר ובדוח לרואה החשבון האוכל והדלק מופיעים בנפרד מהשכר ברוטו. שינוי הסכום חל מהדיווחים הבאים — חודשים קודמים לא משתנים." },
   { icon:"🛠️", title:"תקלות נפוצות", body:"• 'קוד שגוי' למרות קוד נכון — ודאו שנכנסתם דרך הקישור הנכון של העסק שלכם.\n• נתונים לא מתעדכנים — צאו והתחברו מחדש, או משכו לרענון.\n• המסך נראה ישן אחרי עדכון — סגרו את האפליקציה לגמרי ופתחו שוב.\n• ההתחברות תקפה 12 שעות — אחריהן פשוט מתחברים שוב.\n• 'לא ניתן לאמת מיקום' — יש לאשר גישה למיקום: הגדרות הטלפון ← ספארי/כרום ← מיקום ← אפשר.\nלכל בעיה אחרת — פנו לספק המערכת." },
 ];
@@ -166,6 +167,7 @@ const BT_DESKTOP_CSS = `
   .bt-head { padding: 0 32px !important; }
   .bt-tabs { justify-content: center !important; }
   .bt-tabs > button { font-size: 14px !important; padding: 14px 16px !important; }
+  .bt-subtabs { justify-content: center; }
   .bt-main { padding-top: 26px !important; }
   .bt-main.bt-wide { max-width: 1280px !important; padding-left: 32px !important; padding-right: 32px !important; }
   .bt-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(440px, 1fr)); column-gap: 16px; }
@@ -816,6 +818,18 @@ function projProgress(p) {
 }
 
 const VAT_RATE = 0.18; // מע"מ — לשינוי בעתיד רק כאן
+// ===== אייקונים לניווט התחתון =====
+const NAV_PATHS = {
+  today:    <><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/></>,
+  projects: <><rect x="4" y="3" width="16" height="18" rx="1"/><path d="M9 7h2M13 7h2M9 11h2M13 11h2M9 15h2M13 15h2"/></>,
+  team:     <><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.5 3-6 6.5-6s6.5 2.5 6.5 6"/><circle cx="17" cy="9" r="2.5"/><path d="M17 14c2.5 0 4.5 2 4.5 5"/></>,
+  money:    <><rect x="2" y="6" width="20" height="13" rx="2"/><path d="M16 12.5h2"/><path d="M2 10h20"/></>,
+  more:     <path d="M4 7h16M4 12h16M4 17h16"/>,
+};
+const NavIcon = ({ name, size = 22 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{NAV_PATHS[name]}</svg>
+);
+
 // ===== מחירון + סעיפים לפי כמות × מחיר ליחידה =====
 const Q_UNITS = ["מ\"ר", "מ\"א", "נקודה", "יחידה", "קוב", "יום", "קומפלט"];
 const qNum = (n) => Number(n).toLocaleString("he-IL");
@@ -1555,7 +1569,7 @@ export default function App() {
   const [manNote,  setManNote]  = useState("");
   const [pendingReports, setPendingReports] = useState([]); // reports waiting manager approval
 
-  const [mgTab,      setMgTab]      = useState("reports");
+  const [mgTab,      setMgTab]      = useState("today");
   const [canInstall, doInstall]    = useInstallPrompt();
   const [detailId,   setDetailId]   = useState(null);
   const [projTab,    setProjTab]    = useState("active"); // "active" | "completed"
@@ -1866,7 +1880,7 @@ export default function App() {
     try {
       const res = await loginAny("foreman");
       rememberOrg();
-      setLoggedForeman(res.worker); setCodeInput(""); setCodeError(false); setMgTab("reports"); setDetailId(null); setScreen("foreman");
+      setLoggedForeman(res.worker); setCodeInput(""); setCodeError(false); setMgTab("today"); setDetailId(null); setScreen("foreman");
       loadAll(true);
     } catch(e) { setCodeError(true); }
   };
@@ -3051,7 +3065,7 @@ async function shareImg() {
                 style={{ flex:1, background:(obj.vatType||"licensed")===o.v?"#6D28D9":"#EDE9FE", color:(obj.vatType||"licensed")===o.v?"#fff":"#6D28D9", border:"none", borderRadius:8, padding:"6px 0", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700 }}>{o.l}</button>
             ))}
           </div>
-          <p style={{ margin:"5px 0 0", fontSize:11, color:"#888" }}>התעריף לפני מע"מ. העובד מדווח כרגיל, אבל לא נכנס לדוח השכר ברוטו — התשלום שלו מופיע בטאב שכר ← 🔨 קבלנים, ושם מעלים את החשבונית שלו.</p>
+          <p style={{ margin:"5px 0 0", fontSize:11, color:"#888" }}>התעריף לפני מע"מ. העובד מדווח כרגיל, אבל לא נכנס לדוח השכר ברוטו — התשלום שלו מופיע בצוות ← קבלני משנה, ושם מעלים את החשבונית שלו.</p>
         </>)}
       </div>
       {(obj.payType||"daily")==="daily" && (
@@ -3828,6 +3842,27 @@ async function shareImg() {
     .filter(t => t.key !== "foremen" || plan.foremen)
     .filter(t => (t.key !== "income" && t.key !== "monthly") || finOn);
 
+  // ===== ניווט: 5 אזורים בסרגל תחתון; בתוך כל אזור — תתי־לשוניות =====
+  const subsOn = !isForeman && (plan.subs || workers.some(isInvoiceW));
+  const tabOk = (k) => k === "today" || k === "more" || (k === "subs" ? subsOn : tabs.some(t => t.key === k));
+  const subLabel = { reports:"דיווחים", calendar:"יומן", workers:"עובדים", payroll:"שכר", subs:"קבלני משנה", foremen:"מנהלי עבודה",
+    income:"הכנסות", monthly:"הוצאות חודשיות", quotes:"הצעות מחיר", equipment:"ציוד", summaries:"סיכומי יום", alerts:"התראות ודוחות", settings:"הגדרות", help:"עזרה" };
+  const sections = [
+    { key:"today",    label:"היום",     items:["today"] },
+    { key:"projects", label:"פרויקטים", items:["projects"] },
+    { key:"team",     label:"צוות",     items:["reports","calendar","workers","payroll","subs","foremen"] },
+    { key:"money",    label:"כספים",    items:["income","monthly","quotes"] },
+    { key:"more",     label:"עוד",      items:["more","equipment","summaries","alerts","settings","help"] },
+  ].map(sc => ({ ...sc, items: sc.items.filter(tabOk) })).filter(sc => sc.items.length);
+  const activeKey = mgTab === "payroll" && payrollView === "subs" ? "subs" : mgTab;
+  const curSection = sections.find(sc => sc.items.includes(activeKey)) || sections[0];
+  const openSub = (k) => {
+    setDetailId(null);
+    if (k === "subs") { setMgTab("payroll"); setPayrollView("subs"); setSubsView("pending"); }
+    else { if (k === "payroll" && payrollView === "subs") setPayrollView("pending"); setMgTab(k); }
+    try { window.scrollTo(0, 0); } catch(e) {}
+  };
+
   // ====== התראות (מחושבות מהנתונים — נעלמות לבד כשמטפלים בהן) ======
   const goTab = (k, extra) => { setMgTab(k); setDetailId(null); setBellOpen(false); if (extra) extra(); try { window.scrollTo(0,0); } catch(e) {} };
   const alerts = [];
@@ -3917,7 +3952,7 @@ async function shareImg() {
         return m ? m.pay - Number(paidMonths[`${w.id}_${prevYm}`]?.paidAmt || 0) : 0;
       }).filter(x => x > 0);
       if (invLeft.length) alerts.push({ key: "payinv", icon: "💼", color: "#6D28D9", bg: "#EDE9FE", title: `לשלם לעובדים בחשבונית — ${monthLabel(prevYm)} · ₪${fmtNum(invLeft.reduce((s, x) => s + x, 0))} + מע"מ`,
-        detail: "בטאב שכר ← 🔨 קבלנים · אפשר להעלות שם את החשבונית שלהם", go: () => goTab("payroll", () => setPayrollView("subs")) });
+        detail: "בצוות ← קבלני משנה · אפשר להעלות שם את החשבונית שלהם", go: () => goTab("payroll", () => setPayrollView("subs")) });
     }
     a = A("vat");
     if (a && finDoc) {
@@ -4051,7 +4086,7 @@ async function shareImg() {
               📝 דיווח יום
             </button>
           </>}
-          <button onClick={()=>{ setLoggedForeman(null); setMgTab("reports"); setDetailId(null); setScreen("home"); }} style={{ background:"rgba(255,255,255,0.1)", color:"#ccc", border:"none", borderRadius:8, padding:"5px 12px", fontSize:13, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>יציאה</button>
+          <button onClick={()=>{ setLoggedForeman(null); setMgTab("today"); setDetailId(null); setScreen("home"); }} style={{ background:"rgba(255,255,255,0.1)", color:"#ccc", border:"none", borderRadius:8, padding:"5px 12px", fontSize:13, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>יציאה</button>
         </div>
       </header>
 
@@ -4083,15 +4118,31 @@ async function shareImg() {
         </div>
       )}
 
-      <div className="bt-tabs" style={{ background:"#fff", borderBottom:"1.5px solid #EEE", display:"flex", justifyContent:"flex-start", overflowX:"auto", WebkitOverflowScrolling:"touch" }}>
-        {tabs.map(t => (
-          <button key={t.key} onClick={()=>{ setMgTab(t.key); setDetailId(null); }} style={{ background:"none", border:"none", borderBottom:mgTab===t.key?"3px solid #E8C547":"3px solid transparent", padding:"11px 12px", fontWeight:mgTab===t.key?700:500, fontSize:13, cursor:"pointer", fontFamily:"Heebo,sans-serif", color:mgTab===t.key?"#1A1A2E":"#888", whiteSpace:"nowrap" }}>
-            {t.emoji} {t.label}
-          </button>
-        ))}
-      </div>
-
-      <main className={"bt-main" + ((["reports","workers","quotes","equipment","calendar"].includes(mgTab) || (mgTab==="projects" && !detailProject)) ? " bt-wide" : "")} style={{ maxWidth:880, margin:"0 auto", padding:"20px 14px" }}>
+      <main className={"bt-main" + ((["reports","workers","quotes","equipment","calendar"].includes(mgTab) || (mgTab==="projects" && !detailProject)) ? " bt-wide" : "")} style={{ maxWidth:880, margin:"0 auto", padding:"16px 14px 104px" }}>
+        {/* תתי־לשוניות של האזור (צוות / כספים) או חזרה ל'עוד' */}
+        {(curSection.key === "team" || curSection.key === "money") && curSection.items.length > 1 && (
+          <div className="bt-subtabs" role="tablist" ref={el => {
+            // הלשונית הפעילה תמיד גלויה (גלילה אופקית בלבד — לא מזיז את הדף)
+            const a = el?.querySelector('[aria-selected="true"]'); if (!a) return;
+            const r = a.getBoundingClientRect(), c = el.getBoundingClientRect();
+            if (r.left < c.left) el.scrollLeft -= (c.left - r.left + 14); else if (r.right > c.right) el.scrollLeft += (r.right - c.right + 14);
+          }} style={{ display:"flex", gap:6, overflowX:"auto", WebkitOverflowScrolling:"touch", margin:"0 -14px 16px", padding:"0 14px 2px", scrollbarWidth:"none" }}>
+            {curSection.items.map(k => {
+              const on = activeKey === k;
+              const badge = k === "reports" && visiblePending.length ? visiblePending.length : 0;
+              return (
+                <button key={k} role="tab" aria-selected={on} onClick={()=>openSub(k)}
+                  style={{ flexShrink:0, display:"flex", alignItems:"center", gap:6, height:40, padding:"0 16px", borderRadius:20, border: on ? "none" : "1.5px solid #E2E2DA", background: on ? "#1A1A2E" : "#fff", color: on ? "#E8C547" : "#444", fontWeight: on ? 800 : 600, fontSize:14, cursor:"pointer", fontFamily:"Heebo,sans-serif", whiteSpace:"nowrap" }}>
+                  {subLabel[k]}
+                  {badge > 0 && <span style={{ background:"#E53935", color:"#fff", borderRadius:10, minWidth:18, height:18, fontSize:11, fontWeight:800, display:"flex", alignItems:"center", justifyContent:"center", padding:"0 4px" }}>{badge}</span>}
+                </button>
+              );
+            })}
+          </div>
+        )}
+        {curSection.key === "more" && mgTab !== "more" && (
+          <button onClick={()=>openSub("more")} style={{ display:"flex", alignItems:"center", gap:4, background:"none", border:"none", padding:"0 0 12px", color:"#555", fontSize:14, fontWeight:600, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>→ עוד</button>
+        )}
         {!isForeman && cfgLoaded && !cfgData._alertsSeen && mgTab !== "alerts" && (
           <div style={{ display:"flex", alignItems:"center", gap:10, background:"#1A1A2E", color:"#fff", borderRadius:14, padding:"12px 14px", marginBottom:14 }}>
             <span style={{ fontSize:22 }}>🔔</span>
@@ -4100,6 +4151,142 @@ async function shareImg() {
             <button onClick={()=>saveCfgPatch({ _alertsSeen: true })} aria-label="סגור" style={{ background:"none", border:"none", color:"#888", fontSize:16, cursor:"pointer", padding:0 }}>✕</button>
           </div>
         )}
+
+        {/* TODAY — מסך הבית */}
+        {mgTab==="today" && (() => {
+          const tdy = todayStr();
+          const now = new Date();
+          const dateLbl = now.toLocaleDateString("he-IL", { weekday:"long", day:"numeric", month:"long" });
+          const hr = now.getHours();
+          const hello = hr < 5 ? "לילה טוב" : hr < 12 ? "בוקר טוב" : hr < 17 ? "צהריים טובים" : hr < 21 ? "ערב טוב" : "לילה טוב";
+          const who = isForeman ? (loggedForeman?.name || "") : (cfgData._ownerName || "");
+          const wName = (id) => workers.find(w => String(w.id) === String(id))?.name || "עובד";
+          const hm = (ms) => new Date(Number(ms)).toLocaleTimeString("he-IL", { hour:"2-digit", minute:"2-digit" });
+          // שיבוצים להיום + דיווחים של היום, מקובצים לפי פרויקט
+          const ev = calEvents[tdy];
+          const assigns = ev?.assignments?.length ? ev.assignments : (ev?.workers?.length ? [{ projectId:"", workers: ev.workers }] : []);
+          const todayReps = visibleReports.filter(r => r.date === tdy);
+          const groups = {};
+          const grp = (pid) => {
+            const k = String(pid ?? "");
+            if (!groups[k]) { const pr = projects.find(x => String(x.id) === k); groups[k] = { pid:k, name: pr?.name || "ללא פרויקט", people:{} }; }
+            return groups[k];
+          };
+          assigns.forEach(a => { if (a.projectId && !canSeeProject(a.projectId)) return; (a.workers||[]).forEach(wid => { grp(a.projectId).people[String(wid)] = grp(a.projectId).people[String(wid)] || { wid:String(wid), status:"wait" }; }); });
+          todayReps.forEach(r => {
+            const g = grp(r.projectId), k = String(r.workerId);
+            const st = r._shift ? (r.clockOut ? { status:"out", t: hm(r.clockOut) } : { status:"in", t: hm(r.clockIn) }) : { status:"rep" };
+            // עובד ששובץ לפרויקט אחר אבל דיווח כאן — מוסר מהשיבוץ ומוצג כאן
+            Object.values(groups).forEach(gg => { if (gg !== g && gg.people[k]?.status === "wait") delete gg.people[k]; });
+            g.people[k] = { wid:k, ...st };
+          });
+          const siteList = Object.values(groups).filter(g => Object.keys(g.people).length);
+          const allPeople = siteList.flatMap(g => Object.values(g.people));
+          const onSite = allPeople.filter(x => x.status !== "wait").length;
+          const due = finOn ? projects.flatMap(pr => (pr.clientPayments||[]).filter(cp => cp.due && !cp.received)).reduce((t, cp) => t + Number(cp.amount||0), 0) : 0;
+          const activeCnt = projects.filter(pr => pr.status !== "הושלם" && canSeeProject(pr.id)).length;
+          const kNum = (n) => n >= 100000 ? `${Math.round(n/1000)}K` : fmtNum(n);
+          const kpis = [
+            { v: allPeople.length ? `${onSite}/${allPeople.length}` : String(onSite), l: "עובדים בשטח", go: () => openSub("calendar") },
+            { v: String(visiblePending.length), l: "ממתינים לאישור", go: () => openSub("reports"), hot: visiblePending.length > 0 },
+            finOn ? { v: `₪${kNum(due)}`, l: "לגבות", go: () => openSub("income") } : { v: String(activeCnt), l: "פרויקטים פעילים", go: () => { setMgTab("projects"); setDetailId(null); } },
+          ];
+          const stCh = (x) => x.status === "in" ? { t:`בשטח מ-${x.t}`, bg:"#E8F5E9", c:"#1B5E20" }
+            : x.status === "out" ? { t:`יצא ב-${x.t}`, bg:"#ECECE6", c:"#444" }
+            : x.status === "rep" ? { t:"דיווח", bg:"#E8F5E9", c:"#1B5E20" }
+            : { t:"טרם דיווח", bg:"#FFF4D6", c:"#7A4F00" };
+          const todo = alerts.slice(0, 6);
+          const card = { background:"#fff", borderRadius:14, boxShadow:"0 1px 4px rgba(0,0,0,0.06)" };
+          return (
+            <>
+              <div style={{ background:"#1A1A2E", color:"#fff", borderRadius:18, padding:"16px 16px 14px", marginBottom:18 }}>
+                <p style={{ margin:0, fontSize:13, color:"#C9C9D6" }}>{dateLbl}</p>
+                <h1 style={{ margin:"2px 0 12px", fontSize:22, fontWeight:800 }}>{hello}{who ? `, ${who}` : ""}</h1>
+                <div style={{ display:"grid", gridTemplateColumns:"repeat(3, minmax(0, 1fr))", gap:8 }}>
+                  {kpis.map(k => (
+                    <button key={k.l} onClick={k.go} style={{ background:"rgba(255,255,255,0.08)", border:"none", borderRadius:12, padding:"10px 10px", textAlign:"right", cursor:"pointer", fontFamily:"Heebo,sans-serif", minHeight:64 }}>
+                      <span style={{ display:"block", fontSize:21, fontWeight:800, color: k.hot ? "#FFB74D" : "#E8C547", lineHeight:1.2 }}>{k.v}</span>
+                      <span style={{ display:"block", fontSize:12, color:"#C9C9D6" }}>{k.l}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <h2 style={{ margin:"0 2px 8px", fontSize:16, fontWeight:800 }}>דורש טיפול</h2>
+              {todo.length === 0 ? (
+                <div style={{ ...card, padding:"18px 14px", marginBottom:18, display:"flex", alignItems:"center", gap:10 }}>
+                  <span style={{ fontSize:22 }}>✅</span>
+                  <span style={{ fontSize:14, color:"#444" }}>הכול מטופל — אין משהו שמחכה לך</span>
+                </div>
+              ) : (
+                <div style={{ ...card, marginBottom:18, overflow:"hidden" }}>
+                  {todo.map((a, i) => (
+                    <button key={a.key} onClick={a.go} style={{ display:"flex", alignItems:"center", gap:11, width:"100%", textAlign:"right", background:"#fff", border:"none", borderBottom: i < todo.length - 1 ? "1px solid #F0F0EC" : "none", padding:"12px 14px", minHeight:58, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>
+                      <span style={{ width:36, height:36, borderRadius:10, background:a.bg, display:"flex", alignItems:"center", justifyContent:"center", fontSize:17, flexShrink:0 }}>{a.icon}</span>
+                      <span style={{ flex:1, minWidth:0 }}>
+                        <span style={{ display:"block", fontSize:14, fontWeight:700, color:"#1A1A2E" }}>{a.title}</span>
+                        {a.detail && <span style={{ display:"block", fontSize:12, color:"#666", marginTop:1, lineHeight:1.45, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{a.detail}</span>}
+                      </span>
+                      <span style={{ color:"#BBB", fontSize:16 }}>‹</span>
+                    </button>
+                  ))}
+                  {alerts.length > todo.length && (
+                    <button onClick={()=>setBellOpen(true)} style={{ width:"100%", background:"#FAFAF7", border:"none", borderTop:"1px solid #F0F0EC", padding:"11px", fontSize:13, fontWeight:700, color:"#1A1A2E", cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>עוד {alerts.length - todo.length} ‹</button>
+                  )}
+                </div>
+              )}
+
+              <div style={{ display:"flex", justifyContent:"space-between", alignItems:"baseline", margin:"0 2px 8px" }}>
+                <h2 style={{ margin:0, fontSize:16, fontWeight:800 }}>בשטח היום</h2>
+                <button onClick={()=>openSub("calendar")} style={{ background:"none", border:"none", color:"#1A1A2E", fontSize:13, fontWeight:700, cursor:"pointer", fontFamily:"Heebo,sans-serif", padding:"6px 2px" }}>ליומן ‹</button>
+              </div>
+              {siteList.length === 0 ? (
+                <div style={{ ...card, padding:"16px 14px", marginBottom:18 }}>
+                  <p style={{ margin:"0 0 10px", fontSize:14, color:"#555" }}>אין עדיין שיבוצים או דיווחים להיום.</p>
+                  <button onClick={()=>openSub("calendar")} style={{ ...btnD, padding:"9px 16px", fontSize:13 }}>שבץ עובדים ביומן</button>
+                </div>
+              ) : (
+                <div style={{ ...card, padding:"4px 14px", marginBottom:18 }}>
+                  {siteList.map((g, gi) => (
+                    <div key={g.pid} style={{ padding:"11px 0", borderBottom: gi < siteList.length - 1 ? "1px solid #F0F0EC" : "none" }}>
+                      <button onClick={()=>{ const pr = projects.find(x => String(x.id) === g.pid); if (pr) { setMgTab("projects"); setDetailId(pr.id); try { window.scrollTo(0,0); } catch(e) {} } }}
+                        style={{ background:"none", border:"none", padding:0, margin:"0 0 7px", fontSize:14.5, fontWeight:800, color:"#1A1A2E", cursor: g.pid ? "pointer" : "default", fontFamily:"Heebo,sans-serif", textAlign:"right" }}>{g.name}</button>
+                      <div style={{ display:"flex", flexWrap:"wrap", gap:6 }}>
+                        {Object.values(g.people).map(x => { const c = stCh(x); return (
+                          <span key={x.wid} style={{ background:c.bg, color:c.c, borderRadius:20, padding:"4px 11px", fontSize:12.5, fontWeight:700 }}>{wName(x.wid)} · {c.t}</span>
+                        ); })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
+          );
+        })()}
+
+        {/* MORE — כל השאר */}
+        {mgTab==="more" && (() => {
+          const desc = { equipment:"רשימת קניות והזמנות לאתרים", summaries:"מה נעשה בכל אתר", alerts:"מה נשלח, מתי ולמי", settings:"פרטי עסק, בנק, קטגוריות", help:"איך עושים…" };
+          const ico = { equipment:"🛒", summaries:"📝", alerts:"🔔", settings:"⚙️", help:"❓" };
+          const items = (sections.find(sc => sc.key === "more")?.items || []).filter(k => k !== "more");
+          return (
+            <>
+              <h1 style={{ margin:"0 0 14px", fontSize:20, fontWeight:800 }}>עוד</h1>
+              <div style={{ background:"#fff", borderRadius:14, boxShadow:"0 1px 4px rgba(0,0,0,0.06)", overflow:"hidden" }}>
+                {items.map((k, i) => (
+                  <button key={k} onClick={()=>openSub(k)} style={{ display:"flex", alignItems:"center", gap:12, width:"100%", textAlign:"right", background:"#fff", border:"none", borderBottom: i < items.length - 1 ? "1px solid #F0F0EC" : "none", padding:"10px 14px", minHeight:60, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>
+                    <span style={{ width:38, height:38, borderRadius:10, background:"#F2F2EC", display:"flex", alignItems:"center", justifyContent:"center", fontSize:18, flexShrink:0 }}>{ico[k]}</span>
+                    <span style={{ flex:1 }}>
+                      <span style={{ display:"block", fontSize:15, fontWeight:700, color:"#1A1A2E" }}>{subLabel[k]}</span>
+                      <span style={{ display:"block", fontSize:12.5, color:"#666" }}>{desc[k]}</span>
+                    </span>
+                    <span style={{ color:"#BBB", fontSize:16 }}>‹</span>
+                  </button>
+                ))}
+              </div>
+            </>
+          );
+        })()}
 
         {/* REPORTS */}
         {mgTab==="reports" && (
@@ -5286,14 +5473,14 @@ async function shareImg() {
                         return (
                           <div key={pm.id} style={{ display:"flex", gap:6, alignItems:"center", marginBottom:6 }}>
                             <button title={pm.paid ? "שולם" : pm.due ? "אושר — ממתין לתשלום" : "אשר שהשלב בוצע"} onClick={()=>{
-                              if (pm.paid) { alert(`השלב שולם${pm.paidAt ? ` ב-${pm.paidAt}` : ""} ✓\nביטול תשלום — בטאב שכר ← קבלנים ← היסטוריה.`); return; }
+                              if (pm.paid) { alert(`השלב שולם${pm.paidAt ? ` ב-${pm.paidAt}` : ""} ✓\nביטול תשלום — בצוות ← קבלני משנה ← היסטוריה.`); return; }
                               if (pm.due) {
                                 if (!window.confirm("לבטל את האישור?\nהשלב יוסר מרשימת 'לתשלום' של הקבלנים.")) return;
                                 updPm({ due:false, dueAt:"" });
                                 return;
                               }
                               if (!(Number(pm.amount) > 0)) { alert("הזן סכום לשלב לפני האישור"); return; }
-                              if (!window.confirm(`לאשר ש${sc.name ? `"${sc.name}"` : "הקבלן"} סיים את השלב "${pm.desc||"שלב"}"?\n₪${Number(pm.amount||0).toLocaleString("he-IL")} יעבור לתשלום בטאב שכר ← קבלנים.`)) return;
+                              if (!window.confirm(`לאשר ש${sc.name ? `"${sc.name}"` : "הקבלן"} סיים את השלב "${pm.desc||"שלב"}"?\n₪${Number(pm.amount||0).toLocaleString("he-IL")} יעבור לתשלום בצוות ← קבלני משנה.`)) return;
                               updPm({ due:true, dueAt: new Date().toLocaleDateString("he-IL") });
                             }}
                               style={{ width:22, height:22, borderRadius:"50%", border:`2px solid ${pm.paid?"#22C55E":pm.due?"#F59E0B":"#CCC"}`, background:pm.paid?"#22C55E":pm.due?"#FEF3C7":"#fff", cursor:"pointer", flexShrink:0, color:pm.paid?"#fff":"#B45309", fontSize:11, display:"flex", alignItems:"center", justifyContent:"center", padding:0 }}>{pm.paid?"✓":pm.due?"⏳":""}</button>
@@ -6015,15 +6202,15 @@ async function shareImg() {
               </button>
             )}
 
-            {/* toggle pending / history */}
-            <div style={{ display:"flex", background:"#F0F0EC", borderRadius:12, padding:3, marginBottom:14, gap:3 }}>
-              {[{k:"pending",l:"לתשלום"},{k:"history",l:"היסטוריה"},...((plan.subs || workers.some(isInvoiceW))?[{k:"subs",l:"🔨 קבלנים"}]:[])].map(t=>(
+            {/* toggle pending / history — קבלני משנה עברו ללשונית משלהם בצוות */}
+            {payrollView!=="subs" && <div style={{ display:"flex", background:"#F0F0EC", borderRadius:12, padding:3, marginBottom:14, gap:3 }}>
+              {[{k:"pending",l:"לתשלום"},{k:"history",l:"היסטוריה"}].map(t=>(
                 <button key={t.k} onClick={()=>setPayrollView(t.k)}
                   style={{ flex:1, background:payrollView===t.k?"#1A1A2E":"transparent", color:payrollView===t.k?"#E8C547":"#888", border:"none", borderRadius:10, padding:"8px 0", fontWeight:700, fontSize:13, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>
                   {t.l}
                 </button>
               ))}
-            </div>
+            </div>}
 
             {/* summary bar */}
             {payrollView!=="subs" && (
@@ -6968,6 +7155,26 @@ async function shareImg() {
           </>
         )}
       </main>
+
+      {/* סרגל ניווט תחתון */}
+      <nav aria-label="ניווט ראשי" className="bt-bottomnav" style={{ position:"fixed", bottom:0, left:0, right:0, zIndex:800, background:"#fff", borderTop:"1px solid #E6E6E0", boxShadow:"0 -2px 10px rgba(0,0,0,0.05)", paddingBottom:"env(safe-area-inset-bottom)" }}>
+        <div style={{ maxWidth:560, margin:"0 auto", display:"grid", gridTemplateColumns:`repeat(${sections.length}, minmax(0, 1fr))`, height:66 }}>
+          {sections.map(sc => {
+            const on = curSection.key === sc.key;
+            const badge = sc.key === "team" && visiblePending.length ? visiblePending.length : 0;
+            return (
+              <button key={sc.key} aria-current={on ? "page" : undefined} onClick={()=>openSub(sc.items[0])}
+                style={{ position:"relative", background:"none", border:"none", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:3, cursor:"pointer", fontFamily:"Heebo,sans-serif", color: on ? "#1A1A2E" : "#6B6B70", fontSize:12, fontWeight: on ? 800 : 600, padding:0 }}>
+                <span style={{ position:"relative", display:"flex", background: on ? "#F6E7A6" : "transparent", borderRadius:14, padding:"3px 16px" }}>
+                  <NavIcon name={sc.key}/>
+                  {badge > 0 && <span style={{ position:"absolute", top:-3, left:6, background:"#E53935", color:"#fff", borderRadius:9, minWidth:17, height:17, fontSize:10.5, fontWeight:800, display:"flex", alignItems:"center", justifyContent:"center", padding:"0 4px", boxShadow:"0 0 0 2px #fff" }}>{badge > 99 ? "99+" : badge}</span>}
+                </span>
+                {sc.label}
+              </button>
+            );
+          })}
+        </div>
+      </nav>
 
       {/* MODAL: Assign */}
       {assignM && assignProject && (
