@@ -92,7 +92,7 @@ const PLANS = {
 // ===== תוכן מסך העזרה =====
 const HELP_TOPICS = [
   { icon:"🔑", title:"כניסה למערכת", body:"במסך הפתיחה שלוש כניסות:\n• כניסת עובד — עם הקוד האישי שהמנהל הגדיר לעובד.\n• כניסת מנהל עבודה — עם קוד מנהל העבודה (מוגדר בטאב מנהלי עבודה).\n• כניסת מנהל — עם קוד המנהל של העסק.\nאת הקישור של העסק מוסיפים למסך הבית: פותחים בדפדפן ← שיתוף ← הוספה למסך הבית — ומקבלים אייקון כמו אפליקציה." },
-  { icon:"🧭", title:"איך מתמצאים במערכת", body:"בתחתית המסך יש סרגל עם 5 אזורים:\n• היום — מסך הבית: מי בשטח, מה ממתין לאישור, כמה לגבות, ורשימת 'דורש טיפול' עם מעבר ישיר לכל דבר.\n• פרויקטים — כל הפרויקטים ודף כל פרויקט.\n• צוות — דיווחים, יומן, עובדים, שכר, קבלני משנה ומנהלי עבודה (בחירה בשורת הכפתורים למעלה).\n• כספים — הכנסות, הוצאות חודשיות והצעות מחיר.\n• עוד — ציוד, סיכומי יום, התראות ודוחות, הגדרות ועזרה.\nהמספר האדום על 'צוות' = דיווחים שממתינים לאישור." },
+  { icon:"🧭", title:"איך מתמצאים במערכת", body:"בתחתית המסך יש סרגל עם 5 אזורים:\n• היום — מסך הבית: מי בשטח, מה ממתין לאישור, כמה לגבות, ורשימת 'דורש טיפול' עם מעבר ישיר לכל דבר.\n• פרויקטים — כל הפרויקטים ודף כל פרויקט.\n• צוות — דיווחים, יומן, עובדים, שכר, קבלני משנה ומנהלי עבודה (בחירה בשורת הכפתורים למעלה).\n• כספים — הכנסות, הוצאות חודשיות והצעות מחיר.\n• עוד — ציוד, סיכומי יום, התראות ודוחות, הגדרות ועזרה.\nהמספר האדום על 'צוות' = דיווחים שממתינים לאישור.\nבדף פרויקט: למעלה תמונת מצב (סכום העסקה, נגבה, הוצאות, נשאר לגבות) ומתחת 5 לשוניות — סקירה (הצעד הבא, סיכומי יום, דגשים, תיאור, מיקום), כספים (נתונים, סה\"כ הוצאות, שלבי תשלום, הוצאות), שלבים, צוות (עובדים, קבלני משנה, פרטי ניהול, אימות מיקום, דיווחים) וקבצים (חשבוניות ותוכניות)." },
   { icon:"📝", title:"דיווח יומי של עובד", body:"העובד נכנס עם הקוד שלו, בוחר פרויקט (מוצגים רק פרויקטים שהוא משויך אליהם — השיוך בכפתור 'שייך עובדים' בפרויקט; אפשר לבטל את חובת השיוך בטאב עובדים ← ⚙️ הגדרות דיווח, ואז כל עובד רואה את כל הפרויקטים הפעילים), בוחר יום מלא או חצי יום, מסמן דלק אם נסע ברכב, ולוחץ שלח.\n• אי אפשר לדווח פעמיים על אותו תאריך.\n• דיווח על תאריך שעבר נכנס ל'ממתינים לאישור' אצל המנהל ולא נספר בשכר עד שמאושר.\n• אי אפשר לדווח על תאריך עתידי.\n• שיבוץ ביומן — נקבע בטאב עובדים ← ⚙️ הגדרות דיווח: 'חובה לכולם' (מדווחים רק ביום ובפרויקט ששובצו), 'רק למי שמשובץ ביומן' (ברירת מחדל: עובד שלא מנוהל ביומן מדווח חופשי), או 'לא מחייב' (היומן לתכנון בלבד).\n• בטאב 'היומן שלי' העובד רואה את הימים שהוא משובץ בהם." },
   { icon:"⏱️", title:"עובד שעתי — שעון נוכחות", body:"גם עובד יומי יכול לעבוד עם שעון: בעריכת העובד מפעילים '⏱️ שעון נוכחות'. השכר נשאר לפי יום; אם הוא עבד יותר מ-9 שעות — מגיעה התראה (בפעמון ובמייל הבוקר), ובטאב דיווחים מחליטים: '💰 לשלם נוספות' (125% / 150% לפי היומית חלקי 9) או '✓ בלי תוספת'.\nמעבר בין אתרים באותו יום: סוגרים שעון באתר הראשון ופותחים שעון חדש באתר הבא. היום נחשב יום אחד, העלות מתחלקת בין הפרויקטים לפי השעות, שעות נוספות (בשעתי) מחושבות על סך שעות היום, ודלק ואוכל — פעם אחת ביום.\nעובד יומי בלי שעון שעבד בשני פרויקטים: מדווח חצי יום על כל פרויקט.\nעובד שהוגדר כשעתי רואה שעון נוכחות במקום טופס דיווח: בוחר פרויקט ← ▶️ כניסה בתחילת היום ← 🛑 יציאה בסיומו.\nחישוב השכר: 9 שעות ראשונות 100%, שעות 10-11 לפי 125%, משעה 12 לפי 150%.\nשכח לסגור? המנהל רואה 'שעון תקוע' בטאב דיווחים ומתקן עם כפתור '✏️ שעות'.\nאם בפרויקט הוגדר אימות מיקום — בפתיחת השעון הטלפון יבקש אישור גישה למיקום (פעם ראשונה בלבד). במצב 'חסימה' ניתן לפתוח שעון רק בקרבת האתר." },
   { icon:"👷", title:"ניהול עובדים וסוגי העסקה", body:"בטאב עובדים מוסיפים עובד עם שם, קוד אישי ותפקיד, ובוחרים סוג העסקה:\n• יומי — שכר קבוע ליום (עם אפשרות חצי יום).\n• שעתי — שכר לשעה + שעון נוכחות.\n• גלובלי — משכורת חודשית קבועה.\nלכל עובד אפשר להגדיר אם יראה כפתור דלק וכמה ₪ דלק ליום.\nחשוב: כדי שעובד יוכל לדווח, חובה לשייך אותו לפרויקט (כפתור 'שייך עובדים' בתוך הפרויקט)." },
@@ -1607,7 +1607,10 @@ export default function App() {
   const [sumMonth,  setSumMonth]  = useState(todayStr().slice(0,7));
   const [sumM,      setSumM]      = useState(null);        // מודל כתיבת סיכום
   const [projOpen,    setProjOpen]    = useState({});        // אזורים פתוחים בדף פרויקט (הוצאות/קבלנים/עובדים/חשבוניות)
-  const togOpen = (k, v) => setProjOpen(o => ({ ...o, [k]: v === undefined ? !o[k] : v }));
+  const [pTab, setPTab] = useState("overview");   // תת־לשונית בדף פרויקט
+  // פתיחת קטע מבחוץ (למשל מהתראה) — עוברים קודם ללשונית שבה הוא נמצא
+  const SEC_TAB = { inv:"files", subs:"team", exp:"money", reps:"team", workers:"team", summaries:"overview" };
+  const togOpen = (k, v) => { if (v === true && SEC_TAB[k]) setPTab(SEC_TAB[k]); setProjOpen(o => ({ ...o, [k]: v === undefined ? !o[k] : v })); };
   const [viewFile,    setViewFile]    = useState(null);     // קובץ פתוח במציג (חשבונית / תוכנית / הצעת קבלן)
   const [descFull,    setDescFull]    = useState(false);    // תיאור פרויקט במסך מלא
   // הוספה מהירה מבחוץ — בלי לפתוח את הרשימות
@@ -1636,6 +1639,11 @@ export default function App() {
   const [newWorker,  setNewWorker]  = useState({ name:"", code:"", role:"", dailyRate:"", payType:"daily", hourlyRate:"", monthlySalary:"", showFuel:true, fuelAmount:50 });
 
   const detailProject = projects.find(p => String(p.id) === String(detailId)) || null;
+  // פרויקט חדש נפתח — תמיד בסקירה; ואם נפתח מבחוץ (התראה / מסך היום) — טוענים את נתוני העריכה שלו
+  useEffect(() => { setPTab("overview"); }, [detailId]);
+  useEffect(() => {
+    if (detailProject && (!editProj || String(editProj.id) !== String(detailProject.id))) setEditProj({ ...detailProject });
+  }, [detailId, detailProject]);
   const assignProject = projects.find(p => String(p.id) === String(assignPid)) || null;
 
   // Debounce ref for Supabase updates
@@ -5078,14 +5086,27 @@ async function shareImg() {
             if (pay > 0) laborByName[w.name] = pay;
           });
           const laborTotal = Object.values(laborByName).reduce((s, v) => s + v, 0);
+          // ===== תמונת מצב לכותרת =====
+          const contractAmt = Number(editProj.totalCost || 0);
+          const cps = editProj.clientPayments || [];
+          const receivedAmt = cps.filter(cp => cp.received).reduce((t, cp) => t + Number(cp.amount || 0), 0);
+          const costsAmt = (editProj.expenses||[]).reduce((t,e)=>t+Number(e.amount||0),0)
+            + (editProj.subcontractors||[]).reduce((t,sc)=>t+Number(sc.price||0),0) + laborTotal
+            + (finOn ? Math.round(projFixedShare(finDoc, reports, detailProject.id, todayStr().slice(0,7), projects).total) : 0);
+          const dueCp = cps.find(cp => cp.due && !cp.received);
+          const nextPh = (editProj.phases||[]).find(ph => ph.status !== "הושלם" && !ph.done);
+          const nextStep = dueCp ? { text: `לגבות ₪${fmtNum(dueCp.amount)}${dueCp.desc ? ` — ${dueCp.desc}` : ""}`, btn: "לגבייה", tab: "money" }
+            : nextPh ? { text: `השלב הבא: ${nextPh.name || "שלב"}`, btn: "לשלבים", tab: "phases" }
+            : null;
           return (
             <>
-              <button onClick={()=>{ setDetailId(null); setEditProj(null); }} style={{ background:"none", border:"none", fontSize:13, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:600, marginBottom:14, padding:0, color:"#1A1A2E" }}>← חזור לפרויקטים</button>
-              <div style={{ background:"#1A1A2E", borderRadius:16, padding:"18px 22px", marginBottom:14, color:"#fff" }}>
-                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", flexWrap:"wrap", gap:8, marginBottom:14 }}>
-                  <div>
-                    <h2 style={{ margin:0, fontSize:19, fontWeight:800 }}>{detailProject.name}</h2>
-                    {(detailProject.startDate||detailProject.endDate) && <p style={{ margin:"4px 0 0", color:"#AAA", fontSize:12 }}>📅 {detailProject.startDate} — {detailProject.endDate}</p>}
+              <button onClick={()=>{ setDetailId(null); setEditProj(null); }} style={{ background:"none", border:"none", fontSize:14, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:600, marginBottom:12, padding:"4px 0", color:"#1A1A2E" }}>→ כל הפרויקטים</button>
+              <div style={{ background:"#1A1A2E", borderRadius:18, padding:"16px 16px 14px", marginBottom:12, color:"#fff" }}>
+                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", flexWrap:"wrap", gap:8, marginBottom:12 }}>
+                  <div style={{ minWidth:0 }}>
+                    <h2 style={{ margin:0, fontSize:20, fontWeight:800 }}>{detailProject.name}</h2>
+                    {(detailProject.clientName || detailProject.client || detailProject.address) && <p style={{ margin:"3px 0 0", color:"#C9C9D6", fontSize:12.5 }}>{[detailProject.clientName || detailProject.client, detailProject.address].filter(Boolean).join(" · ")}</p>}
+                    {(detailProject.startDate||detailProject.endDate) && <p style={{ margin:"3px 0 0", color:"#AAA", fontSize:12 }}>📅 {detailProject.startDate} — {detailProject.endDate}</p>}
                   </div>
                   <div style={{ display:"flex", gap:5, flexWrap:"wrap" }}>
                     {["ממתין","בביצוע","מושהה","הושלם"].map(st => (
@@ -5101,6 +5122,20 @@ async function shareImg() {
                       </button>
                     ))}
                   </div>
+                </div>
+                {/* תמונת מצב כספית — מחושבת מהנתונים הקיימים */}
+                <div style={{ display:"grid", gridTemplateColumns:"repeat(2, minmax(0, 1fr))", gap:8, marginBottom:12 }}>
+                  {[
+                    { v: contractAmt ? `₪${fmtNum(contractAmt)}` : "—", l: "סכום העסקה", c:"#fff", tab:"money" },
+                    { v: `₪${fmtNum(receivedAmt)}`, l: "נגבה", c:"#9BE29F", tab:"money" },
+                    { v: `₪${fmtNum(costsAmt)}`, l: "הוצאות עד כה", c:"#FFB4B4", tab:"money" },
+                    { v: contractAmt ? `₪${fmtNum(Math.max(0, contractAmt - receivedAmt))}` : "—", l: "נשאר לגבות", c:"#E8C547", tab:"money" },
+                  ].map(k => (
+                    <button key={k.l} onClick={()=>setPTab(k.tab)} style={{ background:"rgba(255,255,255,0.08)", border:"none", borderRadius:12, padding:"9px 11px", textAlign:"right", cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>
+                      <span style={{ display:"block", fontSize:18, fontWeight:800, color:k.c, lineHeight:1.25 }}>{k.v}</span>
+                      <span style={{ display:"block", fontSize:12, color:"#C9C9D6" }}>{k.l}</span>
+                    </button>
+                  ))}
                 </div>
                 <div>
                   <div style={{ display:"flex", justifyContent:"space-between", marginBottom:5 }}>
@@ -5119,6 +5154,31 @@ async function shareImg() {
                 </div>
               </div>
 
+              {/* תתי־לשוניות של הפרויקט */}
+              <div role="tablist" style={{ position:"sticky", top:0, zIndex:5, background:"#F5F5F0", padding:"4px 0 10px", margin:"0 0 4px" }}>
+                <div style={{ background:"#E9E9E2", borderRadius:12, padding:3, display:"flex", gap:2 }}>
+                  {[{k:"overview",l:"סקירה"},{k:"money",l:"כספים"},{k:"phases",l:"שלבים"},{k:"team",l:"צוות"},{k:"files",l:"קבצים"}].map(t => (
+                    <button key={t.k} role="tab" aria-selected={pTab===t.k} onClick={()=>{ setPTab(t.k); }}
+                      style={{ flex:1, height:40, border:"none", borderRadius:10, background: pTab===t.k ? "#1A1A2E" : "transparent", color: pTab===t.k ? "#E8C547" : "#555", fontWeight: pTab===t.k ? 800 : 600, fontSize:13.5, cursor:"pointer", fontFamily:"Heebo,sans-serif", padding:0 }}>
+                      {t.l}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* הצעד הבא */}
+              {pTab==="overview" && nextStep && (
+                <div style={{ background:"#fff", borderRadius:14, padding:"12px 14px", marginBottom:14, boxShadow:"0 2px 8px rgba(0,0,0,0.07)", display:"flex", alignItems:"center", gap:10 }}>
+                  <div style={{ flex:1, minWidth:0 }}>
+                    <p style={{ margin:0, fontSize:12, color:"#666", fontWeight:600 }}>הצעד הבא</p>
+                    <p style={{ margin:"2px 0 0", fontSize:14.5, fontWeight:800, color:"#1A1A2E" }}>{nextStep.text}</p>
+                  </div>
+                  <button onClick={()=>setPTab(nextStep.tab)} style={{ ...btnD, padding:"9px 14px", fontSize:13, flexShrink:0 }}>{nextStep.btn}</button>
+                </div>
+              )}
+
+
+              {pTab==="overview" && (<>
               {/* סיכומי יום של הפרויקט */}
               {(() => {
                 const ps = summaries.filter(s => String(s.projectId) === String(detailProject.id)).sort((a,b) => String(b.date).localeCompare(String(a.date)) || (b.updatedAt||0) - (a.updatedAt||0));
@@ -5140,36 +5200,75 @@ async function shareImg() {
                 );
               })()}
 
-              {/* Worker days in project */}
               <div style={{ background:"#fff", borderRadius:14, padding:"16px 20px", marginBottom:14, boxShadow:"0 2px 8px rgba(0,0,0,0.07)" }}>
-                <SecHead title="👷 עובדים בפרויקט" open={!!projOpen.workers} onToggle={()=>togOpen("workers")} mb={12}
-                  summary={`${workerEntries.length} עובדים${laborTotal>0 ? ` · ₪${fmtNum(laborTotal)}` : ""}`}
-                  action={<span onClick={()=>togOpen("workers")} style={{ background:"#F0F4FF", color:"#3B5BDB", borderRadius:8, padding:"4px 12px", fontSize:13, fontWeight:700, cursor:"pointer" }}>📅 {totalDays} ימי עבודה</span>}/>
-                {projOpen.workers && (workerEntries.length===0 ? <p style={{ margin:0, fontSize:13, color:"#AAA" }}>אין דיווחים עדיין</p> :
-                  workerEntries.map(([name, days]) => {
-                    const w = workers.find(w=>w.name===name);
-                    const cost = laborByName[name] || 0;
-                    const isGlobal = w?.payType === "global";
-                    return (
-                      <div key={name} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"9px 12px", background:"#F9F9F9", borderRadius:10, marginBottom:7 }}>
-                        <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-                          <div style={{ width:34, height:34, borderRadius:"50%", background:"#1A1A2E", color:"#E8C547", display:"flex", alignItems:"center", justifyContent:"center", fontWeight:800, fontSize:14, flexShrink:0 }}>{name[0]}</div>
-                          <div>
-                            <p style={{ margin:0, fontWeight:700, fontSize:14 }}>{name}</p>
-                            {w?.role && <p style={{ margin:0, fontSize:12, color:"#888" }}>{w.role}</p>}
-                          </div>
-                        </div>
-                        <div style={{ textAlign:"left" }}>
-                          <p style={{ margin:0, fontWeight:800, fontSize:15, color:"#3B5BDB" }}>{days} ימים</p>
-                          {isGlobal ? <p style={{ margin:0, fontSize:11, color:"#AAA" }}>גלובלי — לא נכלל בעלות</p>
-                            : cost>0 && <p style={{ margin:0, fontSize:12, color:"#888" }}>₪{fmtNum(cost)}{w?.payType==="hourly" ? " · שעתי" : ""}</p>}
-                        </div>
-                      </div>
-                    );
-                  })
-                )}
+                <h3 style={{ margin:"0 0 10px", fontSize:15, fontWeight:700 }}>📌 דגשים לעבודה</h3>
+                <textarea value={editProj.highlights||""} placeholder="הנחיות בטיחות, דרישות, הערות חשובות..." rows={5}
+                  onChange={e=>{ const v=e.target.value; setEditProj(p=>({...p,highlights:v})); updateProjField(detailProject,{highlights:v}); }}
+                  style={{ ...inp, resize:"vertical", fontSize:14, lineHeight:1.7 }}/>
               </div>
 
+              {/* PROJECT DESCRIPTION — תצוגה מקוצרת, לחיצה פותחת מסך מלא לקריאה ועריכה */}
+              <div style={{ background:"#fff", borderRadius:14, padding:"16px 20px", marginBottom:14, boxShadow:"0 2px 8px rgba(0,0,0,0.07)" }}>
+                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:10 }}>
+                  <h3 style={{ margin:0, fontSize:15, fontWeight:700 }}>📋 תיאור הפרויקט</h3>
+                  <button onClick={()=>setDescFull(true)} style={{ background:"#1A1A2E", color:"#E8C547", border:"none", borderRadius:7, padding:"4px 12px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700 }}>⤢ פתח</button>
+                </div>
+                <div onClick={()=>setDescFull(true)}
+                  style={{ border:"1.5px solid #EEE", borderRadius:10, padding:"10px 12px", fontSize:14, lineHeight:1.6, background:"#FDFDFB", cursor:"pointer", whiteSpace:"pre-wrap", wordBreak:"break-word",
+                           color: editProj.description ? "#333" : "#AAA", display:"-webkit-box", WebkitLineClamp:4, WebkitBoxOrient:"vertical", overflow:"hidden" }}>
+                  {editProj.description || "לחץ להוספת תיאור — לדוגמה: 200 מטר גבס · שלד בטון 150 מ״ר · פרגולה 40 מ״ר"}
+                </div>
+              </div>
+
+              {descFull && (
+                <div style={{ position:"fixed", inset:0, zIndex:9999, background:"#F5F5F0", display:"flex", flexDirection:"column", direction:"rtl" }}>
+                  <div style={{ display:"flex", alignItems:"center", gap:10, padding:"12px 16px", paddingTop:"calc(12px + env(safe-area-inset-top))", background:"#1A1A2E", flexShrink:0 }}>
+                    <div style={{ flex:1, minWidth:0 }}>
+                      <p style={{ margin:0, color:"#E8C547", fontWeight:800, fontSize:16 }}>📋 תיאור הפרויקט</p>
+                      <p style={{ margin:0, color:"#AAA", fontSize:12, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{detailProject.name} · נשמר אוטומטית</p>
+                    </div>
+                    <button onClick={()=>setDescFull(false)} style={{ background:"#E8C547", color:"#1A1A2E", border:"none", borderRadius:9, padding:"8px 16px", fontSize:14, fontWeight:800, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>✓ סגור</button>
+                  </div>
+                  <div style={{ flex:1, padding:14, display:"flex", minHeight:0 }}>
+                    <textarea autoFocus value={editProj.description||""} placeholder="לדוגמה: 200 מטר גבס · שלד בטון 150 מ״ר · פרגולה 40 מ״ר"
+                      onChange={e=>{ setEditProj(p=>({...p, description: e.target.value})); updateProjFieldDebounced(detailProject, { description: e.target.value }); }}
+                      style={{ flex:1, width:"100%", border:"1.5px solid #DDD", borderRadius:12, padding:"14px 16px", fontSize:16, lineHeight:1.8, fontFamily:"Heebo,sans-serif", outline:"none", background:"#fff", boxSizing:"border-box", resize:"none" }}/>
+                  </div>
+                </div>
+              )}
+
+              {/* SITE ADDRESS + WAZE */}
+              <div style={{ background:"#fff", borderRadius:14, padding:"16px 20px", marginBottom:14, boxShadow:"0 2px 8px rgba(0,0,0,0.07)" }}>
+                <h3 style={{ margin:"0 0 4px", fontSize:15, fontWeight:700 }}>📍 מיקום האתר</h3>
+                <p style={{ margin:"0 0 10px", fontSize:12, color:"#888" }}>העובדים יקבלו כפתור "נווט עם Waze" לאתר הזה. אפשר לכתוב כתובת, להדביק קישור מ-Waze/גוגל מפות, או לקבוע מיקום כשאתה באתר.</p>
+                <input value={editProj.siteAddress||""} placeholder="לדוגמה: הרצל 12, רמת גן"
+                  onChange={e=>{ setEditProj(p=>({...p, siteAddress: e.target.value})); updateProjFieldDebounced(detailProject, { siteAddress: e.target.value }); }}
+                  style={{ width:"100%", border:"1.5px solid #EEE", borderRadius:10, padding:"10px 12px", fontSize:14, fontFamily:"Heebo,sans-serif", outline:"none", background:"#FDFDFB", boxSizing:"border-box", marginBottom:10 }}/>
+                <div style={{ display:"flex", gap:8, marginBottom:8 }}>
+                  <button onClick={async ()=>{
+                    try {
+                      const loc = await getPosition();
+                      setEditProj(p=>({...p, siteLat:loc.lat, siteLng:loc.lng}));
+                      updateProjField(detailProject, { siteLat:loc.lat, siteLng:loc.lng });
+                      alert(`מיקום האתר נקבע! 📍\n(דיוק: ±${Math.round(loc.acc)} מטר)`);
+                    } catch(e) { alert("לא ניתן לקבל מיקום — יש לאשר גישה למיקום בדפדפן."); }
+                  }} style={{ flex:1, background:"#F0F0EC", color:"#1A1A2E", border:"none", borderRadius:9, padding:"10px 0", fontSize:13, fontWeight:700, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>
+                    📍 אני באתר — קבע מיקום נוכחי
+                  </button>
+                  {editProj.siteLat!=null && (
+                    <button onClick={()=>{ if(!window.confirm("למחוק את המיקום המדויק? (הניווט יעבוד לפי הכתובת, ואימות המיקום בשעון יכבה)")) return; setEditProj(p=>({...p, siteLat:null, siteLng:null})); updateProjField(detailProject, { siteLat:null, siteLng:null }); }}
+                      style={{ background:"#FCE4EC", color:"#B71C1C", border:"none", borderRadius:9, padding:"10px 12px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>מחק מיקום</button>
+                  )}
+                </div>
+                <p style={{ margin:"0 0 10px", fontSize:12, fontWeight:600, color: editProj.siteLat!=null ? "#2E7D32" : (editProj.siteAddress ? "#1565C0" : "#999") }}>
+                  {editProj.siteLat!=null ? "✓ ניווט לנקודה המדויקת שנקבעה באתר" : editProj.siteAddress ? "✓ לפי כתובת — Waze יציג תוצאות חיפוש לבחירה. לדיוק מלא: קבע מיקום באתר או הדבק קישור מ-Waze" : "טרם הוזן מיקום"}
+                </p>
+                <WazeBtn project={editProj} full/>
+              </div>
+
+              </>)}
+
+              {pTab==="money" && (<>
               <div style={{ background:"#fff", borderRadius:14, padding:"16px 20px", marginBottom:14, boxShadow:"0 2px 8px rgba(0,0,0,0.07)" }}>
                 <h3 style={{ margin:"0 0 14px", fontSize:15, fontWeight:700 }}>📊 נתוני פרויקט</h3>
                 <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
@@ -5202,29 +5301,99 @@ async function shareImg() {
                 )}
               </div>
 
-              <div style={{ background:"#fff", borderRadius:14, padding:"16px 20px", marginBottom:14, boxShadow:"0 2px 8px rgba(0,0,0,0.07)" }}>
-                <h3 style={{ margin:"0 0 13px", fontSize:15, fontWeight:700 }}>🧑‍💼 פרטי ניהול</h3>
-                <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
-                  <label style={{ display:"block" }}>
-                    <span style={{ fontSize:12, fontWeight:600, display:"block", marginBottom:4, color:"#555" }}>מנהל פרויקט</span>
-                    <input value={editProj.projectManager||""} placeholder="שם מנהל"
-                      onChange={e=>{ const v=e.target.value; setEditProj(p=>({...p,projectManager:v})); updateProjField(detailProject,{projectManager:v}); }}
-                      style={{ ...inp, fontSize:14 }}/>
-                  </label>
-                  <label style={{ display:"block" }}>
-                    <span style={{ fontSize:12, fontWeight:600, display:"block", marginBottom:4, color:"#555" }}>כמות עובדים מתוכננת</span>
-                    <input type="number" value={editProj.plannedWorkers||""} placeholder="לדוגמה: 5"
-                      onChange={e=>{ const v=e.target.value; setEditProj(p=>({...p,plannedWorkers:v})); updateProjField(detailProject,{plannedWorkers:v}); }}
-                      style={{ ...inp, fontSize:14 }}/>
-                  </label>
-                </div>
-              </div>
+              {/* TOTAL PROJECT COSTS */}
+              {(() => {
+                const expTotal = (editProj.expenses||[]).reduce((s,e)=>s+Number(e.amount||0),0);
+                const subTotal = (editProj.subcontractors||[]).reduce((s,sc)=>s+Number(sc.price||0),0);
+                const subPaid = (editProj.subcontractors||[]).reduce((s,sc)=>s+(sc.payments||[]).filter(p=>p.paid).reduce((s2,p)=>s2+Number(p.amount||0),0),0);
+                const fixedShare = finOn ? Math.round(projFixedShare(finDoc, reports, detailProject.id, todayStr().slice(0,7), projects).total) : 0;
+                if (expTotal===0 && subTotal===0 && laborTotal===0 && fixedShare===0) return null;
+                return (
+                  <div style={{ background:"#1A1A2E", borderRadius:14, padding:"14px 20px", marginBottom:14 }}>
+                    <p style={{ margin:"0 0 8px", fontSize:13, fontWeight:700, color:"#E8C547" }}>💰 סה"כ הוצאות פרויקט</p>
+                    <div style={{ display:"flex", justifyContent:"space-between", fontSize:12, color:"#AAA", marginBottom:3 }}>
+                      <span>הוצאות וחומרים</span><span>₪{fmtNum(expTotal)}</span>
+                    </div>
+                    <div style={{ display:"flex", justifyContent:"space-between", fontSize:12, color:"#AAA", marginBottom:3 }}>
+                      <span>👷 עובדים (כולל דלק)</span><span>₪{fmtNum(laborTotal)}</span>
+                    </div>
+                    <div style={{ display:"flex", justifyContent:"space-between", fontSize:12, color:"#AAA", marginBottom:3 }}>
+                      <span>קבלני משנה (סוכם)</span><span>₪{fmtNum(subTotal)}</span>
+                    </div>
+                    <div style={{ display:"flex", justifyContent:"space-between", fontSize:12, color:"#AAA", marginBottom:8 }}>
+                      <span>מתוכם שולם לקבלנים</span><span>₪{fmtNum(subPaid)}</span>
+                    </div>
+                    {finOn && (
+                      <div style={{ display:"flex", justifyContent:"space-between", fontSize:12, color:"#AAA", marginBottom:8, marginTop:-5 }}>
+                        <span>🧮 חלק מהוצאות קבועות</span><span>₪{fmtNum(fixedShare)}</span>
+                      </div>
+                    )}
+                    <div style={{ display:"flex", justifyContent:"space-between", paddingTop:8, borderTop:"1px solid rgba(255,255,255,0.15)" }}>
+                      <span style={{ color:"#fff", fontWeight:700, fontSize:14 }}>סה"כ</span>
+                      <span style={{ color:"#E8C547", fontWeight:800, fontSize:18 }}>₪{fmtNum(expTotal + subTotal + laborTotal + fixedShare)}</span>
+                    </div>
+                  </div>
+                );
+              })()}
 
+              {/* CLIENT PAYMENT STAGES */}
               <div style={{ background:"#fff", borderRadius:14, padding:"16px 20px", marginBottom:14, boxShadow:"0 2px 8px rgba(0,0,0,0.07)" }}>
-                <h3 style={{ margin:"0 0 10px", fontSize:15, fontWeight:700 }}>📌 דגשים לעבודה</h3>
-                <textarea value={editProj.highlights||""} placeholder="הנחיות בטיחות, דרישות, הערות חשובות..." rows={5}
-                  onChange={e=>{ const v=e.target.value; setEditProj(p=>({...p,highlights:v})); updateProjField(detailProject,{highlights:v}); }}
-                  style={{ ...inp, resize:"vertical", fontSize:14, lineHeight:1.7 }}/>
+                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:13 }}>
+                  <h3 style={{ margin:0, fontSize:15, fontWeight:700 }}>💵 שלבי קבלת תשלום</h3>
+                  <button onClick={()=>{ const cp=[...(editProj.clientPayments||[]),{id:Date.now(),desc:"",amount:"",received:false}]; setEditProj(p=>({...p,clientPayments:cp})); updateProjField(detailProject,{clientPayments:cp}); }}
+                    style={{ background:"#1A1A2E", color:"#E8C547", border:"none", borderRadius:7, padding:"4px 12px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700 }}>+ שלב תשלום</button>
+                </div>
+                {(!editProj.clientPayments||editProj.clientPayments.length===0) && <p style={{ margin:0, fontSize:13, color:"#AAA" }}>אין שלבי תשלום — למשל: מקדמה, אחרי שלד, מסירה</p>}
+                {finOn && (editProj.clientPayments||[]).length>0 && <p style={{ margin:"0 0 8px", fontSize:10.5, color:"#999" }}>לחץ על העיגול כשהשלב בוצע ← ⏳ עובר ל"הכנסות ← לגבייה" ← כשהכסף נכנס מסמנים ✓ התקבל. הסכומים לפני מע״מ.</p>}
+                {(editProj.clientPayments||[]).map((cp,ci) => {
+                  const updCp = (changes, isText=false) => {
+                    const clientPayments=(editProj.clientPayments||[]).map((x,i)=>i===ci?{...x,...changes}:x);
+                    setEditProj(p=>({...p,clientPayments}));
+                    if (isText) updateProjFieldDebounced(detailProject,{clientPayments});
+                    else updateProjField(detailProject,{clientPayments});
+                  };
+                  return (
+                    <div key={cp.id} style={{ display:"flex", gap:6, alignItems:"center", marginBottom:7 }}>
+                      <button title={cp.received ? "התקבל" : cp.due ? "לגבייה" : (finOn ? "השלב בוצע — לגבייה" : "התקבל")} onClick={()=>{
+                        const amt = `₪${Number(cp.amount||0).toLocaleString("he-IL")}`;
+                        if (finOn) {
+                          if (cp.received) { if (!window.confirm(`לבטל את הסימון "התקבל"?\nהשלב יחזור ל"לגבייה".`)) return; updCp({ received:false, receivedAt:"", receivedIso:"" }); return; }
+                          if (cp.due) {
+                            if (window.confirm(`הכסף התקבל? (${amt})\n\nאישור = התקבל · ביטול = אפשרות לבטל את "לגבייה"`)) { updCp({ received:true, receivedAt:new Date().toLocaleDateString("he-IL"), receivedIso:todayStr() }); return; }
+                            if (window.confirm("לבטל את הסימון \"לגבייה\"? (השלב עוד לא בוצע)")) updCp({ due:false, dueAt:"" });
+                            return;
+                          }
+                          if (!(Number(cp.amount) > 0)) { alert("הזן סכום לשלב לפני הסימון"); return; }
+                          if (!window.confirm(`השלב "${cp.desc||"שלב"}" בוצע?\n${amt} יעבור לטאב הכנסות ← לגבייה.`)) return;
+                          updCp({ due:true, dueAt: todayStr() });
+                          return;
+                        }
+                        if (!cp.received && !window.confirm(`לסמן שקיבלת ${amt}?`)) return;
+                        updCp({received:!cp.received, receivedAt: !cp.received ? new Date().toLocaleDateString("he-IL") : "", receivedIso: !cp.received ? todayStr() : ""});
+                      }}
+                        style={{ width:24, height:24, borderRadius:"50%", border:`2px solid ${cp.received?"#22C55E":cp.due?"#F59E0B":"#CCC"}`, background:cp.received?"#22C55E":cp.due?"#FEF3C7":"#fff", cursor:"pointer", flexShrink:0, color:cp.received?"#fff":"#B45309", fontSize:12, display:"flex", alignItems:"center", justifyContent:"center" }}>{cp.received?"✓":cp.due?"⏳":""}</button>
+                      <input value={cp.desc} placeholder="מתי (למשל: אחרי שלד)" onChange={e=>updCp({desc:e.target.value}, true)}
+                        style={{ flex:2, minWidth:0, width:0, border:"1.5px solid #EEE", borderRadius:8, padding:"7px 10px", fontSize:13, fontFamily:"Heebo,sans-serif", outline:"none", background:"#fff", textDecoration:cp.received?"line-through":"none", color:cp.received?"#AAA":"#333" }}/>
+                      <input type="number" value={cp.amount} placeholder="₪ לפני מע״מ" onChange={e=>updCp({amount:e.target.value}, true)}
+                        style={{ flex:1, minWidth:0, width:0, border:"1.5px solid #EEE", borderRadius:8, padding:"7px 10px", fontSize:13, fontFamily:"Heebo,sans-serif", outline:"none", background:"#fff", textDecoration:cp.received?"line-through":"none", color:cp.received?"#AAA":"#333" }}/>
+                      <button onClick={()=>{ const clientPayments=(editProj.clientPayments||[]).filter((_,i)=>i!==ci); setEditProj(p=>({...p,clientPayments})); updateProjField(detailProject,{clientPayments}); }}
+                        style={{ background:"none", border:"none", cursor:"pointer", color:"#CCC", fontSize:14, padding:0, flexShrink:0 }}>✕</button>
+                    </div>
+                  );
+                })}
+                {(editProj.clientPayments||[]).length>0 && (() => {
+                  const cpTotal = (editProj.clientPayments||[]).reduce((s,x)=>s+Number(x.amount||0),0);
+                  const cpReceived = (editProj.clientPayments||[]).filter(x=>x.received).reduce((s,x)=>s+Number(x.amount||0),0);
+                  const cpDue = (editProj.clientPayments||[]).filter(x=>x.due && !x.received).reduce((s,x)=>s+Number(x.amount||0),0);
+                  return (
+                    <div style={{ display:"flex", justifyContent:"space-between", flexWrap:"wrap", gap:4, paddingTop:10, borderTop:"1px solid #EEE", marginTop:6, fontSize:13 }}>
+                      <span style={{ color:"#555" }}>סה"כ: <b>₪{fmtNum(cpTotal)}</b></span>
+                      <span style={{ color:"#2E7D32" }}>התקבל: <b>₪{fmtNum(cpReceived)}</b></span>
+                      {finOn && cpDue > 0 && <span style={{ color:"#B45309" }}>⏳ לגבייה: <b>₪{fmtNum(cpDue)}</b></span>}
+                      <span style={{ color:(cpTotal-cpReceived)>0?"#B71C1C":"#2E7D32" }}>נותר: <b>₪{fmtNum(cpTotal-cpReceived)}</b></span>
+                    </div>
+                  );
+                })()}
               </div>
 
               {/* EXPENSES */}
@@ -5329,6 +5498,142 @@ async function shareImg() {
                     <span style={{ fontSize:16, fontWeight:800, color:"#B71C1C" }}>₪{fmtNum((editProj.expenses||[]).reduce((s,e)=>s+Number(e.amount||0),0))}</span>
                   </div>
                 )}
+              </div>
+
+              {/* REMAINING MATERIALS - shown when project is completed */}
+              {detailProject.status==="הושלם" && (editProj.expenses||[]).filter(e=>e.fromInvoice).length>0 && (
+                <div style={{ background:"#fff", borderRadius:14, padding:"16px 20px", marginBottom:14, boxShadow:"0 2px 8px rgba(0,0,0,0.07)", border:"2px solid #E8C547" }}>
+                  <h3 style={{ margin:"0 0 4px", fontSize:15, fontWeight:700 }}>📦 מלאי שנשאר</h3>
+                  <p style={{ margin:"0 0 12px", fontSize:12, color:"#777" }}>מלא כמה נשאר מכל חומר</p>
+                  <div style={{ borderRadius:10, overflow:"hidden", border:"1px solid #EEE" }}>
+                    <div style={{ display:"grid", gridTemplateColumns:"1fr auto", background:"#F5F5F0", padding:"7px 12px", fontSize:12, fontWeight:700, color:"#555" }}>
+                      <span>חומר</span><span>נשאר</span>
+                    </div>
+                    {(editProj.expenses||[]).filter(e=>e.fromInvoice).map((ex,i) => (
+                      <div key={i} style={{ display:"grid", gridTemplateColumns:"1fr auto", padding:"8px 12px", borderTop:"1px solid #F0F0EC", alignItems:"center" }}>
+                        <span style={{ fontSize:13 }}>{ex.desc}</span>
+                        <input type="text" placeholder="כמה נשאר?"
+                          value={ex.remaining||""}
+                          onChange={e=>{
+                            const expenses=(editProj.expenses||[]).map((ex2,j)=>j===i?{...ex2,remaining:e.target.value}:ex2);
+                            setEditProj(p=>({...p,expenses}));
+                            updateProjFieldDebounced(detailProject,{expenses});
+                          }}
+                          style={{ width:90, border:"1.5px solid #DDD", borderRadius:8, padding:"5px 8px", fontSize:13, fontFamily:"Heebo,sans-serif", outline:"none", textAlign:"center" }}/>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              </>)}
+
+              {pTab==="phases" && (<>
+              <div style={{ background:"#fff", borderRadius:14, padding:"16px 20px", marginBottom:14, boxShadow:"0 2px 8px rgba(0,0,0,0.07)" }}>
+                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:13 }}>
+                  <h3 style={{ margin:0, fontSize:15, fontWeight:700 }}>🪜 שלבי ביצוע</h3>
+                  <button onClick={()=>{ const phases=[...(editProj.phases||[]),{id:Date.now(),name:"",done:false,targetDate:"",notes:""}]; setEditProj(p=>({...p,phases})); updateProjField(detailProject,{phases}); }}
+                    style={{ background:"#1A1A2E", color:"#E8C547", border:"none", borderRadius:7, padding:"4px 12px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700 }}>+ הוסף שלב</button>
+                </div>
+                {(!editProj.phases||editProj.phases.length===0) && <p style={{ margin:0, fontSize:13, color:"#AAA" }}>אין שלבים עדיין</p>}
+                {(editProj.phases||[]).map((ph,idx) => {
+                  const updPhase = (changes, isText=false) => {
+                    const phases=(editProj.phases||[]).map((p,i)=>i===idx?{...p,...changes}:p);
+                    setEditProj(p=>({...p,phases}));
+                    if (isText) {
+                      updateProjFieldDebounced(detailProject,{phases});
+                    } else {
+                      updateProjField(detailProject,{phases});
+                    }
+                  };
+                  return (
+                    <div key={ph.id} style={{ marginBottom:10, background:"#F9F9F9", borderRadius:12, padding:"12px 14px", borderRight:(ph.status==="הושלם"||ph.done)?"4px solid #22C55E":ph.status==="בביצוע"?"4px solid #E8C547":"4px solid #DDD" }}>
+                      <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:8 }}>
+                        <input value={ph.name} placeholder={`שם השלב ${idx+1}`} onChange={e=>updPhase({name:e.target.value}, true)}
+                          style={{ flex:1, border:"none", background:"transparent", fontSize:14, fontFamily:"Heebo,sans-serif", outline:"none", fontWeight:700, textDecoration:ph.status==="הושלם"?"line-through":"none", color:ph.status==="הושלם"?"#AAA":"#1A1A2E" }}/>
+                        <button onClick={()=>{ const phases=(editProj.phases||[]).filter((_,i)=>i!==idx); setEditProj(p=>({...p,phases})); updateProjField(detailProject,{phases}); }}
+                          style={{ background:"none", border:"none", cursor:"pointer", color:"#CCC", fontSize:14, padding:0, flexShrink:0 }}>✕</button>
+                      </div>
+                      <div style={{ display:"flex", gap:6, marginBottom:8 }}>
+                        {["ממתין","בביצוע","הושלם"].map(st => (
+                          <button key={st} onClick={()=>updPhase({status:st, done:st==="הושלם"})}
+                            style={{
+                              background: ph.status===st ? (st==="הושלם"?"#22C55E":st==="בביצוע"?"#E8C547":"#DDD") : "#F5F5F0",
+                              color: ph.status===st ? (st==="הושלם"?"#fff":st==="בביצוע"?"#1A1A2E":"#555") : "#888",
+                              border:"none", borderRadius:7, padding:"3px 10px", fontSize:12,
+                              cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:ph.status===st?700:400
+                            }}>
+                            {st==="ממתין"?"⏳":st==="בביצוע"?"🔨":"✅"} {st}
+                          </button>
+                        ))}
+                      </div>
+                      <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:8 }}>
+                        <span style={{ fontSize:12, color:"#888", whiteSpace:"nowrap" }}>⚖️ משקל:</span>
+                        <input type="number" value={ph.weight||""} placeholder="%" onChange={e=>updPhase({weight:e.target.value}, true)}
+                          style={{ width:60, border:"1px solid #DDD", borderRadius:7, padding:"4px 8px", fontSize:13, fontFamily:"Heebo,sans-serif", background:"#fff", outline:"none" }}/>
+                        <span style={{ fontSize:12, color:"#888", whiteSpace:"nowrap" }}>🎯 יעד:</span>
+                        <input type="date" value={ph.targetDate||""} onChange={e=>updPhase({targetDate:e.target.value})}
+                          style={{ border:"1px solid #DDD", borderRadius:7, padding:"4px 8px", fontSize:13, fontFamily:"Heebo,sans-serif", background:"#fff", outline:"none" }}/>
+                        {ph.targetDate && (ph.status==="הושלם"||ph.done) && <span style={{ background:"#F0FDF4", color:"#2E7D32", borderRadius:6, padding:"2px 8px", fontSize:11, fontWeight:600 }}>✓ הושלם</span>}
+                        {ph.targetDate && ph.status!=="הושלם" && !ph.done && new Date(ph.targetDate)<new Date() && <span style={{ background:"#FCE4EC", color:"#B71C1C", borderRadius:6, padding:"2px 8px", fontSize:11, fontWeight:600 }}>⚠ באיחור</span>}
+                      </div>
+                      <textarea value={ph.notes||""} placeholder="הערות, פירוט..." onChange={e=>updPhase({notes:e.target.value}, true)} rows={2}
+                        style={{ width:"100%", border:"1px solid #E8E8E8", borderRadius:8, padding:"7px 10px", fontSize:13, fontFamily:"Heebo,sans-serif", background:"#fff", outline:"none", resize:"vertical", boxSizing:"border-box", lineHeight:1.6 }}/>
+                    </div>
+                  );
+                })}
+                {(editProj.phases||[]).length>0 && (
+                  <div style={{ marginTop:10, paddingTop:10, borderTop:"1px solid #EEE", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+                    <span style={{ fontSize:13, color:"#666" }}>
+                      {(editProj.phases||[]).filter(p=>p.status==="הושלם"||p.done).length} / {(editProj.phases||[]).length} שלבים · {projProgress(editProj)}%
+                      {(() => { const ws=(editProj.phases||[]).reduce((s,p)=>s+Number(p.weight||0),0); return ws>0 && ws!==100 ? ` · ⚠️ סה"כ משקלים ${ws}%` : ""; })()}
+                    </span>
+                    <div style={{ background:"#EEE", borderRadius:99, height:7, width:120 }}>
+                      <div style={{ height:"100%", borderRadius:99, background:"#22C55E", width:`${projProgress(editProj)}%` }}/>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              </>)}
+
+              {pTab==="team" && (<>
+              {/* Worker days in project */}
+              <div style={{ background:"#fff", borderRadius:14, padding:"16px 20px", marginBottom:14, boxShadow:"0 2px 8px rgba(0,0,0,0.07)" }}>
+                <SecHead title="👷 עובדים בפרויקט" open={!!projOpen.workers} onToggle={()=>togOpen("workers")} mb={12}
+                  summary={`${workerEntries.length} עובדים${laborTotal>0 ? ` · ₪${fmtNum(laborTotal)}` : ""}`}
+                  action={<span onClick={()=>togOpen("workers")} style={{ background:"#F0F4FF", color:"#3B5BDB", borderRadius:8, padding:"4px 12px", fontSize:13, fontWeight:700, cursor:"pointer" }}>📅 {totalDays} ימי עבודה</span>}/>
+                {projOpen.workers && (workerEntries.length===0 ? <p style={{ margin:0, fontSize:13, color:"#AAA" }}>אין דיווחים עדיין</p> :
+                  workerEntries.map(([name, days]) => {
+                    const w = workers.find(w=>w.name===name);
+                    const cost = laborByName[name] || 0;
+                    const isGlobal = w?.payType === "global";
+                    return (
+                      <div key={name} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"9px 12px", background:"#F9F9F9", borderRadius:10, marginBottom:7 }}>
+                        <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+                          <div style={{ width:34, height:34, borderRadius:"50%", background:"#1A1A2E", color:"#E8C547", display:"flex", alignItems:"center", justifyContent:"center", fontWeight:800, fontSize:14, flexShrink:0 }}>{name[0]}</div>
+                          <div>
+                            <p style={{ margin:0, fontWeight:700, fontSize:14 }}>{name}</p>
+                            {w?.role && <p style={{ margin:0, fontSize:12, color:"#888" }}>{w.role}</p>}
+                          </div>
+                        </div>
+                        <div style={{ textAlign:"left" }}>
+                          <p style={{ margin:0, fontWeight:800, fontSize:15, color:"#3B5BDB" }}>{days} ימים</p>
+                          {isGlobal ? <p style={{ margin:0, fontSize:11, color:"#AAA" }}>גלובלי — לא נכלל בעלות</p>
+                            : cost>0 && <p style={{ margin:0, fontSize:12, color:"#888" }}>₪{fmtNum(cost)}{w?.payType==="hourly" ? " · שעתי" : ""}</p>}
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+
+              <div style={{ background:"#fff", borderRadius:14, padding:"13px 18px", marginBottom:14, boxShadow:"0 2px 8px rgba(0,0,0,0.07)", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+                <div>
+                  <p style={{ margin:"0 0 2px", fontSize:13, fontWeight:700 }}>👷 עובדים משויכים</p>
+                  <p style={{ margin:0, fontSize:13, color:"#555" }}>{getWkrNames(detailProject.workers)||"לא שויכו עובדים"}</p>
+                </div>
+                <button onClick={()=>{ setAssignPid(detailProject.id); setAssignM(true); }} style={{ ...btnD, fontSize:13, padding:"7px 14px" }}>שייך עובדים</button>
               </div>
 
               {/* SUBCONTRACTORS */}
@@ -5510,41 +5815,86 @@ async function shareImg() {
 
               )}
 
-              {/* TOTAL PROJECT COSTS */}
-              {(() => {
-                const expTotal = (editProj.expenses||[]).reduce((s,e)=>s+Number(e.amount||0),0);
-                const subTotal = (editProj.subcontractors||[]).reduce((s,sc)=>s+Number(sc.price||0),0);
-                const subPaid = (editProj.subcontractors||[]).reduce((s,sc)=>s+(sc.payments||[]).filter(p=>p.paid).reduce((s2,p)=>s2+Number(p.amount||0),0),0);
-                const fixedShare = finOn ? Math.round(projFixedShare(finDoc, reports, detailProject.id, todayStr().slice(0,7), projects).total) : 0;
-                if (expTotal===0 && subTotal===0 && laborTotal===0 && fixedShare===0) return null;
-                return (
-                  <div style={{ background:"#1A1A2E", borderRadius:14, padding:"14px 20px", marginBottom:14 }}>
-                    <p style={{ margin:"0 0 8px", fontSize:13, fontWeight:700, color:"#E8C547" }}>💰 סה"כ הוצאות פרויקט</p>
-                    <div style={{ display:"flex", justifyContent:"space-between", fontSize:12, color:"#AAA", marginBottom:3 }}>
-                      <span>הוצאות וחומרים</span><span>₪{fmtNum(expTotal)}</span>
-                    </div>
-                    <div style={{ display:"flex", justifyContent:"space-between", fontSize:12, color:"#AAA", marginBottom:3 }}>
-                      <span>👷 עובדים (כולל דלק)</span><span>₪{fmtNum(laborTotal)}</span>
-                    </div>
-                    <div style={{ display:"flex", justifyContent:"space-between", fontSize:12, color:"#AAA", marginBottom:3 }}>
-                      <span>קבלני משנה (סוכם)</span><span>₪{fmtNum(subTotal)}</span>
-                    </div>
-                    <div style={{ display:"flex", justifyContent:"space-between", fontSize:12, color:"#AAA", marginBottom:8 }}>
-                      <span>מתוכם שולם לקבלנים</span><span>₪{fmtNum(subPaid)}</span>
-                    </div>
-                    {finOn && (
-                      <div style={{ display:"flex", justifyContent:"space-between", fontSize:12, color:"#AAA", marginBottom:8, marginTop:-5 }}>
-                        <span>🧮 חלק מהוצאות קבועות</span><span>₪{fmtNum(fixedShare)}</span>
-                      </div>
-                    )}
-                    <div style={{ display:"flex", justifyContent:"space-between", paddingTop:8, borderTop:"1px solid rgba(255,255,255,0.15)" }}>
-                      <span style={{ color:"#fff", fontWeight:700, fontSize:14 }}>סה"כ</span>
-                      <span style={{ color:"#E8C547", fontWeight:800, fontSize:18 }}>₪{fmtNum(expTotal + subTotal + laborTotal + fixedShare)}</span>
-                    </div>
-                  </div>
-                );
-              })()}
+              <div style={{ background:"#fff", borderRadius:14, padding:"16px 20px", marginBottom:14, boxShadow:"0 2px 8px rgba(0,0,0,0.07)" }}>
+                <h3 style={{ margin:"0 0 13px", fontSize:15, fontWeight:700 }}>🧑‍💼 פרטי ניהול</h3>
+                <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
+                  <label style={{ display:"block" }}>
+                    <span style={{ fontSize:12, fontWeight:600, display:"block", marginBottom:4, color:"#555" }}>מנהל פרויקט</span>
+                    <input value={editProj.projectManager||""} placeholder="שם מנהל"
+                      onChange={e=>{ const v=e.target.value; setEditProj(p=>({...p,projectManager:v})); updateProjField(detailProject,{projectManager:v}); }}
+                      style={{ ...inp, fontSize:14 }}/>
+                  </label>
+                  <label style={{ display:"block" }}>
+                    <span style={{ fontSize:12, fontWeight:600, display:"block", marginBottom:4, color:"#555" }}>כמות עובדים מתוכננת</span>
+                    <input type="number" value={editProj.plannedWorkers||""} placeholder="לדוגמה: 5"
+                      onChange={e=>{ const v=e.target.value; setEditProj(p=>({...p,plannedWorkers:v})); updateProjField(detailProject,{plannedWorkers:v}); }}
+                      style={{ ...inp, fontSize:14 }}/>
+                  </label>
+                </div>
+              </div>
 
+              {/* LOCATION VERIFICATION (hourly clock) */}
+              <div style={{ background:"#fff", borderRadius:14, padding:"16px 20px", marginBottom:14, boxShadow:"0 2px 8px rgba(0,0,0,0.07)" }}>
+                <h3 style={{ margin:"0 0 4px", fontSize:15, fontWeight:700 }}>📍 אימות מיקום לשעון נוכחות</h3>
+                <p style={{ margin:"0 0 12px", fontSize:12, color:"#888" }}>חל רק על עובדים שעתיים בפתיחת שעון. עובדי יומית וגלובלי — ללא אימות.</p>
+                <div style={{ display:"flex", gap:6, marginBottom:12 }}>
+                  {[{v:"off",l:"בלי אימות"},{v:"flag",l:"⚠️ סימון בלבד"},{v:"block",l:"🚫 חסימה"}].map(o=>(
+                    <button key={o.v} onClick={()=>{ setEditProj(p=>({...p, locationMode:o.v})); updateProjField(detailProject, { locationMode:o.v }); }}
+                      style={{ flex:1, background:(editProj.locationMode||"off")===o.v?"#1A1A2E":"#F0F0EC", color:(editProj.locationMode||"off")===o.v?"#E8C547":"#777", border:"none", borderRadius:9, padding:"9px 0", fontSize:12, fontWeight:700, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>
+                      {o.l}
+                    </button>
+                  ))}
+                </div>
+                {(editProj.locationMode||"off")!=="off" && (
+                  <>
+                    <div style={{ display:"flex", gap:8, alignItems:"center", marginBottom:10 }}>
+                      <button onClick={async ()=>{
+                        try {
+                          const loc = await getPosition();
+                          setEditProj(p=>({...p, siteLat:loc.lat, siteLng:loc.lng}));
+                          updateProjField(detailProject, { siteLat:loc.lat, siteLng:loc.lng });
+                          alert(`מיקום האתר נקבע! 📍\n(דיוק: ±${Math.round(loc.acc)} מטר)`);
+                        } catch(e) { alert("לא ניתן לקבל מיקום — יש לאשר גישה למיקום בדפדפן."); }
+                      }} style={{ flex:1, background:"#E8C547", color:"#1A1A2E", border:"none", borderRadius:9, padding:"10px 0", fontSize:13, fontWeight:700, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>
+                        📍 קבע את המיקום הנוכחי כאתר
+                      </button>
+                    </div>
+                    <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", gap:10 }}>
+                      <span style={{ fontSize:12, color:editProj.siteLat!=null?"#2E7D32":"#E53935", fontWeight:600 }}>
+                        {editProj.siteLat!=null ? "✓ מיקום אתר מוגדר" : "✗ טרם נקבע מיקום — האימות לא פעיל"}
+                      </span>
+                      <label style={{ display:"flex", alignItems:"center", gap:6 }}>
+                        <span style={{ fontSize:12, color:"#555", whiteSpace:"nowrap" }}>רדיוס (מ')</span>
+                        <input type="number" value={editProj.siteRadius ?? 300}
+                          onChange={e=>{ setEditProj(p=>({...p, siteRadius:e.target.value})); updateProjFieldDebounced(detailProject, { siteRadius:e.target.value }); }}
+                          style={{ width:75, border:"1.5px solid #DDD", borderRadius:8, padding:"6px 9px", fontSize:13, fontFamily:"Heebo,sans-serif", outline:"none", background:"#fff" }}/>
+                      </label>
+                    </div>
+                  </>
+                )}
+              </div>
+
+              <div style={{ background:"#fff", borderRadius:14, padding:"14px 20px", marginBottom:10, boxShadow:"0 2px 8px rgba(0,0,0,0.07)" }}>
+                <SecHead title={`📋 דיווחים מהשטח (${pr.length})`} open={!!projOpen.reps} onToggle={()=>togOpen("reps")} mb={0}
+                  summary={pr.length ? (projOpen.reps ? "לחץ לסגירה" : "לחץ לרשימה") : ""}/>
+              </div>
+              {projOpen.reps && pr.length===0 && <div style={{ background:"#fff", borderRadius:12, padding:24, textAlign:"center", color:"#AAA", border:"1.5px dashed #DDD" }}><p style={{ margin:0 }}>אין דיווחים עדיין</p></div>}
+              {projOpen.reps && [...pr].reverse().map(r => (
+                <div key={r._dbid} style={{ background:"#fff", borderRadius:12, padding:"12px 16px", marginBottom:9, borderRight:"4px solid #E8C547", boxShadow:"0 1px 5px rgba(0,0,0,0.06)", display:"flex", justifyContent:"space-between", alignItems:"flex-start" }}>
+                  <div>
+                    <div style={{ display:"flex", gap:8, alignItems:"center", marginBottom:3 }}>
+                      <span style={{ fontWeight:700, fontSize:14 }}>{r.workerName}</span>
+                      <span style={{ fontSize:12, color:"#999" }}>📅 {r.date}</span>
+                    </div>
+                    {r.note && <p style={{ margin:0, fontSize:13, color:"#555" }}>{r.note}</p>}
+                  </div>
+                  <button onClick={()=>delReport(r)} style={{ background:"none", border:"none", cursor:"pointer", color:"#CCC", fontSize:14, padding:0 }}>✕</button>
+                </div>
+              ))}
+
+              </>)}
+
+              {pTab==="files" && (<>
               {/* INVOICES */}
               {(() => {
                 const aiLimit = Number(org?.settings?.aiTier || 0);
@@ -5808,283 +6158,8 @@ async function shareImg() {
                 )}
               </div>
 
-              {/* PROJECT DESCRIPTION — תצוגה מקוצרת, לחיצה פותחת מסך מלא לקריאה ועריכה */}
-              <div style={{ background:"#fff", borderRadius:14, padding:"16px 20px", marginBottom:14, boxShadow:"0 2px 8px rgba(0,0,0,0.07)" }}>
-                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:10 }}>
-                  <h3 style={{ margin:0, fontSize:15, fontWeight:700 }}>📋 תיאור הפרויקט</h3>
-                  <button onClick={()=>setDescFull(true)} style={{ background:"#1A1A2E", color:"#E8C547", border:"none", borderRadius:7, padding:"4px 12px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700 }}>⤢ פתח</button>
-                </div>
-                <div onClick={()=>setDescFull(true)}
-                  style={{ border:"1.5px solid #EEE", borderRadius:10, padding:"10px 12px", fontSize:14, lineHeight:1.6, background:"#FDFDFB", cursor:"pointer", whiteSpace:"pre-wrap", wordBreak:"break-word",
-                           color: editProj.description ? "#333" : "#AAA", display:"-webkit-box", WebkitLineClamp:4, WebkitBoxOrient:"vertical", overflow:"hidden" }}>
-                  {editProj.description || "לחץ להוספת תיאור — לדוגמה: 200 מטר גבס · שלד בטון 150 מ״ר · פרגולה 40 מ״ר"}
-                </div>
-              </div>
+              </>)}
 
-              {descFull && (
-                <div style={{ position:"fixed", inset:0, zIndex:9999, background:"#F5F5F0", display:"flex", flexDirection:"column", direction:"rtl" }}>
-                  <div style={{ display:"flex", alignItems:"center", gap:10, padding:"12px 16px", paddingTop:"calc(12px + env(safe-area-inset-top))", background:"#1A1A2E", flexShrink:0 }}>
-                    <div style={{ flex:1, minWidth:0 }}>
-                      <p style={{ margin:0, color:"#E8C547", fontWeight:800, fontSize:16 }}>📋 תיאור הפרויקט</p>
-                      <p style={{ margin:0, color:"#AAA", fontSize:12, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{detailProject.name} · נשמר אוטומטית</p>
-                    </div>
-                    <button onClick={()=>setDescFull(false)} style={{ background:"#E8C547", color:"#1A1A2E", border:"none", borderRadius:9, padding:"8px 16px", fontSize:14, fontWeight:800, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>✓ סגור</button>
-                  </div>
-                  <div style={{ flex:1, padding:14, display:"flex", minHeight:0 }}>
-                    <textarea autoFocus value={editProj.description||""} placeholder="לדוגמה: 200 מטר גבס · שלד בטון 150 מ״ר · פרגולה 40 מ״ר"
-                      onChange={e=>{ setEditProj(p=>({...p, description: e.target.value})); updateProjFieldDebounced(detailProject, { description: e.target.value }); }}
-                      style={{ flex:1, width:"100%", border:"1.5px solid #DDD", borderRadius:12, padding:"14px 16px", fontSize:16, lineHeight:1.8, fontFamily:"Heebo,sans-serif", outline:"none", background:"#fff", boxSizing:"border-box", resize:"none" }}/>
-                  </div>
-                </div>
-              )}
-
-              {/* SITE ADDRESS + WAZE */}
-              <div style={{ background:"#fff", borderRadius:14, padding:"16px 20px", marginBottom:14, boxShadow:"0 2px 8px rgba(0,0,0,0.07)" }}>
-                <h3 style={{ margin:"0 0 4px", fontSize:15, fontWeight:700 }}>📍 מיקום האתר</h3>
-                <p style={{ margin:"0 0 10px", fontSize:12, color:"#888" }}>העובדים יקבלו כפתור "נווט עם Waze" לאתר הזה. אפשר לכתוב כתובת, להדביק קישור מ-Waze/גוגל מפות, או לקבוע מיקום כשאתה באתר.</p>
-                <input value={editProj.siteAddress||""} placeholder="לדוגמה: הרצל 12, רמת גן"
-                  onChange={e=>{ setEditProj(p=>({...p, siteAddress: e.target.value})); updateProjFieldDebounced(detailProject, { siteAddress: e.target.value }); }}
-                  style={{ width:"100%", border:"1.5px solid #EEE", borderRadius:10, padding:"10px 12px", fontSize:14, fontFamily:"Heebo,sans-serif", outline:"none", background:"#FDFDFB", boxSizing:"border-box", marginBottom:10 }}/>
-                <div style={{ display:"flex", gap:8, marginBottom:8 }}>
-                  <button onClick={async ()=>{
-                    try {
-                      const loc = await getPosition();
-                      setEditProj(p=>({...p, siteLat:loc.lat, siteLng:loc.lng}));
-                      updateProjField(detailProject, { siteLat:loc.lat, siteLng:loc.lng });
-                      alert(`מיקום האתר נקבע! 📍\n(דיוק: ±${Math.round(loc.acc)} מטר)`);
-                    } catch(e) { alert("לא ניתן לקבל מיקום — יש לאשר גישה למיקום בדפדפן."); }
-                  }} style={{ flex:1, background:"#F0F0EC", color:"#1A1A2E", border:"none", borderRadius:9, padding:"10px 0", fontSize:13, fontWeight:700, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>
-                    📍 אני באתר — קבע מיקום נוכחי
-                  </button>
-                  {editProj.siteLat!=null && (
-                    <button onClick={()=>{ if(!window.confirm("למחוק את המיקום המדויק? (הניווט יעבוד לפי הכתובת, ואימות המיקום בשעון יכבה)")) return; setEditProj(p=>({...p, siteLat:null, siteLng:null})); updateProjField(detailProject, { siteLat:null, siteLng:null }); }}
-                      style={{ background:"#FCE4EC", color:"#B71C1C", border:"none", borderRadius:9, padding:"10px 12px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>מחק מיקום</button>
-                  )}
-                </div>
-                <p style={{ margin:"0 0 10px", fontSize:12, fontWeight:600, color: editProj.siteLat!=null ? "#2E7D32" : (editProj.siteAddress ? "#1565C0" : "#999") }}>
-                  {editProj.siteLat!=null ? "✓ ניווט לנקודה המדויקת שנקבעה באתר" : editProj.siteAddress ? "✓ לפי כתובת — Waze יציג תוצאות חיפוש לבחירה. לדיוק מלא: קבע מיקום באתר או הדבק קישור מ-Waze" : "טרם הוזן מיקום"}
-                </p>
-                <WazeBtn project={editProj} full/>
-              </div>
-
-              {/* LOCATION VERIFICATION (hourly clock) */}
-              <div style={{ background:"#fff", borderRadius:14, padding:"16px 20px", marginBottom:14, boxShadow:"0 2px 8px rgba(0,0,0,0.07)" }}>
-                <h3 style={{ margin:"0 0 4px", fontSize:15, fontWeight:700 }}>📍 אימות מיקום לשעון נוכחות</h3>
-                <p style={{ margin:"0 0 12px", fontSize:12, color:"#888" }}>חל רק על עובדים שעתיים בפתיחת שעון. עובדי יומית וגלובלי — ללא אימות.</p>
-                <div style={{ display:"flex", gap:6, marginBottom:12 }}>
-                  {[{v:"off",l:"בלי אימות"},{v:"flag",l:"⚠️ סימון בלבד"},{v:"block",l:"🚫 חסימה"}].map(o=>(
-                    <button key={o.v} onClick={()=>{ setEditProj(p=>({...p, locationMode:o.v})); updateProjField(detailProject, { locationMode:o.v }); }}
-                      style={{ flex:1, background:(editProj.locationMode||"off")===o.v?"#1A1A2E":"#F0F0EC", color:(editProj.locationMode||"off")===o.v?"#E8C547":"#777", border:"none", borderRadius:9, padding:"9px 0", fontSize:12, fontWeight:700, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>
-                      {o.l}
-                    </button>
-                  ))}
-                </div>
-                {(editProj.locationMode||"off")!=="off" && (
-                  <>
-                    <div style={{ display:"flex", gap:8, alignItems:"center", marginBottom:10 }}>
-                      <button onClick={async ()=>{
-                        try {
-                          const loc = await getPosition();
-                          setEditProj(p=>({...p, siteLat:loc.lat, siteLng:loc.lng}));
-                          updateProjField(detailProject, { siteLat:loc.lat, siteLng:loc.lng });
-                          alert(`מיקום האתר נקבע! 📍\n(דיוק: ±${Math.round(loc.acc)} מטר)`);
-                        } catch(e) { alert("לא ניתן לקבל מיקום — יש לאשר גישה למיקום בדפדפן."); }
-                      }} style={{ flex:1, background:"#E8C547", color:"#1A1A2E", border:"none", borderRadius:9, padding:"10px 0", fontSize:13, fontWeight:700, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>
-                        📍 קבע את המיקום הנוכחי כאתר
-                      </button>
-                    </div>
-                    <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", gap:10 }}>
-                      <span style={{ fontSize:12, color:editProj.siteLat!=null?"#2E7D32":"#E53935", fontWeight:600 }}>
-                        {editProj.siteLat!=null ? "✓ מיקום אתר מוגדר" : "✗ טרם נקבע מיקום — האימות לא פעיל"}
-                      </span>
-                      <label style={{ display:"flex", alignItems:"center", gap:6 }}>
-                        <span style={{ fontSize:12, color:"#555", whiteSpace:"nowrap" }}>רדיוס (מ')</span>
-                        <input type="number" value={editProj.siteRadius ?? 300}
-                          onChange={e=>{ setEditProj(p=>({...p, siteRadius:e.target.value})); updateProjFieldDebounced(detailProject, { siteRadius:e.target.value }); }}
-                          style={{ width:75, border:"1.5px solid #DDD", borderRadius:8, padding:"6px 9px", fontSize:13, fontFamily:"Heebo,sans-serif", outline:"none", background:"#fff" }}/>
-                      </label>
-                    </div>
-                  </>
-                )}
-              </div>
-
-              {/* CLIENT PAYMENT STAGES */}
-              <div style={{ background:"#fff", borderRadius:14, padding:"16px 20px", marginBottom:14, boxShadow:"0 2px 8px rgba(0,0,0,0.07)" }}>
-                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:13 }}>
-                  <h3 style={{ margin:0, fontSize:15, fontWeight:700 }}>💵 שלבי קבלת תשלום</h3>
-                  <button onClick={()=>{ const cp=[...(editProj.clientPayments||[]),{id:Date.now(),desc:"",amount:"",received:false}]; setEditProj(p=>({...p,clientPayments:cp})); updateProjField(detailProject,{clientPayments:cp}); }}
-                    style={{ background:"#1A1A2E", color:"#E8C547", border:"none", borderRadius:7, padding:"4px 12px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700 }}>+ שלב תשלום</button>
-                </div>
-                {(!editProj.clientPayments||editProj.clientPayments.length===0) && <p style={{ margin:0, fontSize:13, color:"#AAA" }}>אין שלבי תשלום — למשל: מקדמה, אחרי שלד, מסירה</p>}
-                {finOn && (editProj.clientPayments||[]).length>0 && <p style={{ margin:"0 0 8px", fontSize:10.5, color:"#999" }}>לחץ על העיגול כשהשלב בוצע ← ⏳ עובר ל"הכנסות ← לגבייה" ← כשהכסף נכנס מסמנים ✓ התקבל. הסכומים לפני מע״מ.</p>}
-                {(editProj.clientPayments||[]).map((cp,ci) => {
-                  const updCp = (changes, isText=false) => {
-                    const clientPayments=(editProj.clientPayments||[]).map((x,i)=>i===ci?{...x,...changes}:x);
-                    setEditProj(p=>({...p,clientPayments}));
-                    if (isText) updateProjFieldDebounced(detailProject,{clientPayments});
-                    else updateProjField(detailProject,{clientPayments});
-                  };
-                  return (
-                    <div key={cp.id} style={{ display:"flex", gap:6, alignItems:"center", marginBottom:7 }}>
-                      <button title={cp.received ? "התקבל" : cp.due ? "לגבייה" : (finOn ? "השלב בוצע — לגבייה" : "התקבל")} onClick={()=>{
-                        const amt = `₪${Number(cp.amount||0).toLocaleString("he-IL")}`;
-                        if (finOn) {
-                          if (cp.received) { if (!window.confirm(`לבטל את הסימון "התקבל"?\nהשלב יחזור ל"לגבייה".`)) return; updCp({ received:false, receivedAt:"", receivedIso:"" }); return; }
-                          if (cp.due) {
-                            if (window.confirm(`הכסף התקבל? (${amt})\n\nאישור = התקבל · ביטול = אפשרות לבטל את "לגבייה"`)) { updCp({ received:true, receivedAt:new Date().toLocaleDateString("he-IL"), receivedIso:todayStr() }); return; }
-                            if (window.confirm("לבטל את הסימון \"לגבייה\"? (השלב עוד לא בוצע)")) updCp({ due:false, dueAt:"" });
-                            return;
-                          }
-                          if (!(Number(cp.amount) > 0)) { alert("הזן סכום לשלב לפני הסימון"); return; }
-                          if (!window.confirm(`השלב "${cp.desc||"שלב"}" בוצע?\n${amt} יעבור לטאב הכנסות ← לגבייה.`)) return;
-                          updCp({ due:true, dueAt: todayStr() });
-                          return;
-                        }
-                        if (!cp.received && !window.confirm(`לסמן שקיבלת ${amt}?`)) return;
-                        updCp({received:!cp.received, receivedAt: !cp.received ? new Date().toLocaleDateString("he-IL") : "", receivedIso: !cp.received ? todayStr() : ""});
-                      }}
-                        style={{ width:24, height:24, borderRadius:"50%", border:`2px solid ${cp.received?"#22C55E":cp.due?"#F59E0B":"#CCC"}`, background:cp.received?"#22C55E":cp.due?"#FEF3C7":"#fff", cursor:"pointer", flexShrink:0, color:cp.received?"#fff":"#B45309", fontSize:12, display:"flex", alignItems:"center", justifyContent:"center" }}>{cp.received?"✓":cp.due?"⏳":""}</button>
-                      <input value={cp.desc} placeholder="מתי (למשל: אחרי שלד)" onChange={e=>updCp({desc:e.target.value}, true)}
-                        style={{ flex:2, minWidth:0, width:0, border:"1.5px solid #EEE", borderRadius:8, padding:"7px 10px", fontSize:13, fontFamily:"Heebo,sans-serif", outline:"none", background:"#fff", textDecoration:cp.received?"line-through":"none", color:cp.received?"#AAA":"#333" }}/>
-                      <input type="number" value={cp.amount} placeholder="₪ לפני מע״מ" onChange={e=>updCp({amount:e.target.value}, true)}
-                        style={{ flex:1, minWidth:0, width:0, border:"1.5px solid #EEE", borderRadius:8, padding:"7px 10px", fontSize:13, fontFamily:"Heebo,sans-serif", outline:"none", background:"#fff", textDecoration:cp.received?"line-through":"none", color:cp.received?"#AAA":"#333" }}/>
-                      <button onClick={()=>{ const clientPayments=(editProj.clientPayments||[]).filter((_,i)=>i!==ci); setEditProj(p=>({...p,clientPayments})); updateProjField(detailProject,{clientPayments}); }}
-                        style={{ background:"none", border:"none", cursor:"pointer", color:"#CCC", fontSize:14, padding:0, flexShrink:0 }}>✕</button>
-                    </div>
-                  );
-                })}
-                {(editProj.clientPayments||[]).length>0 && (() => {
-                  const cpTotal = (editProj.clientPayments||[]).reduce((s,x)=>s+Number(x.amount||0),0);
-                  const cpReceived = (editProj.clientPayments||[]).filter(x=>x.received).reduce((s,x)=>s+Number(x.amount||0),0);
-                  const cpDue = (editProj.clientPayments||[]).filter(x=>x.due && !x.received).reduce((s,x)=>s+Number(x.amount||0),0);
-                  return (
-                    <div style={{ display:"flex", justifyContent:"space-between", flexWrap:"wrap", gap:4, paddingTop:10, borderTop:"1px solid #EEE", marginTop:6, fontSize:13 }}>
-                      <span style={{ color:"#555" }}>סה"כ: <b>₪{fmtNum(cpTotal)}</b></span>
-                      <span style={{ color:"#2E7D32" }}>התקבל: <b>₪{fmtNum(cpReceived)}</b></span>
-                      {finOn && cpDue > 0 && <span style={{ color:"#B45309" }}>⏳ לגבייה: <b>₪{fmtNum(cpDue)}</b></span>}
-                      <span style={{ color:(cpTotal-cpReceived)>0?"#B71C1C":"#2E7D32" }}>נותר: <b>₪{fmtNum(cpTotal-cpReceived)}</b></span>
-                    </div>
-                  );
-                })()}
-              </div>
-
-              <div style={{ background:"#fff", borderRadius:14, padding:"16px 20px", marginBottom:14, boxShadow:"0 2px 8px rgba(0,0,0,0.07)" }}>
-                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:13 }}>
-                  <h3 style={{ margin:0, fontSize:15, fontWeight:700 }}>🪜 שלבי ביצוע</h3>
-                  <button onClick={()=>{ const phases=[...(editProj.phases||[]),{id:Date.now(),name:"",done:false,targetDate:"",notes:""}]; setEditProj(p=>({...p,phases})); updateProjField(detailProject,{phases}); }}
-                    style={{ background:"#1A1A2E", color:"#E8C547", border:"none", borderRadius:7, padding:"4px 12px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700 }}>+ הוסף שלב</button>
-                </div>
-                {(!editProj.phases||editProj.phases.length===0) && <p style={{ margin:0, fontSize:13, color:"#AAA" }}>אין שלבים עדיין</p>}
-                {(editProj.phases||[]).map((ph,idx) => {
-                  const updPhase = (changes, isText=false) => {
-                    const phases=(editProj.phases||[]).map((p,i)=>i===idx?{...p,...changes}:p);
-                    setEditProj(p=>({...p,phases}));
-                    if (isText) {
-                      updateProjFieldDebounced(detailProject,{phases});
-                    } else {
-                      updateProjField(detailProject,{phases});
-                    }
-                  };
-                  return (
-                    <div key={ph.id} style={{ marginBottom:10, background:"#F9F9F9", borderRadius:12, padding:"12px 14px", borderRight:(ph.status==="הושלם"||ph.done)?"4px solid #22C55E":ph.status==="בביצוע"?"4px solid #E8C547":"4px solid #DDD" }}>
-                      <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:8 }}>
-                        <input value={ph.name} placeholder={`שם השלב ${idx+1}`} onChange={e=>updPhase({name:e.target.value}, true)}
-                          style={{ flex:1, border:"none", background:"transparent", fontSize:14, fontFamily:"Heebo,sans-serif", outline:"none", fontWeight:700, textDecoration:ph.status==="הושלם"?"line-through":"none", color:ph.status==="הושלם"?"#AAA":"#1A1A2E" }}/>
-                        <button onClick={()=>{ const phases=(editProj.phases||[]).filter((_,i)=>i!==idx); setEditProj(p=>({...p,phases})); updateProjField(detailProject,{phases}); }}
-                          style={{ background:"none", border:"none", cursor:"pointer", color:"#CCC", fontSize:14, padding:0, flexShrink:0 }}>✕</button>
-                      </div>
-                      <div style={{ display:"flex", gap:6, marginBottom:8 }}>
-                        {["ממתין","בביצוע","הושלם"].map(st => (
-                          <button key={st} onClick={()=>updPhase({status:st, done:st==="הושלם"})}
-                            style={{
-                              background: ph.status===st ? (st==="הושלם"?"#22C55E":st==="בביצוע"?"#E8C547":"#DDD") : "#F5F5F0",
-                              color: ph.status===st ? (st==="הושלם"?"#fff":st==="בביצוע"?"#1A1A2E":"#555") : "#888",
-                              border:"none", borderRadius:7, padding:"3px 10px", fontSize:12,
-                              cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:ph.status===st?700:400
-                            }}>
-                            {st==="ממתין"?"⏳":st==="בביצוע"?"🔨":"✅"} {st}
-                          </button>
-                        ))}
-                      </div>
-                      <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:8 }}>
-                        <span style={{ fontSize:12, color:"#888", whiteSpace:"nowrap" }}>⚖️ משקל:</span>
-                        <input type="number" value={ph.weight||""} placeholder="%" onChange={e=>updPhase({weight:e.target.value}, true)}
-                          style={{ width:60, border:"1px solid #DDD", borderRadius:7, padding:"4px 8px", fontSize:13, fontFamily:"Heebo,sans-serif", background:"#fff", outline:"none" }}/>
-                        <span style={{ fontSize:12, color:"#888", whiteSpace:"nowrap" }}>🎯 יעד:</span>
-                        <input type="date" value={ph.targetDate||""} onChange={e=>updPhase({targetDate:e.target.value})}
-                          style={{ border:"1px solid #DDD", borderRadius:7, padding:"4px 8px", fontSize:13, fontFamily:"Heebo,sans-serif", background:"#fff", outline:"none" }}/>
-                        {ph.targetDate && (ph.status==="הושלם"||ph.done) && <span style={{ background:"#F0FDF4", color:"#2E7D32", borderRadius:6, padding:"2px 8px", fontSize:11, fontWeight:600 }}>✓ הושלם</span>}
-                        {ph.targetDate && ph.status!=="הושלם" && !ph.done && new Date(ph.targetDate)<new Date() && <span style={{ background:"#FCE4EC", color:"#B71C1C", borderRadius:6, padding:"2px 8px", fontSize:11, fontWeight:600 }}>⚠ באיחור</span>}
-                      </div>
-                      <textarea value={ph.notes||""} placeholder="הערות, פירוט..." onChange={e=>updPhase({notes:e.target.value}, true)} rows={2}
-                        style={{ width:"100%", border:"1px solid #E8E8E8", borderRadius:8, padding:"7px 10px", fontSize:13, fontFamily:"Heebo,sans-serif", background:"#fff", outline:"none", resize:"vertical", boxSizing:"border-box", lineHeight:1.6 }}/>
-                    </div>
-                  );
-                })}
-                {(editProj.phases||[]).length>0 && (
-                  <div style={{ marginTop:10, paddingTop:10, borderTop:"1px solid #EEE", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-                    <span style={{ fontSize:13, color:"#666" }}>
-                      {(editProj.phases||[]).filter(p=>p.status==="הושלם"||p.done).length} / {(editProj.phases||[]).length} שלבים · {projProgress(editProj)}%
-                      {(() => { const ws=(editProj.phases||[]).reduce((s,p)=>s+Number(p.weight||0),0); return ws>0 && ws!==100 ? ` · ⚠️ סה"כ משקלים ${ws}%` : ""; })()}
-                    </span>
-                    <div style={{ background:"#EEE", borderRadius:99, height:7, width:120 }}>
-                      <div style={{ height:"100%", borderRadius:99, background:"#22C55E", width:`${projProgress(editProj)}%` }}/>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* REMAINING MATERIALS - shown when project is completed */}
-              {detailProject.status==="הושלם" && (editProj.expenses||[]).filter(e=>e.fromInvoice).length>0 && (
-                <div style={{ background:"#fff", borderRadius:14, padding:"16px 20px", marginBottom:14, boxShadow:"0 2px 8px rgba(0,0,0,0.07)", border:"2px solid #E8C547" }}>
-                  <h3 style={{ margin:"0 0 4px", fontSize:15, fontWeight:700 }}>📦 מלאי שנשאר</h3>
-                  <p style={{ margin:"0 0 12px", fontSize:12, color:"#777" }}>מלא כמה נשאר מכל חומר</p>
-                  <div style={{ borderRadius:10, overflow:"hidden", border:"1px solid #EEE" }}>
-                    <div style={{ display:"grid", gridTemplateColumns:"1fr auto", background:"#F5F5F0", padding:"7px 12px", fontSize:12, fontWeight:700, color:"#555" }}>
-                      <span>חומר</span><span>נשאר</span>
-                    </div>
-                    {(editProj.expenses||[]).filter(e=>e.fromInvoice).map((ex,i) => (
-                      <div key={i} style={{ display:"grid", gridTemplateColumns:"1fr auto", padding:"8px 12px", borderTop:"1px solid #F0F0EC", alignItems:"center" }}>
-                        <span style={{ fontSize:13 }}>{ex.desc}</span>
-                        <input type="text" placeholder="כמה נשאר?"
-                          value={ex.remaining||""}
-                          onChange={e=>{
-                            const expenses=(editProj.expenses||[]).map((ex2,j)=>j===i?{...ex2,remaining:e.target.value}:ex2);
-                            setEditProj(p=>({...p,expenses}));
-                            updateProjFieldDebounced(detailProject,{expenses});
-                          }}
-                          style={{ width:90, border:"1.5px solid #DDD", borderRadius:8, padding:"5px 8px", fontSize:13, fontFamily:"Heebo,sans-serif", outline:"none", textAlign:"center" }}/>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              <div style={{ background:"#fff", borderRadius:14, padding:"13px 18px", marginBottom:14, boxShadow:"0 2px 8px rgba(0,0,0,0.07)", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-                <div>
-                  <p style={{ margin:"0 0 2px", fontSize:13, fontWeight:700 }}>👷 עובדים משויכים</p>
-                  <p style={{ margin:0, fontSize:13, color:"#555" }}>{getWkrNames(detailProject.workers)||"לא שויכו עובדים"}</p>
-                </div>
-                <button onClick={()=>{ setAssignPid(detailProject.id); setAssignM(true); }} style={{ ...btnD, fontSize:13, padding:"7px 14px" }}>שייך עובדים</button>
-              </div>
-
-              <div style={{ background:"#fff", borderRadius:14, padding:"14px 20px", marginBottom:10, boxShadow:"0 2px 8px rgba(0,0,0,0.07)" }}>
-                <SecHead title={`📋 דיווחים מהשטח (${pr.length})`} open={!!projOpen.reps} onToggle={()=>togOpen("reps")} mb={0}
-                  summary={pr.length ? (projOpen.reps ? "לחץ לסגירה" : "לחץ לרשימה") : ""}/>
-              </div>
-              {projOpen.reps && pr.length===0 && <div style={{ background:"#fff", borderRadius:12, padding:24, textAlign:"center", color:"#AAA", border:"1.5px dashed #DDD" }}><p style={{ margin:0 }}>אין דיווחים עדיין</p></div>}
-              {projOpen.reps && [...pr].reverse().map(r => (
-                <div key={r._dbid} style={{ background:"#fff", borderRadius:12, padding:"12px 16px", marginBottom:9, borderRight:"4px solid #E8C547", boxShadow:"0 1px 5px rgba(0,0,0,0.06)", display:"flex", justifyContent:"space-between", alignItems:"flex-start" }}>
-                  <div>
-                    <div style={{ display:"flex", gap:8, alignItems:"center", marginBottom:3 }}>
-                      <span style={{ fontWeight:700, fontSize:14 }}>{r.workerName}</span>
-                      <span style={{ fontSize:12, color:"#999" }}>📅 {r.date}</span>
-                    </div>
-                    {r.note && <p style={{ margin:0, fontSize:13, color:"#555" }}>{r.note}</p>}
-                  </div>
-                  <button onClick={()=>delReport(r)} style={{ background:"none", border:"none", cursor:"pointer", color:"#CCC", fontSize:14, padding:0 }}>✕</button>
-                </div>
-              ))}
             </>
           );
         })()}
