@@ -60,6 +60,15 @@ const RESET_TOKEN = (() => {
     return t || "";
   } catch(e) { return ""; }
 })();
+// ===== איפוס קוד הניהול הראשי: קישור מהמייל (/?masterReset=...) =====
+const MASTER_RESET_TOKEN = (() => {
+  try {
+    const u = new URL(window.location.href);
+    const t = u.searchParams.get("masterReset");
+    if (t) { u.searchParams.delete("masterReset"); window.history.replaceState(null, "", u.pathname + u.search + u.hash); }
+    return t || "";
+  } catch(e) { return ""; }
+})();
 // כללי קוד מנהל — זהים לבדיקה בשרת (reset-code)
 function weakCodeMsg(code, current = "", slug = "") {
   const c = String(code || "").trim();
@@ -863,6 +872,16 @@ async function getMasterCode() {
     return cfg?.settings?.masterCode || SUPER_ADMIN_CODE_DEFAULT;
   } catch(e) { return SUPER_ADMIN_CODE_DEFAULT; }
 }
+// מייל שחזור לקוד הניהול הראשי — נשמר בשורת _config (מוסתרת מהציבור)
+async function getMasterRecovery() {
+  const cfg = await orgGetBySlug("_config");
+  return String(cfg?.settings?.recoveryEmail || "");
+}
+async function setMasterRecovery(email) {
+  const cfg = await orgGetBySlug("_config");
+  if (cfg) await orgUpdate(cfg._dbid, { settings: { ...(cfg.settings||{}), recoveryEmail: email } });
+  else await orgInsert({ slug: "_config", name: "_config", active: false, settings: { recoveryEmail: email } });
+}
 async function setMasterCode(newCode) {
   let cfg = await orgGetBySlug("_config");
   if (cfg) await orgUpdate(cfg._dbid, { settings: { ...(cfg.settings||{}), masterCode: newCode } });
@@ -1608,6 +1627,7 @@ export default function App() {
   const [sumM,      setSumM]      = useState(null);        // מודל כתיבת סיכום
   const [projOpen,    setProjOpen]    = useState({});        // אזורים פתוחים בדף פרויקט (הוצאות/קבלנים/עובדים/חשבוניות)
   const [pTab, setPTab] = useState("overview");   // תת־לשונית בדף פרויקט
+  const [mr, setMr] = useState({ a:"", b:"", busy:false, done:false });   // איפוס קוד ניהול ראשי מקישור במייל
   const pTabNextRef = useRef(null);                 // לשונית שנפתחת עם הפרויקט הבא (מהכפתור +)
   const quickInvRef = useRef(null);                 // חשבוניות שנבחרו בכפתור + — מועלות כשדף הפרויקט נטען
   const [fabOpen, setFabOpen] = useState(null);     // null | "menu" | { act }
@@ -3183,6 +3203,21 @@ async function shareImg() {
         {orgError==="notfound" && <p style={{ margin:"0 0 16px", color:"#E53935", fontSize:14 }}>הכתובת לא מוכרת. בדוק את הקישור שקיבלת.</p>}
         {orgError==="suspended" && <p style={{ margin:"0 0 16px", color:"#E53935", fontSize:14 }}>המערכת מושהית זמנית.<br/>צור קשר עם הספק.</p>}
         {orgError.startsWith?.("error") && <p style={{ margin:"0 0 16px", color:"#E53935", fontSize:13 }}>{orgError}</p>}
+        {MASTER_RESET_TOKEN && !mr.done ? (
+          <div style={{ textAlign:"right", background:"#F7F7F4", borderRadius:12, padding:"12px", marginBottom:10 }}>
+            <p style={{ margin:"0 0 8px", fontWeight:800, fontSize:15 }}>🔐 בחירת קוד ניהול ראשי חדש</p>
+            <input value={mr.a} onChange={e=>setMr(m=>({ ...m, a:e.target.value }))} placeholder="קוד חדש (לפחות 6 תווים)" type="password" style={{ ...inp, textAlign:"center", marginBottom:6, fontSize:14 }}/>
+            <input value={mr.b} onChange={e=>setMr(m=>({ ...m, b:e.target.value }))} placeholder="שוב, לאימות" type="password" style={{ ...inp, textAlign:"center", marginBottom:8, fontSize:14 }}/>
+            <button disabled={mr.busy} onClick={async ()=>{
+              const c = mr.a.trim();
+              const bad = weakCodeMsg(c); if (bad) { alert(bad); return; }
+              if (c !== mr.b.trim()) { alert("שני הקודים לא זהים"); return; }
+              setMr(m=>({ ...m, busy:true }));
+              try { await resetCodeApi({ action:"master_reset", token: MASTER_RESET_TOKEN, code: c }); setMr({ a:"", b:"", busy:false, done:true }); alert("✅ קוד הניהול הראשי עודכן. אפשר להיכנס עם הקוד החדש."); }
+              catch(e) { setMr(m=>({ ...m, busy:false })); alert(e.message); }
+            }} style={{ ...btnD, width:"100%", opacity: mr.busy ? 0.6 : 1 }}>{mr.busy ? "שומר…" : "שמור קוד חדש"}</button>
+          </div>
+        ) : null}
         <input value={saCodeInput} onChange={e=>setSaCodeInput(e.target.value)} placeholder="קוד ניהול ראשי" type="password"
           style={{ ...inp, textAlign:"center", marginBottom:8, fontSize:13 }}/>
         <button onClick={async ()=>{
@@ -3192,6 +3227,11 @@ async function shareImg() {
             setSaOrgs(all.filter(o=>o.slug!=="_config")); setSuperAdmin(true); setSaCodeInput("");
           } catch(e) { alert("קוד שגוי"); }
         }} style={{ ...btnG, width:"100%", fontSize:13 }}>ניהול ראשי</button>
+        <button onClick={async ()=>{
+          if (!window.confirm("לשלוח קישור לאיפוס קוד הניהול הראשי למייל השחזור?")) return;
+          try { const r = await resetCodeApi({ action:"master_request" }); alert(`📧 נשלח קישור ל-${r.to}\nהקישור תקף ל-30 דקות. בדוק גם בספאם.`); }
+          catch(e) { alert(e.message); }
+        }} style={{ background:"none", border:"none", color:"#888", fontSize:12, marginTop:8, cursor:"pointer", fontFamily:"Heebo,sans-serif", textDecoration:"underline" }}>שכחתי קוד ניהול</button>
       </div>
     </div>
   );
@@ -3203,7 +3243,17 @@ async function shareImg() {
       {viewFile && <FileViewer file={viewFile} onClose={()=>setViewFile(null)}/>}
       <header style={{ background:"#1A1A2E", padding:"14px 20px", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
         <span style={{ color:"#E8C547", fontWeight:800, fontSize:16 }}>👑 ניהול ראשי — BuildTrack</span>
-        <div style={{ display:"flex", gap:8 }}>
+        <div style={{ display:"flex", gap:8, flexWrap:"wrap", justifyContent:"flex-end" }}>
+        <button onClick={async ()=>{
+          let cur = "";
+          try { cur = await getMasterRecovery(); } catch(e) {}
+          const v = window.prompt(`מייל לשחזור קוד הניהול הראשי.\nאם תשכח את הקוד — יישלח לכאן קישור לבחירת קוד חדש.${cur ? `\n\nכרגע: ${cur}` : "\n\nכרגע לא הוגדר."}`, cur);
+          if (v === null) return;
+          const em = v.trim();
+          if (!/^[^\s@<>"']+@[^\s@<>"']+\.[a-z]{2,}$/i.test(em)) { alert("כתובת מייל לא תקינה"); return; }
+          try { await setMasterRecovery(em); alert(`✅ מייל השחזור נשמר: ${em}`); }
+          catch(e) { alert("שגיאה: " + e.message); }
+        }} style={{ background:"rgba(232,197,71,0.2)", color:"#E8C547", border:"none", borderRadius:8, padding:"5px 12px", fontSize:13, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700 }}>📧 מייל שחזור</button>
         <button onClick={async ()=>{
           const cur = window.prompt("קוד ניהול חדש (לפחות 6 תווים):");
           if (!cur) return;
