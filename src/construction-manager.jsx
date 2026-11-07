@@ -868,22 +868,22 @@ function rememberOrg() {
 const SUPER_ADMIN_CODE_DEFAULT = "GNE-MASTER-2026"; // קוד התחלתי — ניתן לשינוי ממסך הניהול
 async function getMasterCode() {
   try {
-    const cfg = await orgGetBySlug("_config");
+    const cfg = await orgGetConfig();
     return cfg?.settings?.masterCode || SUPER_ADMIN_CODE_DEFAULT;
   } catch(e) { return SUPER_ADMIN_CODE_DEFAULT; }
 }
 // מייל שחזור לקוד הניהול הראשי — נשמר בשורת _config (מוסתרת מהציבור)
 async function getMasterRecovery() {
-  const cfg = await orgGetBySlug("_config");
+  const cfg = await orgGetConfig();
   return String(cfg?.settings?.recoveryEmail || "");
 }
 async function setMasterRecovery(email) {
-  const cfg = await orgGetBySlug("_config");
+  const cfg = await orgGetConfig();
   if (cfg) await orgUpdate(cfg._dbid, { settings: { ...(cfg.settings||{}), recoveryEmail: email } });
   else await orgInsert({ slug: "_config", name: "_config", active: false, settings: { recoveryEmail: email } });
 }
 async function setMasterCode(newCode) {
-  let cfg = await orgGetBySlug("_config");
+  let cfg = await orgGetConfig();
   if (cfg) await orgUpdate(cfg._dbid, { settings: { ...(cfg.settings||{}), masterCode: newCode } });
   else await orgInsert({ slug: "_config", name: "_config", active: false, settings: { masterCode: newCode } });
 }
@@ -1074,6 +1074,13 @@ async function orgGetBySlug(slug) {
     localStorage.setItem(key, JSON.stringify(copy));
   } catch(e) {}
   return o;
+}
+// שורת _config (קוד ניהול ראשי, מייל שחזור) — מוסתרת מהציבור, נקראת רק עם הטוקן של הניהול הראשי
+async function orgGetConfig() {
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/organizations?select=*&slug=eq._config`, { headers: hdrs() });
+  const rows = await r.json();
+  if (!r.ok) throw new Error(rows?.message || `שגיאה (${r.status})`);
+  return Array.isArray(rows) && rows.length ? { ...rows[0], _dbid: rows[0].id } : null;
 }
 async function orgGetAll() {
   const r = await fetch(`${SUPABASE_URL}/rest/v1/organizations?select=*&order=id.asc`, { headers: hdrs() });
