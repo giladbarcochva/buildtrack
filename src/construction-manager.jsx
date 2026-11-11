@@ -1580,6 +1580,61 @@ function calcWorkerPayroll(worker, reports) {
   return { totalDays: Math.round(totalDays*100)/100, totalPay, months, projectBreakdown };
 }
 
+// ===== סיור מודרך: מחשיך את המסך, מדגיש כפתור אמיתי ומסביר אותו =====
+function Tour({ steps: all, onDone }) {
+  const [steps] = useState(() => all.filter(s => !s.sel || document.querySelector(s.sel)));
+  const [i, setI] = useState(0);
+  const [rect, setRect] = useState(null);
+  const step = steps[i];
+  useEffect(() => {
+    if (!steps.length) { onDone(); return; }
+    let alive = true;
+    const measure = () => {
+      const el = step?.sel ? document.querySelector(step.sel) : null;
+      if (!el) { setRect(null); return; }
+      const r = el.getBoundingClientRect();
+      setRect({ x: r.left, y: r.top, w: r.width, h: r.height });
+    };
+    const el = step?.sel ? document.querySelector(step.sel) : null;
+    if (el) {
+      const r = el.getBoundingClientRect();
+      if (r.top < 80 || r.bottom > window.innerHeight - 120) el.scrollIntoView({ block: "center", behavior: "smooth" });
+    }
+    setRect(null);
+    const t = setTimeout(() => { if (alive) measure(); }, el ? 380 : 0);
+    window.addEventListener("resize", measure); window.addEventListener("scroll", measure, true);
+    return () => { alive = false; clearTimeout(t); window.removeEventListener("resize", measure); window.removeEventListener("scroll", measure, true); };
+  }, [i]);
+  if (!step) return null;
+  const last = i === steps.length - 1;
+  const vw = window.innerWidth, vh = window.innerHeight, P = 6;
+  const cardW = Math.min(340, vw - 24);
+  let cardStyle = { left: (vw - cardW) / 2, top: vh / 2 - 110 };
+  if (rect) {
+    const cx = Math.min(Math.max(12, rect.x + rect.w / 2 - cardW / 2), vw - cardW - 12);
+    const below = rect.y + rect.h + P + 12, spaceBelow = vh - below;
+    cardStyle = spaceBelow > 210 ? { left: cx, top: below } : { left: cx, bottom: vh - (rect.y - P - 12) };
+  }
+  const btn = { border: "none", borderRadius: 10, padding: "9px 14px", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "Heebo,sans-serif" };
+  return (
+    <div style={{ position: "fixed", inset: 0, zIndex: 2000, direction: "rtl" }} onClick={e => e.stopPropagation()}>
+      {rect
+        ? <div style={{ position: "fixed", left: rect.x - P, top: rect.y - P, width: rect.w + P * 2, height: rect.h + P * 2, borderRadius: 14, boxShadow: "0 0 0 9999px rgba(12,12,28,0.66)", border: "2.5px solid #E8C547", pointerEvents: "none", transition: "all .25s" }}/>
+        : <div style={{ position: "fixed", inset: 0, background: "rgba(12,12,28,0.66)" }}/>}
+      <div role="dialog" aria-live="polite" style={{ position: "fixed", width: cardW, boxSizing: "border-box", background: "#fff", borderRadius: 16, padding: "16px 16px 12px", boxShadow: "0 12px 40px rgba(0,0,0,0.35)", fontFamily: "Heebo,sans-serif", ...cardStyle }}>
+        <p style={{ margin: "0 0 4px", fontSize: 16.5, fontWeight: 800, color: "#1A1A2E" }}>{step.title}</p>
+        <p style={{ margin: "0 0 14px", fontSize: 14, lineHeight: 1.55, color: "#444", whiteSpace: "pre-line" }}>{step.text}</p>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <span style={{ display: "flex", gap: 4, flex: 1 }}>{steps.map((_, k) => <span key={k} style={{ width: k === i ? 16 : 6, height: 6, borderRadius: 3, background: k === i ? "#1A1A2E" : "#DDD", transition: "width .2s" }}/>)}</span>
+          {!last && <button onClick={onDone} style={{ ...btn, background: "none", color: "#888", padding: "9px 6px" }}>דלג</button>}
+          {i > 0 && <button onClick={() => setI(i - 1)} style={{ ...btn, background: "#F0F0EC", color: "#333" }}>הקודם</button>}
+          <button onClick={() => last ? onDone() : setI(i + 1)} style={{ ...btn, background: "#1A1A2E", color: "#E8C547" }}>{last ? "הבנתי ✓" : "הבא"}</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
   const [projects,  setProjects]  = useState([]);
   const [workers,   setWorkers]   = useState([]);
@@ -1693,6 +1748,7 @@ export default function App() {
   const pTabNextRef = useRef(null);                 // לשונית שנפתחת עם הפרויקט הבא (מהכפתור +)
   const quickInvRef = useRef(null);                 // חשבוניות שנבחרו בכפתור + — מועלות כשדף הפרויקט נטען
   const [fabOpen, setFabOpen] = useState(null);     // null | "menu" | { act }
+  const [tour, setTour] = useState(null);           // סיור מודרך פעיל (מפתח האזור)
   // פתיחת קטע מבחוץ (למשל מהתראה) — עוברים קודם ללשונית שבה הוא נמצא
   const SEC_TAB = { inv:"files", subs:"team", exp:"money", reps:"team", workers:"team", summaries:"overview" };
   const togOpen = (k, v) => { if (v === true && SEC_TAB[k]) setPTab(SEC_TAB[k]); setProjOpen(o => ({ ...o, [k]: v === undefined ? !o[k] : v })); };
@@ -1726,6 +1782,19 @@ export default function App() {
   const detailProject = projects.find(p => String(p.id) === String(detailId)) || null;
   // פרויקט חדש נפתח — תמיד בסקירה; ואם נפתח מבחוץ (התראה / מסך היום) — טוענים את נתוני העריכה שלו
   useEffect(() => { setPTab(pTabNextRef.current || "overview"); pTabNextRef.current = null; }, [detailId]);
+  // סיור מודרך — בכניסה הראשונה לכל אזור (נשמר במכשיר; אפשר להפעיל שוב מהעזרה)
+  const tourKeyOf = () => mgTab === "today" ? "today" : mgTab === "projects" ? (detailId ? "project" : "projects")
+    : ["reports","calendar","workers","payroll","foremen"].includes(mgTab) ? "team" : ["income","monthly","quotes"].includes(mgTab) ? "money" : null;
+  const tourSeenKey = (k) => `bt_tour_${ORG_SLUG}_${screen === "foreman" ? "f" : "m"}_${k}`;
+  useEffect(() => {
+    if ((screen !== "mgr" && screen !== "foreman") || loading || tour) return;
+    // לא מעל מסכי חובה (תנאי שימוש / אבטחת החשבון)
+    if (screen === "mgr" && (!cfgLoaded || termsAccepted === false || !cfgData._email)) return;
+    const k = tourKeyOf(); if (!k) return;
+    try { if (localStorage.getItem(tourSeenKey(k))) return; } catch(e) { return; }
+    const t = setTimeout(() => setTour(k), 900);
+    return () => clearTimeout(t);
+  }, [screen, mgTab, detailId, loading, tour, cfgLoaded, termsAccepted, cfgData._email]);
   useEffect(() => {
     if (detailProject && (!editProj || String(editProj.id) !== String(detailProject.id))) setEditProj({ ...detailProject });
   }, [detailId, detailProject]);
@@ -4023,6 +4092,35 @@ async function shareImg() {
     else { if (k === "payroll" && payrollView === "subs") setPayrollView("pending"); setMgTab(k); }
     try { window.scrollTo(0, 0); } catch(e) {}
   };
+  // ===== תוכן הסיורים המודרכים =====
+  const TOURS = {
+    today: [
+      { title:"👋 ברוך הבא ל-BuildTrack", text:"סיור קצר של דקה — נראה לך איפה כל דבר נמצא. אפשר לדלג בכל רגע, ולהפעיל שוב מהעזרה." },
+      { sel:'[data-tour="today-start"]', title:"🚀 צעדים ראשונים", text:"משימות קצרות שמכינות את המערכת לעבודה. כל לחיצה לוקחת אותך בדיוק למקום הנכון — וכשתסיים, הכרטיס ייעלם." },
+      { sel:'[data-tour="today-kpis"]', title:"📊 תמונת המצב של היום", text: finOn ? "כמה עובדים בשטח, כמה דיווחים מחכים לאישור שלך, וכמה כסף מחכה לגבייה. לחיצה על מספר מעבירה למסך המתאים." : "כמה עובדים בשטח, כמה דיווחים מחכים לאישור וכמה פרויקטים פעילים. לחיצה על מספר מעבירה למסך המתאים." },
+      { sel:'[data-tour="today-todo"]', title:"✅ דורש טיפול", text:"כל מה שמחכה לך — דיווח לאישור, תשלום לגבייה, חשבונית שלא נקראה. לחיצה על שורה לוקחת ישר לטיפול." },
+      { sel:'[data-tour="today-site"]', title:"👷 בשטח היום", text:"מי עובד היום ובאיזה אתר, ומי עוד לא דיווח — לפי השיבוץ ביומן והדיווחים מהטלפון של העובדים." },
+      { sel:'[data-tour="fab"]', title:"➕ הוספה מהירה", text:"מכל מסך: צילום חשבונית, הוצאה, תשלום מלקוח, הצעת מחיר, שיבוץ למחר וסיכום יום." },
+      { sel:'[data-tour="nav"]', title:"🧭 הניווט", text: isForeman ? "היום · פרויקטים · צוות (דיווחים, יומן, עובדים) · עוד (סיכומי יום ועזרה)." : "היום · פרויקטים · צוות (דיווחים, יומן, עובדים, שכר) · כספים (הכנסות, הוצאות, הצעות מחיר) · עוד (הגדרות, התראות, עזרה)." },
+    ],
+    projects: [
+      { sel:'[data-tour="proj-add"]', title:"🏗️ פרויקט חדש", text:"מוסיפים כאן כל עבודה: שם, לקוח, כתובת וסכום העסקה. אפשר גם להפוך הצעת מחיר שאושרה לפרויקט בלחיצה." },
+      { sel:'[data-tour="proj-list"]', title:"📋 הפרויקטים שלך", text:"לחיצה על פרויקט פותחת את כל מה שקשור אליו: כספים, שלבים, צוות וקבצים." },
+    ],
+    project: [
+      { sel:'[data-tour="proj-kpis"]', title:"💰 תמונת מצב כספית", text:"סכום העסקה (כולל תוספות), כמה נגבה, כמה הוצאת וכמה נשאר לגבות — מתעדכן לבד מכל הוצאה, חשבונית ודיווח." },
+      { sel:'[data-tour="proj-tabs"]', title:"🗂️ חמש לשוניות", text:"סקירה · כספים (הוצאות, שלבי תשלום, תוספות) · שלבים · צוות (עובדים וקבלני משנה) · קבצים (חשבוניות ותוכניות)." },
+      { sel:'[data-tour="fab"]', title:"📸 חשבונית לפרויקט", text:"מתוך הפרויקט — הכפתור הצהוב כבר יודע לאיזה פרויקט. מצלמים חשבונית וה-AI מכניס אותה להוצאות." },
+    ],
+    team: [
+      { sel:'[data-tour="subtabs"]', title:"👷 הצוות", text: isForeman ? "דיווחים מהשטח, היומן לשיבוצים, והעובדים." : "דיווחים לאישור, יומן שיבוצים, עובדים, שכר חודשי, קבלני משנה ומנהלי עבודה — הכל כאן." },
+      { sel:'[data-tour="worker-add"]', title:"➕ עובד חדש", text:"שם, קוד כניסה אישי ותעריף (יומי / שעתי / גלובלי). אחר כך שולחים לעובד את הקישור והקוד — והוא מדווח מהטלפון." },
+    ],
+    money: [
+      { sel:'[data-tour="subtabs"]', title:"📊 כספים", text:"הכנסות וגבייה מכל הפרויקטים, הוצאות קבועות של העסק שמתחלקות בין הפרויקטים, והצעות מחיר עם המחירון שלך." },
+    ],
+  };
+  const endTour = () => { try { localStorage.setItem(tourSeenKey(tour), "1"); } catch(e) {} setTour(null); };
 
   // ====== התראות (מחושבות מהנתונים — נעלמות לבד כשמטפלים בהן) ======
   const goTab = (k, extra) => { setMgTab(k); setDetailId(null); setBellOpen(false); if (extra) extra(); try { window.scrollTo(0,0); } catch(e) {} };
@@ -4282,7 +4380,7 @@ async function shareImg() {
       <main className={"bt-main" + ((["reports","workers","quotes","equipment","calendar"].includes(mgTab) || (mgTab==="projects" && !detailProject)) ? " bt-wide" : "")} style={{ maxWidth:880, margin:"0 auto", padding:"16px 14px 104px" }}>
         {/* תתי־לשוניות של האזור (צוות / כספים) או חזרה ל'עוד' */}
         {(curSection.key === "team" || curSection.key === "money") && curSection.items.length > 1 && (
-          <div className="bt-subtabs" role="tablist" ref={el => {
+          <div data-tour="subtabs" className="bt-subtabs" role="tablist" ref={el => {
             // הלשונית הפעילה תמיד גלויה (גלילה אופקית בלבד — לא מזיז את הדף)
             const a = el?.querySelector('[aria-selected="true"]'); if (!a) return;
             const r = a.getBoundingClientRect(), c = el.getBoundingClientRect();
@@ -4360,7 +4458,7 @@ async function shareImg() {
           const card = { background:"#fff", borderRadius:14, boxShadow:"0 1px 4px rgba(0,0,0,0.06)" };
           return (
             <>
-              <div style={{ background:"#1A1A2E", color:"#fff", borderRadius:18, padding:"16px 16px 14px", marginBottom:18 }}>
+              <div data-tour="today-kpis" style={{ background:"#1A1A2E", color:"#fff", borderRadius:18, padding:"16px 16px 14px", marginBottom:18 }}>
                 <p style={{ margin:0, fontSize:13, color:"#C9C9D6" }}>{dateLbl}</p>
                 <h1 style={{ margin:"2px 0 12px", fontSize:22, fontWeight:800 }}>{hello}{who ? `, ${who}` : ""}</h1>
                 <div style={{ display:"grid", gridTemplateColumns:"repeat(3, minmax(0, 1fr))", gap:8 }}>
@@ -4373,7 +4471,47 @@ async function shareImg() {
                 </div>
               </div>
 
-              <h2 style={{ margin:"0 2px 8px", fontSize:16, fontWeight:800 }}>דורש טיפול</h2>
+              {/* 🚀 צעדים ראשונים — לקבלן חדש; נעלם כשהכל בוצע או כשמסתירים */}
+              {!isForeman && !cfgData._onboardDone && (() => {
+                const link = `${location.origin}/${ORG_SLUG}`;
+                const steps = [
+                  { k:"proj", l:"הוסף פרויקט ראשון", sub:"שם, לקוח, כתובת וסכום העסקה", done: projects.length > 0, go: () => { setDetailId(null); setMgTab("projects"); setNewPM(true); } },
+                  { k:"worker", l:"הוסף עובד", sub:"שם, קוד כניסה ותעריף", done: workers.length > 0, go: () => { openSub("workers"); setNewWM(true); } },
+                  { k:"link", l:"שלח לעובדים את הקישור", sub:"הם מדווחים מהטלפון עם הקוד שלהם — השלב יסומן אחרי הדיווח הראשון", done: reports.some(r => !r._paymentRecord && !r._summary && r.workerId),
+                    go: () => window.open(`https://wa.me/?text=${encodeURIComponent(`היי, מהיום מדווחים ימי עבודה באפליקציה 📱\n${link}\nנכנסים ב"כניסת עובד" עם הקוד האישי שקיבלת ממני.\nכדאי להוסיף למסך הבית.`)}`, "_blank") },
+                  { k:"cal", l:"שבץ עובדים ביומן", sub:"מי עובד מחר ואיפה — העובד רואה את זה אצלו", done: Object.keys(calEvents || {}).length > 0, go: () => openSub("calendar") },
+                  { k:"exp", l:"צלם חשבונית או רשום הוצאה", sub:"הכפתור הצהוב + ← צלם חשבונית", done: projects.some(p => (p.expenses||[]).length || (p.invoices||[]).length), go: () => setFabOpen("menu") },
+                  { k:"mail", l:"הגדר מייל לדוחות והתראות", sub:"ובאותו מסך — מייל של רואה החשבון", done: !!cfgData._email, go: () => openSub("settings") },
+                ];
+                const n = steps.filter(x => x.done).length;
+                if (n === steps.length) return null;
+                return (
+                  <div data-tour="today-start" style={{ background:"#fff", borderRadius:14, boxShadow:"0 1px 4px rgba(0,0,0,0.06)", marginBottom:18, overflow:"hidden", border:"1.5px solid #F3D67A" }}>
+                    <div style={{ padding:"12px 14px 10px", background:"#FFF8E1" }}>
+                      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", gap:8 }}>
+                        <h2 style={{ margin:0, fontSize:16, fontWeight:800 }}>🚀 צעדים ראשונים</h2>
+                        <span style={{ fontSize:13, fontWeight:700, color:"#7A5B00" }}>{n} מתוך {steps.length}</span>
+                      </div>
+                      <div style={{ height:7, borderRadius:4, background:"#F3E3A8", marginTop:8 }}><div style={{ width:`${Math.round(n / steps.length * 100)}%`, height:7, borderRadius:4, background:"#E8C547", transition:"width .3s" }}/></div>
+                    </div>
+                    {steps.map((x, i) => (
+                      <button key={x.k} onClick={x.done ? undefined : x.go} disabled={x.done}
+                        style={{ display:"flex", alignItems:"center", gap:11, width:"100%", textAlign:"right", background:"#fff", border:"none", borderTop:"1px solid #F0F0EC", padding:"11px 14px", minHeight:56, cursor: x.done ? "default" : "pointer", fontFamily:"Heebo,sans-serif" }}>
+                        <span style={{ width:26, height:26, borderRadius:"50%", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center", fontSize:13, fontWeight:800, background: x.done ? "#2E7D32" : "#F0F0EC", color: x.done ? "#fff" : "#888" }}>{x.done ? "✓" : i + 1}</span>
+                        <span style={{ flex:1, minWidth:0 }}>
+                          <span style={{ display:"block", fontSize:14, fontWeight:700, color: x.done ? "#999" : "#1A1A2E", textDecoration: x.done ? "line-through" : "none" }}>{x.l}</span>
+                          {!x.done && <span style={{ display:"block", fontSize:12, color:"#666", marginTop:1 }}>{x.sub}</span>}
+                        </span>
+                        {!x.done && <span style={{ color:"#BBB", fontSize:16 }}>‹</span>}
+                      </button>
+                    ))}
+                    <button onClick={()=>{ if (window.confirm("להסתיר את הצעדים הראשונים?\nאפשר תמיד לחזור להסברים במסך העזרה.")) saveCfgPatch({ _onboardDone: true }); }}
+                      style={{ width:"100%", background:"#FAFAF7", border:"none", borderTop:"1px solid #F0F0EC", padding:"10px", fontSize:12.5, color:"#888", cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>הסתר</button>
+                  </div>
+                );
+              })()}
+
+              <h2 data-tour="today-todo" style={{ margin:"0 2px 8px", fontSize:16, fontWeight:800 }}>דורש טיפול</h2>
               {todo.length === 0 ? (
                 <div style={{ ...card, padding:"18px 14px", marginBottom:18, display:"flex", alignItems:"center", gap:10 }}>
                   <span style={{ fontSize:22 }}>✅</span>
@@ -4398,7 +4536,7 @@ async function shareImg() {
               )}
 
               <div style={{ display:"flex", justifyContent:"space-between", alignItems:"baseline", margin:"0 2px 8px" }}>
-                <h2 style={{ margin:0, fontSize:16, fontWeight:800 }}>בשטח היום</h2>
+                <h2 data-tour="today-site" style={{ margin:0, fontSize:16, fontWeight:800 }}>בשטח היום</h2>
                 <button onClick={()=>openSub("calendar")} style={{ background:"none", border:"none", color:"#1A1A2E", fontSize:13, fontWeight:700, cursor:"pointer", fontFamily:"Heebo,sans-serif", padding:"6px 2px" }}>ליומן ‹</button>
               </div>
               {siteList.length === 0 ? (
@@ -5152,7 +5290,7 @@ async function shareImg() {
                 <h1 style={{ margin:0, fontSize:20, fontWeight:800 }}>פרויקטים</h1>
                 <p style={{ margin:"3px 0 0", color:"#777", fontSize:13 }}>{visibleProjects.length} פרויקטים</p>
               </div>
-              {!isForeman && <button onClick={()=>setNewPM(true)} style={btnY}>+ פרויקט חדש</button>}
+              {!isForeman && <button data-tour="proj-add" onClick={()=>setNewPM(true)} style={btnY}>+ פרויקט חדש</button>}
             </div>
 
             {/* Active / Completed toggle */}
@@ -5171,7 +5309,7 @@ async function shareImg() {
                 <p style={{ margin:0 }}>{projTab==="completed"?"אין פרויקטים שהושלמו עדיין":"אין פרויקטים פעילים"}</p>
               </div>
             )}
-            <div className="bt-grid">
+            <div data-tour="proj-list" className="bt-grid">
             {visibleProjects.filter(p => projTab==="completed" ? p.status==="הושלם" : p.status!=="הושלם").map(p => {
               const sc = STATUS_COLORS[p.status]||STATUS_COLORS["ממתין"];
               const pr = projReports(p.id);
@@ -5280,7 +5418,7 @@ async function shareImg() {
                   </div>
                 </div>
                 {/* תמונת מצב כספית — מחושבת מהנתונים הקיימים */}
-                <div style={{ display:"grid", gridTemplateColumns:"repeat(2, minmax(0, 1fr))", gap:8, marginBottom:12 }}>
+                <div data-tour="proj-kpis" style={{ display:"grid", gridTemplateColumns:"repeat(2, minmax(0, 1fr))", gap:8, marginBottom:12 }}>
                   {[
                     { v: contractAmt ? `₪${fmtNum(contractAmt)}` : "—", l: coApprovedAmt ? `סכום העסקה (כולל תוספות ₪${fmtNum(coApprovedAmt)})` : "סכום העסקה", c:"#fff", tab:"money" },
                     { v: `₪${fmtNum(receivedAmt)}`, l: "נגבה", c:"#9BE29F", tab:"money" },
@@ -5311,7 +5449,7 @@ async function shareImg() {
               </div>
 
               {/* תתי־לשוניות של הפרויקט */}
-              <div role="tablist" style={{ position:"sticky", top:0, zIndex:5, background:"#F5F5F0", padding:"4px 0 10px", margin:"0 0 4px" }}>
+              <div data-tour="proj-tabs" role="tablist" style={{ position:"sticky", top:0, zIndex:5, background:"#F5F5F0", padding:"4px 0 10px", margin:"0 0 4px" }}>
                 <div style={{ background:"#E9E9E2", borderRadius:12, padding:3, display:"flex", gap:2 }}>
                   {[{k:"overview",l:"סקירה"},{k:"money",l:"כספים"},{k:"phases",l:"שלבים"},{k:"team",l:"צוות"},{k:"files",l:"קבצים"}].map(t => (
                     <button key={t.k} role="tab" aria-selected={pTab===t.k} onClick={()=>{ setPTab(t.k); }}
@@ -6411,7 +6549,7 @@ async function shareImg() {
                 <h1 style={{ margin:0, fontSize:20, fontWeight:800 }}>עובדים</h1>
                 <p style={{ margin:"3px 0 0", color:"#777", fontSize:13 }}>{workers.length} עובדים</p>
               </div>
-              {!isForeman && <button onClick={()=>setNewWM(true)} style={btnY}>+ עובד חדש</button>}
+              {!isForeman && <button data-tour="worker-add" onClick={()=>setNewWM(true)} style={btnY}>+ עובד חדש</button>}
             </div>
             {!isForeman && (() => {
               const opt = (on) => ({ flex:1, background:on?"#1A1A2E":"#F0F0EC", color:on?"#E8C547":"#666", border:"none", borderRadius:9, padding:"8px 4px", fontWeight:700, fontSize:12.5, cursor:"pointer", fontFamily:"Heebo,sans-serif" });
@@ -7301,6 +7439,10 @@ async function shareImg() {
           return (
           <>
             <h1 style={{ margin:"0 0 4px", fontSize:20, fontWeight:800 }}>❓ מדריך שימוש</h1>
+            <button onClick={()=>{ try { ["today","projects","project","team","money"].forEach(k => localStorage.removeItem(tourSeenKey(k))); } catch(e) {} setDetailId(null); setMgTab("today"); setTimeout(()=>setTour("today"), 400); }}
+              style={{ display:"flex", alignItems:"center", gap:8, width:"100%", background:"#1A1A2E", color:"#E8C547", border:"none", borderRadius:12, padding:"12px 14px", margin:"10px 0 12px", fontSize:14, fontWeight:700, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>
+              🧭 סיור מודרך במערכת <span style={{ color:"#C9C9D6", fontWeight:500, fontSize:12.5 }}>— מתחיל במסך "היום", וממשיך בכל אזור שתיכנס אליו</span>
+            </button>
             <p style={{ margin:"0 0 14px", color:"#777", fontSize:13 }}>לחצו על נושא לפתיחה, או חפשו מילה</p>
             <input value={helpSearch} onChange={e=>setHelpSearch(e.target.value)} placeholder="🔍 חיפוש — למשל: דלק, שיבוץ, קבלן..."
               style={{ width:"100%", boxSizing:"border-box", border:"1.5px solid #DDD", borderRadius:12, padding:"11px 14px", fontSize:14, fontFamily:"Heebo,sans-serif", outline:"none", background:"#fff", marginBottom:14 }}/>
@@ -7487,6 +7629,8 @@ async function shareImg() {
         )}
       </main>
 
+      {tour && TOURS[tour] && <Tour key={tour} steps={TOURS[tour]} onDone={endTour}/>}
+
       {/* ===== כפתור + הוספה מהירה ===== */}
       {(() => {
         const ctxProj = mgTab === "projects" && detailProject ? detailProject : null;
@@ -7536,7 +7680,7 @@ async function shareImg() {
         return (
           <>
             {!fabOpen && (
-              <button onClick={()=>setFabOpen("menu")} aria-label="הוספה מהירה" className="bt-fab"
+              <button data-tour="fab" onClick={()=>setFabOpen("menu")} aria-label="הוספה מהירה" className="bt-fab"
                 style={{ position:"fixed", left:16, bottom:"calc(82px + env(safe-area-inset-bottom))", zIndex:790, width:58, height:58, borderRadius:18, border:"none", background:"#E8C547", color:"#1A1A2E", boxShadow:"0 6px 18px rgba(0,0,0,0.25)", display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer" }}>
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
               </button>
@@ -7594,7 +7738,7 @@ async function shareImg() {
       })()}
 
       {/* סרגל ניווט תחתון */}
-      <nav aria-label="ניווט ראשי" className="bt-bottomnav" style={{ position:"fixed", bottom:0, left:0, right:0, zIndex:800, background:"#fff", borderTop:"1px solid #E6E6E0", boxShadow:"0 -2px 10px rgba(0,0,0,0.05)", paddingBottom:"env(safe-area-inset-bottom)" }}>
+      <nav data-tour="nav" aria-label="ניווט ראשי" className="bt-bottomnav" style={{ position:"fixed", bottom:0, left:0, right:0, zIndex:800, background:"#fff", borderTop:"1px solid #E6E6E0", boxShadow:"0 -2px 10px rgba(0,0,0,0.05)", paddingBottom:"env(safe-area-inset-bottom)" }}>
         <div style={{ maxWidth:560, margin:"0 auto", display:"grid", gridTemplateColumns:`repeat(${sections.length}, minmax(0, 1fr))`, height:66 }}>
           {sections.map(sc => {
             const on = curSection.key === sc.key;
