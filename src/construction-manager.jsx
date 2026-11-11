@@ -144,7 +144,7 @@ function contentBox(img) {
   let left = 0, right = w - 1; while (left < right && colBg(left, top, bot)) left++; while (right > left && colBg(right, top, bot)) right--;
   const cw = right - left + 1, ch = bot - top + 1;
   if (cw < w * 0.05 || ch < h * 0.05 || (cw >= w - 2 && ch >= h - 2)) return null; // אין מה לחתוך / חשוד
-  const pad = Math.round(Math.max(cw, ch) * 0.04);
+  const pad = 0; // בלי שוליים — המסגרת והאייקון מוסיפים מרווח משלהם
   const L = Math.max(0, left - pad), T = Math.max(0, top - pad), R = Math.min(w - 1, right + pad), B = Math.min(h - 1, bot + pad);
   return { x: L / s, y: T / s, w: (R - L + 1) / s, h: (B - T + 1) / s, bg: `rgb(${bg.join(",")})` };
 }
@@ -176,6 +176,21 @@ function compressImage(file, maxDim = 600, quality = 0.85, opts = {}) {
 }
 
 // יצירת אייקון ריבועי 512px מהלוגו (למסך הבית)
+// הצבע השולט בשולי תמונה (לרקע של אייקון / מסגרת הלוגו) — הצבע הנפוץ ביותר, לא ממוצע
+function edgeColor(img) {
+  const t = document.createElement("canvas"); t.width = 64; t.height = 64;
+  const tx = t.getContext("2d"); tx.fillStyle = "#ffffff"; tx.fillRect(0, 0, 64, 64); tx.drawImage(img, 0, 0, 64, 64);
+  const d = tx.getImageData(0, 0, 64, 64).data; const cnt = {};
+  // טבעת קצת פנימה מהקצה (2 פיקסלים מתוך 64) — הקצה עצמו לפעמים קו דק / מטושטש מהדחיסה
+  for (let i = 2; i < 62; i++) for (const [x, y] of [[i, 2], [i, 61], [2, i], [61, i]]) {
+    const k = (y * 64 + x) * 4, key = [d[k] >> 4, d[k + 1] >> 4, d[k + 2] >> 4].join(",");
+    const c = cnt[key] || (cnt[key] = { n: 0, r: 0, g: 0, b: 0 }); c.n++; c.r += d[k]; c.g += d[k + 1]; c.b += d[k + 2];
+  }
+  const top = Object.values(cnt).sort((p, q) => q.n - p.n)[0];
+  return top ? `rgb(${Math.round(top.r / top.n)},${Math.round(top.g / top.n)},${Math.round(top.b / top.n)})` : "#ffffff";
+}
+const logoBgOf = (dataUrl) => new Promise(res => { const i = new window.Image(); i.onload = () => { try { res(edgeColor(i)); } catch(e) { res("#ffffff"); } }; i.onerror = () => res("#ffffff"); i.src = dataUrl; });
+const isLight = (rgb) => { const m = String(rgb || "").match(/\d+/g); if (!m) return true; const [r, g, b] = m.map(Number); return (r * 299 + g * 587 + b * 114) / 1000 > 200; };
 function makeIconFile(dataUrl) {
   return new Promise((resolve, reject) => {
     const img = new window.Image();
@@ -186,18 +201,7 @@ function makeIconFile(dataUrl) {
       const ctx = canvas.getContext("2d");
       // רקע האייקון = צבע השוליים של הלוגו, כדי שלוגו כהה / צבעוני ימלא את האייקון ולא ייראה כמו מדבקה על לבן
       let bg = "#ffffff";
-      try {
-        const t = document.createElement("canvas"); t.width = 64; t.height = 64;
-        const tx = t.getContext("2d"); tx.drawImage(img, 0, 0, 64, 64);
-        // הצבע הנפוץ ביותר בשוליים (לא ממוצע — ממוצע של כתום ושחור יוצא חום)
-        const d = tx.getImageData(0, 0, 64, 64).data; const cnt = {};
-        for (let i = 0; i < 64; i++) for (const [x, y] of [[i, 0], [i, 63], [0, i], [63, i]]) {
-          const k = (y * 64 + x) * 4, key = [d[k] >> 4, d[k + 1] >> 4, d[k + 2] >> 4].join(",");
-          const c = cnt[key] || (cnt[key] = { n: 0, r: 0, g: 0, b: 0 }); c.n++; c.r += d[k]; c.g += d[k + 1]; c.b += d[k + 2];
-        }
-        const top = Object.values(cnt).sort((p, q) => q.n - p.n)[0];
-        if (top) bg = `rgb(${Math.round(top.r / top.n)},${Math.round(top.g / top.n)},${Math.round(top.b / top.n)})`;
-      } catch(e) {}
+      try { bg = edgeColor(img); } catch(e) {}
       ctx.fillStyle = bg; ctx.fillRect(0, 0, S, S);
       const wide = img.width / img.height > 1.4;
       const scale = Math.min(S * (wide ? 0.94 : 0.86) / img.width, S * 0.86 / img.height);
@@ -3260,7 +3264,7 @@ async function shareImg() {
 
   const orgLogoSrc = org?.logo || (org?.slug==="gne" ? LOGO_URL : null);
   const LogoSmall = () => orgLogoSrc
-    ? <img src={orgLogoSrc} alt={org?.name||""} style={{ height:38, borderRadius:6, objectFit:"contain", background:"#fff", padding:3 }}/>
+    ? <img src={orgLogoSrc} alt={org?.name||""} style={{ height:38, maxWidth:150, borderRadius:6, objectFit:"contain", background: org?.logo ? (org?.settings?.logoBg || "#fff") : "#fff", padding: org?.logo && !isLight(org?.settings?.logoBg || "#fff") ? 0 : 3 }}/>
     : <span style={{ color:"#E8C547", fontWeight:800, fontSize:16 }}>{org?.name||"BuildTrack"}</span>;
   const LogoBig   = () => <div style={{ textAlign:"center", marginBottom:10 }}>
     {orgLogoSrc
@@ -3501,7 +3505,8 @@ async function shareImg() {
                       const iconFile = await makeIconFile(dataUrl);
                       iconUrl = await storageUpload(iconFile, `${o.slug}/icon_${Date.now()}.png`);
                     } catch(e2) { iconErr = String(e2?.message || e2); }
-                    await orgUpdate(o._dbid, { logo: dataUrl, ...(iconUrl ? { icon: iconUrl } : {}) });
+                    const logoBg = await logoBgOf(dataUrl);
+                    await orgUpdate(o._dbid, { logo: dataUrl, settings: { ...(o.settings||{}), logoBg }, ...(iconUrl ? { icon: iconUrl } : {}) });
                     setSaOrgs((await orgGetAll()).filter(o=>o.slug!=="_config"));
                     alert("לוגו עודכן! 🎨" + (iconUrl ? "\nגם אייקון מסך הבית נוצר ✓" : "\n⚠️ יצירת אייקון מסך הבית נכשלה: " + iconErr));
                   } catch(err) { alert("שגיאה: " + err.message); }
@@ -3566,7 +3571,7 @@ async function shareImg() {
       <GFont/>
       <div style={{ textAlign:"center", marginBottom:40 }}>
         {org?.logo
-          ? <img src={org.logo} alt={org?.name} style={{ height:140, maxWidth:"86%", objectFit:"contain", borderRadius:16, background:"#fff", padding:"10px 18px", boxShadow:"0 8px 32px rgba(0,0,0,0.3)", marginBottom:20, boxSizing:"border-box" }}/>
+          ? <img src={org.logo} alt={org?.name} style={{ height:140, maxWidth:"86%", objectFit:"contain", borderRadius:16, background: org?.settings?.logoBg || "#fff", padding: isLight(org?.settings?.logoBg || "#fff") ? "10px 18px" : 0, boxShadow:"0 8px 32px rgba(0,0,0,0.3)", marginBottom:20, boxSizing:"border-box" }}/>
           : org?.slug==="gne"
             ? <img src={LOGO_URL} alt="G&E Construction" style={{ height:140, objectFit:"contain", borderRadius:16, background:"#fff", padding:"10px 18px", boxShadow:"0 8px 32px rgba(0,0,0,0.3)", marginBottom:20 }}/>
             : <h1 style={{ color:"#E8C547", fontWeight:800, fontSize:30, margin:"0 0 12px" }}>{org?.name || "BuildTrack"}</h1>}
