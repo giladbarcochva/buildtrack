@@ -121,6 +121,7 @@ const HELP_TOPICS = [
   { icon:"💼", fin:true, title:"מע\"מ — הערכה אוטומטית", body:"בטאב 🧮 הוצאות חודשיות, בכרטיס 💼 מע\"מ, המערכת מעריכה כמה מע\"מ תשלם:\nמע\"מ עסקאות (18% מההכנסות שהתקבלו בחודש) פחות מע\"מ תשומות (18% מההוצאות בפרויקטים, מהתשלומים לקבלני משנה ומהספקים והתקורות).\nלכן חשוב שכל הסכומים יירשמו לפני מע\"מ.\n• תקופת דיווח — בוחרים 'כל חודש', 'כל חודשיים' או מספר חודשים אחר. כשהתקופה ארוכה מחודש מוצג גם סה\"כ לדוח של כל התקופה.\n• מה לא נכלל: שכר, ביטוח לאומי, פנסיה ומס הכנסה (אין עליהם מע\"מ), הוצאות מסוג אוכל (עליהן לא מזדכים, ולכן הן נרשמות בסכום המלא כולל מע\"מ), וכל מה שסומן 'בלי מע\"מ' — קבלן משנה עוסק פטור (בכרטיס הקבלן), ספק או תקורה (ליד השורה), או הוצאה (ליד ההוצאה). חשבונית שנקראה בלי מע\"מ מסומנת כך אוטומטית.\n• אפשר להקליד סכום אחר ידנית; '↺ חזור לחישוב' מחזיר להערכה. סכום במינוס = החזר משוער.\n• המע\"מ לא יורד מהרווח בסיכום העסק — הוא כסף שגובים מהלקוח ומעבירים למדינה.\nזו הערכה בלבד — הדיווח הרשמי נעשה מול רואה החשבון." },
   { icon:"🔔", title:"טאב התראות ושליחה לרואה החשבון", body:"בטאב 🔔 התראות מחליטים מה נשלח, מתי ולמי. המיילים יוצאים בבוקר (6:30–7:30); יום שיוצא בשבת — נשלח ביום ראשון.\n• 📤 שליחה לרואה החשבון — מגדירים את המייל והטלפון שלו, בוחרים חודש ושולחים: דוח שכר ברוטו (PDF) ו/או את כל החשבוניות של החודש — במייל, או בווטסאפ (מהטלפון נפתח חלון השיתוף עם הקבצים). '💬 הודעת סיכום' פותח ווטסאפ עם הודעה מוכנה.\n• דוח השכר: לכל עובד ימים, שעות, תעריף ושכר ברוטו, ובנפרד תוספות אוכל ודלק, ו'שולם עד כה' — מה שכבר שולם לעובד על החודש (כולל מקדמות).\n• לכל התראה: מתג פעיל/כבוי, יום בחודש או מספר ימים, למי (דוח שכר וחשבוניות), ואיך — אוטומטי במייל או רק תזכורת בפעמון ושליחה ידנית.\n• התראות: דוח שכר, חשבוניות, להוציא משכורות (ב-7 לחודש), מע\"מ, אישור הוצאות חודשיות, כסף שלא נגבה, הצעת מחיר בלי תשובה, עובד שלא דיווח.\n• מייל התראות בוקר — הדיווחים לאישור, שעונים שנשכחו וכו'. התזכורות מצטרפות אליו.\n• למי — בכל התראה (וגם במייל הבוקר) בוחרים: אליי / רואה החשבון / שנינו / מייל אחר. ב\"מייל אחר\" אפשר לכתוב כמה כתובות מופרדות בפסיק — למשל דוח השכר למשרד ההנהלת חשבונות והחשבוניות לרואה החשבון. מי שאינו בעל העסק מקבל רק את החלק שלו, בלי כפתור כניסה למערכת." },
   { icon:"💼", title:"עובד שמשולם בחשבונית", body:"עובד קבוע שיש לו עסק ומוציא לך חשבונית: בעריכת העובד בוחרים 'אופן תשלום' ← '💼 חשבונית (עוסק)', ועוסק מורשה (+מע\"מ) או פטור. התעריף לפני מע\"מ.\nהעובד מדווח כרגיל (ימים או שעון) והעלות נכנסת לפרויקטים, אבל הוא לא מופיע בדוח השכר ברוטו לרואה החשבון ולא בעלות מעסיק.\nהתשלום שלו נמצא בצוות ← קבלני משנה ← '💼 עובדים בחשבונית': כמה מגיע לכל חודש (+מע\"מ), '✓ שולם', ו'📎 חשבונית' — החשבונית נשלחת לרואה החשבון עם שאר החשבוניות של החודש. אצל עוסק מורשה המע\"מ נכנס להערכת המע\"מ." },
+  { icon:"➕", title:"תוספות לעבודה בפרויקט", body:"בדף פרויקט ← כספים ← '➕ תוספות לעבודה' רושמים עבודה שהלקוח ביקש מעבר להסכם — סעיף אחד או כמה (גם מהמחירון: כמות × מחיר).\n• 💬 שלח לאישור — נפתחת הודעת ווטסאפ ללקוח עם הפירוט והסכום המעודכן.\n• ✅ הלקוח אישר — סכום העסקה מתעדכן (עלות הפרויקט + תוספות שאושרו), ונפתח שלב תשלום 'תוספת: …'. הוא עובר לגבייה כרגיל רק כשמסמנים שהשלב בוצע.\n• ↩ בטל אישור — מחזיר לממתין ומוחק את שלב התשלום (רק אם עוד לא סומן לגבייה או התקבל).\nההוצאות של התוספת נרשמות כמו כל הוצאה בפרויקט." },
   { icon:"⛽", title:"דלק לעובד — ליום או לפי ק״מ", body:"בעריכת עובד (טאב עובדים) מפעילים '⛽ הצג לעובד כפתור דלק' ובוחרים:\n• סכום קבוע ליום — העובד מסמן 'נסעתי באוטו' ומקבל את הסכום (פעם אחת ביום).\n• לפי קילומטר — קובעים מחיר לק״מ (למשל ₪1.2). העובד רושם בדיווח כמה ק״מ נסע (עובד עם שעון — ביציאה), והמערכת מחשבת את הסכום.\nבשכר מוצגים סכום הדלק וגם סך הק״מ של החודש, וכך גם בדוח השכר לרואה החשבון ובייצוא לאקסל." },
   { icon:"🍔", title:"תוספת אוכל לעובד", body:"בעריכת עובד (טאב עובדים) מפעילים '🍔 תוספת אוכל לכל יום עבודה' וקובעים סכום ליום. הסכום מתווסף אוטומטית לכל יום עבודה (חצי יום — חצי), כמו הדלק.\nבטאב שכר ובדוח לרואה החשבון האוכל והדלק מופיעים בנפרד מהשכר ברוטו. שינוי הסכום חל מהדיווחים הבאים — חודשים קודמים לא משתנים." },
   { icon:"🛠️", title:"תקלות נפוצות", body:"• 'קוד שגוי' למרות קוד נכון — ודאו שנכנסתם דרך הקישור הנכון של העסק שלכם.\n• נתונים לא מתעדכנים — צאו והתחברו מחדש, או משכו לרענון.\n• המסך נראה ישן אחרי עדכון — סגרו את האפליקציה לגמרי ופתחו שוב.\n• ההתחברות תקפה 12 שעות — אחריהן פשוט מתחברים שוב.\n• 'לא ניתן לאמת מיקום' — יש לאשר גישה למיקום: הגדרות הטלפון ← ספארי/כרום ← מיקום ← אפשר.\nלכל בעיה אחרת — פנו לספק המערכת." },
@@ -405,7 +406,7 @@ function backupSheets(bk) {
   const reps = D("reports");
   const t = (ms) => ms ? new Date(ms).toLocaleString("he-IL") : "";
   const sheets = {};
-  sheets["פרויקטים"] = projects.map(p => ({ "שם":p.name, "סטטוס":p.status, "התחלה":p.startDate, "סיום":p.endDate, "עלות פרויקט":p.totalCost, "עלות חומר":p.materialCost,
+  sheets["פרויקטים"] = projects.map(p => ({ "שם":p.name, "סטטוס":p.status, "התחלה":p.startDate, "סיום":p.endDate, "עלות פרויקט":p.totalCost, "תוספות שאושרו":coTotal(p)||"", "סכום עסקה כולל תוספות":contractOf(p)||"", "עלות חומר":p.materialCost,
     "ימים מתוכננים":p.plannedDays, "כתובת":p.siteAddress, "עובדים משויכים":(p.workers||[]).map(wName).filter(Boolean).join(", "), "תיאור":p.description }));
   sheets["הוצאות"] = projects.flatMap(p => (p.expenses||[]).map(e => ({ "פרויקט":p.name, "תאריך":e.date, "ספק / תיאור":e.desc, "סוג":e.category, "סכום לפני מע\"מ":Number(e.amount)||0, "מחשבונית":e.fromInvoice||"" })));
   sheets["קבלני משנה"] = projects.flatMap(p => (p.subcontractors||[]).flatMap(sc => {
@@ -842,6 +843,11 @@ const NavIcon = ({ name, size = 22 }) => (
 
 // ===== מחירון + סעיפים לפי כמות × מחיר ליחידה =====
 const Q_UNITS = ["מ\"ר", "מ\"א", "נקודה", "יחידה", "קוב", "יום", "קומפלט"];
+// ===== תוספות לעבודה (change orders) — סכום העסקה = עלות הפרויקט + תוספות שאושרו =====
+const coLineAmt = (l) => l.unit && l.unit !== "קומפלט" ? Math.round(Number(l.qty || 0) * Number(l.unitPrice || 0) * 100) / 100 : Number(l.amount || 0);
+const coAmount = (c) => (c.items || []).length ? (c.items || []).reduce((t, l) => t + coLineAmt(l), 0) : Number(c.amount || 0);
+const coTotal = (p, status = "approved") => (p?.changeOrders || []).filter(c => c.status === status).reduce((t, c) => t + Number(c.amount || 0), 0);
+const contractOf = (p) => Number(p?.totalCost || 0) + coTotal(p);
 const qNum = (n) => Number(n).toLocaleString("he-IL");
 // התווית שהלקוח רואה — עם פירוט כמות × מחיר רק אם בחרו להציג
 function qItemLabel(it, units) {
@@ -1345,7 +1351,7 @@ const finAlloc = (fin, reports, projects, ym) => {
   let method = mo.allocBy === "value" ? "value" : "days", weights = {}, wTot = 0;
   if (method === "value") {
     const act = activeProjectIds(projects, reports, ym);
-    (projects || []).forEach(p => { const v = Number(p.totalCost) || 0; if (v > 0 && act.has(String(p.id))) { weights[String(p.id)] = v; wTot += v; } });
+    (projects || []).forEach(p => { const v = contractOf(p); if (v > 0 && act.has(String(p.id))) { weights[String(p.id)] = v; wTot += v; } });
   }
   const valueFallback = method === "value" && !wTot;
   if (method === "days" || valueFallback) { weights = daysBy; wTot = allDays; }
@@ -1557,6 +1563,7 @@ export default function App() {
   const [plM, setPlM] = useState(false);          // מחירון — חלון ניהול
   const [plNew, setPlNew] = useState({ name:"", unit:"נקודה", price:"", priceNoMat:"" });
   const [plFocus, setPlFocus] = useState(null);   // סעיף שמקלידים בו כרגע — להצעות מהמחירון
+  const [coEdit, setCoEdit] = useState(null);     // תוספת לעבודה בעריכה (חלון)
   const [editQuote, setEditQuote] = useState({ clientName:"", clientPhone:"", title:"", desc:"", amount:"", items:[] });
   const [helpSearch, setHelpSearch] = useState("");
   const [sendYm, setSendYm] = useState(() => shiftYm(todayStr().slice(0,7), -1)); // החודש לשליחה לרואה החשבון
@@ -5154,7 +5161,7 @@ async function shareImg() {
                     <span style={{ background:"#F0F4FF", color:"#3B5BDB", borderRadius:8, padding:"3px 10px", fontSize:12, fontWeight:600 }}>📅 {totalDays} ימי עבודה</span>
                     {p.plannedDays && <span style={{ background:"#F5F5F0", color:"#555", borderRadius:8, padding:"3px 10px", fontSize:12 }}>מתוכנן: {p.plannedDays}</span>}
                     {p.materialCost && <span style={{ background:"#FFF8E1", color:"#B26A00", borderRadius:8, padding:"3px 10px", fontSize:12, fontWeight:600 }}>🧱 ₪{fmtNum(p.materialCost)}</span>}
-                    {p.totalCost && <span style={{ background:"#FCE4EC", color:"#B71C1C", borderRadius:8, padding:"3px 10px", fontSize:12, fontWeight:600 }}>💰 ₪{fmtNum(p.totalCost)}</span>}
+                    {contractOf(p) > 0 && <span style={{ background:"#FCE4EC", color:"#B71C1C", borderRadius:8, padding:"3px 10px", fontSize:12, fontWeight:600 }}>💰 ₪{fmtNum(contractOf(p))}</span>}
                   </div>
                   <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
                     <p style={{ margin:0, fontSize:12, color:"#666" }}>👷 {getWkrNames(p.workers)||"לא שויכו עובדים"}</p>
@@ -5190,7 +5197,8 @@ async function shareImg() {
           });
           const laborTotal = Object.values(laborByName).reduce((s, v) => s + v, 0);
           // ===== תמונת מצב לכותרת =====
-          const contractAmt = Number(editProj.totalCost || 0);
+          const contractAmt = contractOf(editProj);
+          const coApprovedAmt = coTotal(editProj), coPendingN = (editProj.changeOrders||[]).filter(c => c.status === "pending").length;
           const cps = editProj.clientPayments || [];
           const receivedAmt = cps.filter(cp => cp.received).reduce((t, cp) => t + Number(cp.amount || 0), 0);
           const costsAmt = (editProj.expenses||[]).reduce((t,e)=>t+Number(e.amount||0),0)
@@ -5198,7 +5206,9 @@ async function shareImg() {
             + (finOn ? Math.round(projFixedShare(finDoc, reports, detailProject.id, todayStr().slice(0,7), projects).total) : 0);
           const dueCp = cps.find(cp => cp.due && !cp.received);
           const nextPh = (editProj.phases||[]).find(ph => ph.status !== "הושלם" && !ph.done);
-          const nextStep = dueCp ? { text: `לגבות ₪${fmtNum(dueCp.amount)}${dueCp.desc ? ` — ${dueCp.desc}` : ""}`, btn: "לגבייה", tab: "money" }
+          const pendCo = (editProj.changeOrders||[]).find(c => c.status === "pending");
+          const nextStep = pendCo ? { text: `תוספת ממתינה לאישור הלקוח — ₪${fmtNum(pendCo.amount)}`, btn: "לתוספות", tab: "money" }
+            : dueCp ? { text: `לגבות ₪${fmtNum(dueCp.amount)}${dueCp.desc ? ` — ${dueCp.desc}` : ""}`, btn: "לגבייה", tab: "money" }
             : nextPh ? { text: `השלב הבא: ${nextPh.name || "שלב"}`, btn: "לשלבים", tab: "phases" }
             : null;
           return (
@@ -5229,7 +5239,7 @@ async function shareImg() {
                 {/* תמונת מצב כספית — מחושבת מהנתונים הקיימים */}
                 <div style={{ display:"grid", gridTemplateColumns:"repeat(2, minmax(0, 1fr))", gap:8, marginBottom:12 }}>
                   {[
-                    { v: contractAmt ? `₪${fmtNum(contractAmt)}` : "—", l: "סכום העסקה", c:"#fff", tab:"money" },
+                    { v: contractAmt ? `₪${fmtNum(contractAmt)}` : "—", l: coApprovedAmt ? `סכום העסקה (כולל תוספות ₪${fmtNum(coApprovedAmt)})` : "סכום העסקה", c:"#fff", tab:"money" },
                     { v: `₪${fmtNum(receivedAmt)}`, l: "נגבה", c:"#9BE29F", tab:"money" },
                     { v: `₪${fmtNum(costsAmt)}`, l: "הוצאות עד כה", c:"#FFB4B4", tab:"money" },
                     { v: contractAmt ? `₪${fmtNum(Math.max(0, contractAmt - receivedAmt))}` : "—", l: "נשאר לגבות", c:"#E8C547", tab:"money" },
@@ -5435,6 +5445,81 @@ async function shareImg() {
                       <span style={{ color:"#fff", fontWeight:700, fontSize:14 }}>סה"כ</span>
                       <span style={{ color:"#E8C547", fontWeight:800, fontSize:18 }}>₪{fmtNum(expTotal + subTotal + laborTotal + fixedShare)}</span>
                     </div>
+                  </div>
+                );
+              })()}
+
+              {/* CHANGE ORDERS — תוספות לעבודה */}
+              {(() => {
+                const cos = editProj.changeOrders || [];
+                const base = Number(editProj.totalCost || 0), appr = coTotal(editProj), pend = coTotal(editProj, "pending");
+                const saveCo = (changeOrders, clientPayments) => {
+                  const ch = clientPayments ? { changeOrders, clientPayments } : { changeOrders };
+                  setEditProj(p => ({ ...p, ...ch })); updateProjField(detailProject, ch);
+                };
+                const stageOf = (c) => (editProj.clientPayments || []).find(x => c.payId && String(x.id) === String(c.payId));
+                const coText = (c) => {
+                  const lines = (c.items || []).length ? c.items.map(l => `• ${l.desc || "סעיף"}${l.unit && l.unit !== "קומפלט" && Number(l.qty) > 0 ? ` — ${fmtNum(l.qty)} ${l.unit} × ₪${fmtNum(l.unitPrice)}` : ""} = ₪${fmtNum(coLineAmt(l))}`) : [];
+                  const after = contractOf(editProj) + (c.status === "approved" ? 0 : Number(c.amount || 0));
+                  return [`שלום${editProj.clientName || editProj.client ? " " + (editProj.clientName || editProj.client) : ""},`,
+                    `מצורף פירוט תוספת לעבודה ב${editProj.name}:`, `*${c.desc || "תוספת"}*`, ...lines,
+                    `סה"כ התוספת: *₪${fmtNum(c.amount)}* + מע"מ`,
+                    contractOf(editProj) > 0 ? `סכום העסקה המעודכן: ₪${fmtNum(after)} + מע"מ` : "",
+                    c.note || "", "נבקש את אישורך בהודעה חוזרת 🙏", org?.name || ""].filter(Boolean).join("\n");
+                };
+                const approve = (c) => {
+                  if (!window.confirm(`הלקוח אישר את התוספת "${c.desc || "תוספת"}" (₪${fmtNum(c.amount)})?\n\nסכום העסקה יתעדכן, ויתווסף שלב תשלום חדש — הוא יעבור לגבייה רק כשתסמן שהשלב בוצע.`)) return;
+                  const payId = Date.now();
+                  const cp = [...(editProj.clientPayments || []), { id: payId, desc: `תוספת: ${c.desc || "תוספת"}`, amount: String(c.amount), received: false, coId: c.id }];
+                  saveCo(cos.map(x => x.id === c.id ? { ...x, status: "approved", approvedAt: todayStr(), payId } : x), cp);
+                };
+                const unapprove = (c, del) => {
+                  const st = stageOf(c);
+                  if (st && (st.due || st.received)) { alert(`שלב התשלום של התוספת כבר ${st.received ? "התקבל" : "סומן לגבייה"}.\nקודם בטל את הסימון בשלבי התשלום.`); return; }
+                  if (!window.confirm(del ? `למחוק את התוספת "${c.desc || "תוספת"}"?${st ? "\nגם שלב התשלום שלה יימחק." : ""}` : `לבטל את האישור של "${c.desc || "תוספת"}"?${st ? "\nשלב התשלום שלה יימחק." : ""}`)) return;
+                  const cp = (editProj.clientPayments || []).filter(x => !st || x.id !== st.id);
+                  saveCo(del ? cos.filter(x => x.id !== c.id) : cos.map(x => x.id === c.id ? { ...x, status: "pending", approvedAt: "", payId: null } : x), cp);
+                };
+                const chip = (c) => c.status === "approved" ? { t: `✅ אושר${c.approvedAt ? " " + c.approvedAt.split("-").reverse().slice(0,2).join(".") : ""}`, bg:"#E8F5E9", fg:"#1B5E20" }
+                  : c.status === "rejected" ? { t: "✖ נדחה", bg:"#F2F2EC", fg:"#666" } : { t: c.sentAt ? "⏳ נשלח — ממתין לאישור" : "⏳ ממתין לאישור", bg:"#FFF4D6", fg:"#7A4F00" };
+                const sb = { border:"none", borderRadius:8, padding:"6px 10px", fontSize:12, fontWeight:700, cursor:"pointer", fontFamily:"Heebo,sans-serif" };
+                return (
+                  <div id="bt-co-sec" style={{ scrollMarginTop:70, background:"#fff", borderRadius:14, padding:"16px 20px", marginBottom:14, boxShadow:"0 2px 8px rgba(0,0,0,0.07)" }}>
+                    <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:10 }}>
+                      <h3 style={{ margin:0, fontSize:15, fontWeight:700 }}>➕ תוספות לעבודה</h3>
+                      <button onClick={()=>setCoEdit({ id: Date.now(), desc:"", note:"", items:[{ id: Date.now()+1, desc:"", qty:"", unit:"", unitPrice:"", amount:"" }], isNew:true })}
+                        style={{ background:"#1A1A2E", color:"#E8C547", border:"none", borderRadius:7, padding:"4px 12px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700 }}>+ תוספת</button>
+                    </div>
+                    {cos.length === 0 && <p style={{ margin:0, fontSize:13, color:"#AAA" }}>עבודה שהלקוח ביקש מעבר להסכם — רושמים, שולחים לו לאישור, וכשהוא מאשר סכום העסקה מתעדכן ונפתח שלב תשלום.</p>}
+                    {cos.map(c => { const ch = chip(c); return (
+                      <div key={c.id} style={{ border:"1px solid #EEE", borderRadius:12, padding:"10px 12px", marginBottom:8, opacity: c.status === "rejected" ? 0.6 : 1 }}>
+                        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", gap:8 }}>
+                          <div style={{ minWidth:0 }}>
+                            <p style={{ margin:0, fontSize:14, fontWeight:700 }}>{c.desc || "תוספת"}</p>
+                            {(c.items||[]).length > 1 && <p style={{ margin:"2px 0 0", fontSize:12, color:"#777" }}>{c.items.map(l => l.desc).filter(Boolean).join(" · ")}</p>}
+                          </div>
+                          <b style={{ fontSize:15, whiteSpace:"nowrap" }}>₪{fmtNum(c.amount)}</b>
+                        </div>
+                        <div style={{ display:"flex", flexWrap:"wrap", gap:6, alignItems:"center", marginTop:8 }}>
+                          <span style={{ background:ch.bg, color:ch.fg, borderRadius:20, padding:"3px 10px", fontSize:12, fontWeight:700 }}>{ch.t}</span>
+                          <span style={{ flex:1 }}/>
+                          {c.status !== "approved" && <button onClick={()=>{ const t = coText(c); const ph = waPhone(editProj.clientPhone); window.open(`https://wa.me/${ph}?text=${encodeURIComponent(t)}`, "_blank"); saveCo(cos.map(x => x.id === c.id ? { ...x, sentAt: todayStr() } : x)); }} style={{ ...sb, background:"#E8F5E9", color:"#1B5E20" }}>💬 שלח לאישור</button>}
+                          {c.status !== "approved" && <button onClick={()=>approve(c)} style={{ ...sb, background:"#1A1A2E", color:"#E8C547" }}>✅ הלקוח אישר</button>}
+                          {c.status === "pending" && <button onClick={()=>{ if (window.confirm("לסמן שהלקוח דחה את התוספת?")) saveCo(cos.map(x => x.id === c.id ? { ...x, status:"rejected" } : x)); }} style={{ ...sb, background:"#F2F2EC", color:"#555" }}>✖ נדחה</button>}
+                          {c.status !== "approved" && <button onClick={()=>setCoEdit({ ...c, items: (c.items||[]).length ? c.items : [{ id: Date.now(), desc: c.desc, qty:"", unit:"", unitPrice:"", amount: String(c.amount||"") }] })} aria-label="עריכה" style={{ ...sb, background:"#F2F2EC", color:"#555" }}>✏️</button>}
+                          {c.status === "approved" && <button onClick={()=>unapprove(c, false)} style={{ ...sb, background:"#F2F2EC", color:"#555" }}>↩ בטל אישור</button>}
+                          <button onClick={()=> c.status === "approved" ? unapprove(c, true) : (window.confirm(`למחוק את "${c.desc || "תוספת"}"?`) && saveCo(cos.filter(x => x.id !== c.id)))} aria-label="מחיקה" style={{ ...sb, background:"none", color:"#BBB" }}>✕</button>
+                        </div>
+                      </div>
+                    ); })}
+                    {cos.length > 0 && (
+                      <div style={{ paddingTop:8, borderTop:"1px solid #EEE", marginTop:4, fontSize:13, display:"flex", flexWrap:"wrap", gap:"4px 14px" }}>
+                        {base > 0 && <span style={{ color:"#555" }}>עלות מקורית: <b>₪{fmtNum(base)}</b></span>}
+                        <span style={{ color:"#2E7D32" }}>תוספות שאושרו: <b>₪{fmtNum(appr)}</b></span>
+                        {pend > 0 && <span style={{ color:"#B26A00" }}>ממתין לאישור: <b>₪{fmtNum(pend)}</b></span>}
+                        {base > 0 && <span style={{ color:"#1A1A2E" }}>סכום העסקה: <b>₪{fmtNum(base + appr)}</b></span>}
+                      </div>
+                    )}
                   </div>
                 );
               })()}
@@ -7546,6 +7631,74 @@ async function shareImg() {
       )}
 
       {/* MODAL: הצעת מחיר */}
+      {coEdit && detailProject && editProj && (() => {
+        const items = coEdit.items || [];
+        const total = items.reduce((t, l) => t + coLineAmt(l), 0);
+        const updL = (i, ch) => setCoEdit(c => ({ ...c, items: c.items.map((x, j) => j === i ? { ...x, ...ch } : x) }));
+        const fi = { border:"1.5px solid #DDD", borderRadius:8, padding:"7px 8px", fontSize:13, fontFamily:"Heebo,sans-serif", outline:"none", background:"#fff", minWidth:0, boxSizing:"border-box" };
+        const save = () => {
+          const its = items.filter(l => String(l.desc||"").trim() || coLineAmt(l) > 0).map(l => ({ ...l, amount: String(coLineAmt(l)) }));
+          const desc = String(coEdit.desc||"").trim() || (its[0]?.desc || "").trim();
+          if (!desc) { alert("כתוב מה התוספת"); return; }
+          const amount = Math.round(its.reduce((t, l) => t + coLineAmt(l), 0) * 100) / 100;
+          if (!(amount > 0)) { alert("הזן סכום לתוספת"); return; }
+          const { isNew, ...rest } = coEdit;
+          const co = { ...rest, desc, items: its, amount, status: coEdit.status || "pending", date: coEdit.date || todayStr() };
+          const list = editProj.changeOrders || [];
+          const changeOrders = isNew ? [...list, co] : list.map(x => x.id === co.id ? co : x);
+          setEditProj(p => ({ ...p, changeOrders })); updateProjField(detailProject, { changeOrders });
+          setCoEdit(null);
+        };
+        return (
+          <div onClick={()=>setCoEdit(null)} style={OVL}>
+            <div onClick={e=>e.stopPropagation()} style={MOD}>
+              <h3 style={{ margin:"0 0 4px", fontWeight:800, fontSize:17 }}>➕ {coEdit.isNew ? "תוספת חדשה" : "עריכת תוספת"}</h3>
+              <p style={{ margin:"0 0 12px", fontSize:12.5, color:"#777" }}>{editProj.name} · סכומים לפני מע״מ</p>
+              <label style={{ display:"block", marginBottom:10 }}>
+                <span style={{ fontSize:13, fontWeight:600, display:"block", marginBottom:5 }}>מה התוספת?</span>
+                <input value={coEdit.desc} onChange={e=>setCoEdit(c=>({ ...c, desc:e.target.value }))} placeholder="למשל: נקודות חשמל נוספות במטבח" style={{ ...inp, fontSize:14 }}/>
+              </label>
+              <datalist id="bt-pl-names">{priceList.map(pl => <option key={pl.id} value={pl.name}/>)}</datalist>
+              {items.map((l, i) => (
+                <div key={l.id} style={{ border:"1px solid #EEE", borderRadius:10, padding:"8px", marginBottom:8, background:"#FAFAF7" }}>
+                  <div style={{ display:"flex", gap:6, marginBottom:5 }}>
+                    <input list="bt-pl-names" value={l.desc} placeholder={priceList.length ? "סעיף — מהמחירון או חופשי" : "סעיף"} onChange={e=>{ const v = e.target.value; const pl = priceList.find(x => normName(x.name) === normName(v));
+                      updL(i, pl && !l.unit ? { desc:v, unit:pl.unit, unitPrice:String(plPriceFor(pl, true)) } : { desc:v }); }} style={{ ...fi, flex:1 }}/>
+                    {items.length > 1 && <button onClick={()=>setCoEdit(c=>({ ...c, items:c.items.filter((_, j) => j !== i) }))} aria-label="הסר סעיף" style={{ background:"none", border:"none", color:"#BBB", cursor:"pointer", fontSize:14 }}>✕</button>}
+                  </div>
+                  <div style={{ display:"flex", gap:5, alignItems:"center" }}>
+                    <select value={l.unit||""} onChange={e=>updL(i, { unit:e.target.value, qty: l.qty || (e.target.value === "קומפלט" ? "1" : "") })} style={{ ...fi, flex:"0 0 92px", padding:"7px 4px" }}>
+                      <option value="">סכום כולל</option>
+                      {Q_UNITS.map(u => <option key={u} value={u}>{u==="יום" ? "יום עבודה" : u}</option>)}
+                    </select>
+                    {l.unit && l.unit !== "קומפלט" ? (<>
+                      <input type="number" inputMode="decimal" value={l.qty||""} placeholder="כמות" onChange={e=>updL(i, { qty:e.target.value })} style={{ ...fi, flex:1 }}/>
+                      <span style={{ color:"#999" }}>×</span>
+                      <input type="number" inputMode="decimal" value={l.unitPrice||""} placeholder="₪ ליחידה" onChange={e=>updL(i, { unitPrice:e.target.value })} style={{ ...fi, flex:1.2 }}/>
+                    </>) : (
+                      <input type="number" inputMode="decimal" value={l.amount||""} placeholder="₪" onChange={e=>updL(i, { amount:e.target.value })} style={{ ...fi, flex:1 }}/>
+                    )}
+                  </div>
+                  {l.unit && l.unit !== "קומפלט" && <p style={{ margin:"5px 0 0", fontSize:12, color:"#444", textAlign:"left" }}>= ₪{fmtNum(coLineAmt(l))}</p>}
+                </div>
+              ))}
+              <button onClick={()=>setCoEdit(c=>({ ...c, items:[...c.items, { id: Date.now(), desc:"", qty:"", unit:"", unitPrice:"", amount:"" }] }))} style={{ ...btnG, width:"100%", padding:"8px", fontSize:13, marginBottom:10 }}>+ סעיף</button>
+              <label style={{ display:"block", marginBottom:10 }}>
+                <span style={{ fontSize:13, fontWeight:600, display:"block", marginBottom:5 }}>הערה ללקוח (אופציונלי)</span>
+                <input value={coEdit.note||""} onChange={e=>setCoEdit(c=>({ ...c, note:e.target.value }))} placeholder="למשל: כולל חומר, לביצוע בשבוע הבא" style={{ ...inp, fontSize:14 }}/>
+              </label>
+              <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", background:"#1A1A2E", color:"#fff", borderRadius:10, padding:"10px 14px", marginBottom:12 }}>
+                <span style={{ fontSize:13 }}>סה״כ התוספת (לפני מע״מ)</span><b style={{ color:"#E8C547", fontSize:17 }}>₪{fmtNum(total)}</b>
+              </div>
+              <div style={{ display:"flex", gap:8 }}>
+                <button onClick={save} style={{ ...btnD, flex:2 }}>שמור</button>
+                <button onClick={()=>setCoEdit(null)} style={{ ...btnG, flex:1 }}>ביטול</button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
       {plM && (
         <div onClick={()=>setPlM(false)} style={OVL}>
           <div onClick={e=>e.stopPropagation()} style={MOD}>
