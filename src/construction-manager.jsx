@@ -184,8 +184,23 @@ function makeIconFile(dataUrl) {
       const canvas = document.createElement("canvas");
       canvas.width = S; canvas.height = S;
       const ctx = canvas.getContext("2d");
-      ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, S, S);
-      const scale = Math.min(S * 0.86 / img.width, S * 0.86 / img.height);
+      // רקע האייקון = צבע השוליים של הלוגו, כדי שלוגו כהה / צבעוני ימלא את האייקון ולא ייראה כמו מדבקה על לבן
+      let bg = "#ffffff";
+      try {
+        const t = document.createElement("canvas"); t.width = 64; t.height = 64;
+        const tx = t.getContext("2d"); tx.drawImage(img, 0, 0, 64, 64);
+        // הצבע הנפוץ ביותר בשוליים (לא ממוצע — ממוצע של כתום ושחור יוצא חום)
+        const d = tx.getImageData(0, 0, 64, 64).data; const cnt = {};
+        for (let i = 0; i < 64; i++) for (const [x, y] of [[i, 0], [i, 63], [0, i], [63, i]]) {
+          const k = (y * 64 + x) * 4, key = [d[k] >> 4, d[k + 1] >> 4, d[k + 2] >> 4].join(",");
+          const c = cnt[key] || (cnt[key] = { n: 0, r: 0, g: 0, b: 0 }); c.n++; c.r += d[k]; c.g += d[k + 1]; c.b += d[k + 2];
+        }
+        const top = Object.values(cnt).sort((p, q) => q.n - p.n)[0];
+        if (top) bg = `rgb(${Math.round(top.r / top.n)},${Math.round(top.g / top.n)},${Math.round(top.b / top.n)})`;
+      } catch(e) {}
+      ctx.fillStyle = bg; ctx.fillRect(0, 0, S, S);
+      const wide = img.width / img.height > 1.4;
+      const scale = Math.min(S * (wide ? 0.94 : 0.86) / img.width, S * 0.86 / img.height);
       const w = img.width * scale, h = img.height * scale;
       ctx.drawImage(img, (S - w) / 2, (S - h) / 2, w, h);
       canvas.toBlob(b => b ? resolve(new File([b], "icon.png", { type: "image/png" })) : reject(new Error("iconfail")), "image/png");
