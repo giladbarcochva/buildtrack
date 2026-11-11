@@ -128,20 +128,43 @@ const HELP_TOPICS = [
 ];
 
 // כיווץ תמונת לוגו אוטומטי — כל גודל קלט הופך לקטן
-function compressImage(file, maxDim = 600, quality = 0.85) {
+// גבולות התוכן בתמונה — חותך שוליים בצבע אחיד (פסים שחורים של צילום מסך, רקע לבן ריק סביב לוגו)
+function contentBox(img) {
+  const s = Math.min(1, 1200 / Math.max(img.width, img.height));
+  const w = Math.max(1, Math.round(img.width * s)), h = Math.max(1, Math.round(img.height * s));
+  const c = document.createElement("canvas"); c.width = w; c.height = h;
+  const x = c.getContext("2d"); x.fillStyle = "#ffffff"; x.fillRect(0, 0, w, h); x.drawImage(img, 0, 0, w, h);
+  const d = x.getImageData(0, 0, w, h).data;
+  const px = (i) => [d[i], d[i + 1], d[i + 2]];
+  const bg = px(0);
+  const same = (i) => Math.abs(d[i] - bg[0]) + Math.abs(d[i + 1] - bg[1]) + Math.abs(d[i + 2] - bg[2]) < 60;
+  const rowBg = (y) => { let n = 0; for (let xx = 0; xx < w; xx++) if (same((y * w + xx) * 4)) n++; return n >= w * 0.985; };
+  const colBg = (xx, y0, y1) => { let n = 0; for (let y = y0; y <= y1; y++) if (same((y * w + xx) * 4)) n++; return n >= (y1 - y0 + 1) * 0.985; };
+  let top = 0, bot = h - 1; while (top < bot && rowBg(top)) top++; while (bot > top && rowBg(bot)) bot--;
+  let left = 0, right = w - 1; while (left < right && colBg(left, top, bot)) left++; while (right > left && colBg(right, top, bot)) right--;
+  const cw = right - left + 1, ch = bot - top + 1;
+  if (cw < w * 0.05 || ch < h * 0.05 || (cw >= w - 2 && ch >= h - 2)) return null; // אין מה לחתוך / חשוד
+  const pad = Math.round(Math.max(cw, ch) * 0.04);
+  const L = Math.max(0, left - pad), T = Math.max(0, top - pad), R = Math.min(w - 1, right + pad), B = Math.min(h - 1, bot + pad);
+  return { x: L / s, y: T / s, w: (R - L + 1) / s, h: (B - T + 1) / s, bg: `rgb(${bg.join(",")})` };
+}
+function compressImage(file, maxDim = 600, quality = 0.85, opts = {}) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = ev => {
       const img = new window.Image();
       img.onload = () => {
-        let { width, height } = img;
+        let box = null;
+        try { if (opts.trim) box = contentBox(img); } catch(e) {}
+        const sx = box ? box.x : 0, sy = box ? box.y : 0, sw = box ? box.w : img.width, sh = box ? box.h : img.height;
+        let width = sw, height = sh;
         const scale = Math.min(1, maxDim / Math.max(width, height));
-        width = Math.round(width * scale); height = Math.round(height * scale);
+        width = Math.max(1, Math.round(width * scale)); height = Math.max(1, Math.round(height * scale));
         const canvas = document.createElement("canvas");
         canvas.width = width; canvas.height = height;
         const ctx = canvas.getContext("2d");
-        ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, width, height);
-        ctx.drawImage(img, 0, 0, width, height);
+        ctx.fillStyle = box ? box.bg : "#ffffff"; ctx.fillRect(0, 0, width, height);
+        ctx.drawImage(img, sx, sy, sw, sh, 0, 0, width, height);
         resolve(canvas.toDataURL("image/jpeg", quality));
       };
       img.onerror = () => reject(new Error("קובץ תמונה לא תקין"));
@@ -3457,7 +3480,7 @@ async function shareImg() {
                   const file = e.target.files[0]; e.target.value="";
                   if (!file) return;
                   try {
-                    const dataUrl = await compressImage(file);
+                    const dataUrl = await compressImage(file, 800, 0.88, { trim: true }); // חותך שוליים מיותרים סביב הלוגו
                     let iconUrl = null, iconErr = "";
                     try {
                       const iconFile = await makeIconFile(dataUrl);
@@ -3528,7 +3551,7 @@ async function shareImg() {
       <GFont/>
       <div style={{ textAlign:"center", marginBottom:40 }}>
         {org?.logo
-          ? <img src={org.logo} alt={org?.name} style={{ height:140, objectFit:"contain", borderRadius:16, background:"#fff", padding:"10px 18px", boxShadow:"0 8px 32px rgba(0,0,0,0.3)", marginBottom:20 }}/>
+          ? <img src={org.logo} alt={org?.name} style={{ height:140, maxWidth:"86%", objectFit:"contain", borderRadius:16, background:"#fff", padding:"10px 18px", boxShadow:"0 8px 32px rgba(0,0,0,0.3)", marginBottom:20, boxSizing:"border-box" }}/>
           : org?.slug==="gne"
             ? <img src={LOGO_URL} alt="G&E Construction" style={{ height:140, objectFit:"contain", borderRadius:16, background:"#fff", padding:"10px 18px", boxShadow:"0 8px 32px rgba(0,0,0,0.3)", marginBottom:20 }}/>
             : <h1 style={{ color:"#E8C547", fontWeight:800, fontSize:30, margin:"0 0 12px" }}>{org?.name || "BuildTrack"}</h1>}
