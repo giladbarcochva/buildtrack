@@ -1311,6 +1311,20 @@ const recReceived = (fin, ym, vatOnly) => (fin?.recurring || []).reduce((t, it) 
   const pd = recPaidOf(fin, ym)[it.id]; if (!pd || (vatOnly && it.vatMode === "none")) return t;
   return t + recBase(it, Number(pd.amount ?? it.amount) || 0);
 }, 0);
+// הכנסות קבועות שהגיע מועדן ולא סומנו כשולמו — מכל החודשים מאז תחילתן (עד 24 אחורה)
+const recOverdue = (fin, todayIso) => {
+  const cur = todayIso.slice(0, 7), d = Number(todayIso.slice(8)), out = [];
+  (fin?.recurring || []).forEach(it => {
+    let [y, m] = (it.since || cur).split("-").map(Number);
+    for (let n = 0; n < 24; n++) {
+      const ym = `${y}-${String(m).padStart(2, "0")}`;
+      if (ym > cur) break;
+      if (recActive(it, ym) && !recPaidOf(fin, ym)[it.id] && (ym < cur || d >= Number(it.day || 1))) out.push({ it, ym, late: ym < cur || d > Number(it.day || 1) });
+      m++; if (m > 12) { m = 1; y++; }
+    }
+  });
+  return out.sort((a, b) => a.ym.localeCompare(b.ym));
+};
 const vatEstimate = (fin, projects, ym, workers, reports) => {
   let income = 0, exp = 0, subs = 0, fixed = 0, wInv = 0;
   (workers || []).filter(w => isInvoiceW(w) && w.vatType !== "exempt").forEach(w => {
@@ -4488,7 +4502,7 @@ async function shareImg() {
           const siteList = Object.values(groups).filter(g => Object.keys(g.people).length);
           const allPeople = siteList.flatMap(g => Object.values(g.people));
           const onSite = allPeople.filter(x => x.status !== "wait").length;
-          const recDue = finOn && !isForeman ? (finDoc?.recurring || []).filter(it => recActive(it, tdy.slice(0,7)) && !recPaidOf(finDoc, tdy.slice(0,7))[it.id] && Number(tdy.slice(8)) > Number(it.day || 1)).reduce((t, it) => t + recBase(it, Number(it.amount)||0), 0) : 0;
+          const recDue = finOn && !isForeman ? recOverdue(finDoc, tdy).reduce((t, x) => t + recBase(x.it, Number(x.it.amount)||0), 0) : 0;
           const due = (finOn ? projects.flatMap(pr => (pr.clientPayments||[]).filter(cp => cp.due && !cp.received)).reduce((t, cp) => t + Number(cp.amount||0), 0) : 0) + recDue;
           const activeCnt = projects.filter(pr => pr.status !== "הושלם" && canSeeProject(pr.id)).length;
           const kNum = (n) => n >= 100000 ? `${Math.round(n/1000)}K` : fmtNum(n);
@@ -4743,6 +4757,22 @@ async function shareImg() {
           const rec = all.filter(x => x.cp.received).sort((a,b) => (ymOf(b.cp.receivedIso||b.cp.receivedAt)+String(b.cp.receivedIso||"")).localeCompare(ymOf(a.cp.receivedIso||a.cp.receivedAt)+String(a.cp.receivedIso||"")));
           const notYet = all.filter(x => !x.cp.due && !x.cp.received);
           const sum = (l) => l.reduce((s,x) => s + amt(x), 0);
+          // הכנסות קבועות שהגיע מועדן ולא שולמו — נכנסות ל"לגבייה"
+          const recDueL = recOverdue(finDoc, todayStr());
+          const recDueSum = recDueL.reduce((t, x) => t + recBase(x.it, Number(x.it.amount)||0), 0);
+          const recSetPaid = (it, ym, val) => saveFin(f => {
+            const months = { ...(f.months || {}) }; const mo = { ...(months[ym] || {}) }; const rp = { ...(mo.recPaid || {}) };
+            if (val) rp[it.id] = val; else delete rp[it.id];
+            mo.recPaid = rp; months[ym] = mo; return { ...f, months };
+          }, true);
+          const recRemind = (it, ym) => {
+            const a = Number(it.amount || 0), total = it.vatMode === "plus" ? Math.round(a * (1 + VAT_RATE) * 100) / 100 : a, b = cfgData._bank || {};
+            const bank = [b.bank && `בנק ${b.bank}`, b.branch && `סניף ${b.branch}`, b.account && `חשבון ${b.account}`, b.holder && `על שם ${b.holder}`].filter(Boolean).join(", ");
+            const t = [`שלום${it.contact ? " " + it.contact : ""},`, `תזכורת לתשלום ${it.name} עבור ${HE_MONTHS[Number(ym.slice(5)) - 1]} ${ym.slice(0, 4)}:`,
+              `*₪${fmtNum(total)}*${it.vatMode === "plus" ? ` (₪${fmtNum(a)} + מע״מ)` : ""}`, bank ? `להעברה: ${bank}` : "", `תודה, ${org?.name || ""}`].filter(Boolean).join("\n");
+            window.open(`https://wa.me/${waPhone(it.phone)}?text=${encodeURIComponent(t)}`, "_blank");
+            saveFin(f => { const months = { ...(f.months || {}) }; const mo = { ...(months[ym] || {}) }; mo.recRemind = { ...(mo.recRemind || {}), [it.id]: todayStr() }; months[ym] = mo; return { ...f, months }; }, true);
+          };
           const setCp = async (x, changes) => {
             const clientPayments = (x.p.clientPayments||[]).map((c, j) => j === x.i ? { ...c, ...changes } : c);
             try { await updateProjField(x.p, { clientPayments }); } catch(e) { alert("השמירה נכשלה: " + e.message); }
@@ -4821,7 +4851,7 @@ async function shareImg() {
               <p style={{ margin:"3px 0 0", color:"#777", fontSize:13 }}>שלבי התשלום מכל הפרויקטים — מה לגבות ומה התקבל</p>
             </div>
             <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:8, marginBottom:14 }}>
-              {[["⏳ לגבייה", sum(due), "#B45309", "#FFF8E1"], [`✓ התקבל ב${HE_MONTHS[Number(thisYm.slice(5))-1]}`, byMonth[thisYm]||0, "#2E7D32", "#E8F5E9"], [`📆 התקבל ב-${thisYm.slice(0,4)}`, yearTot, "#1A1A2E", "#F0F0EC"]].map(([l, v, c, bg]) => (
+              {[["⏳ לגבייה", sum(due) + recDueSum, "#B45309", "#FFF8E1"], [`✓ התקבל ב${HE_MONTHS[Number(thisYm.slice(5))-1]}`, byMonth[thisYm]||0, "#2E7D32", "#E8F5E9"], [`📆 התקבל ב-${thisYm.slice(0,4)}`, yearTot, "#1A1A2E", "#F0F0EC"]].map(([l, v, c, bg]) => (
                 <div key={l} style={{ background:bg, borderRadius:12, padding:"10px 8px", textAlign:"center" }}>
                   <div style={{ fontWeight:800, fontSize:16, color:c }}>₪{fmtNum(v)}</div>
                   <div style={{ fontSize:11, color:"#666", marginTop:2 }}>{l}</div>
@@ -4829,12 +4859,37 @@ async function shareImg() {
               ))}
             </div>
             <div style={{ display:"flex", background:"#F0F0EC", borderRadius:12, padding:3, marginBottom:14, gap:3 }}>
-              {[{k:"due",l:`⏳ לגבייה (${due.length})`},{k:"received",l:"✅ התקבלו"},{k:"recurring",l:"🔁 קבועות"},{k:"months",l:"📊 לפי חודש"}].map(t=>(
+              {[{k:"due",l:`⏳ לגבייה (${due.length + recDueL.length})`},{k:"received",l:"✅ התקבלו"},{k:"recurring",l:"🔁 קבועות"},{k:"months",l:"📊 לפי חודש"}].map(t=>(
                 <button key={t.k} onClick={()=>setIncView(t.k)} style={{ flex:1, background:incView===t.k?"#1A1A2E":"transparent", color:incView===t.k?"#E8C547":"#888", border:"none", borderRadius:10, padding:"8px 0", fontWeight:700, fontSize:13, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>{t.l}</button>
               ))}
             </div>
             {incView==="due" && (<>
-              {due.length === 0 && <div style={{ background:"#fff", borderRadius:14, padding:30, textAlign:"center", border:"1.5px dashed #DDD", color:"#AAA" }}>אין כרגע כסף לגבות 👍<br/><span style={{ fontSize:12 }}>כשמסמנים בפרויקט ששלב תשלום בוצע — הוא מופיע כאן</span></div>}
+              {recDueL.map(({ it, ym, late }) => {
+                const rm = finDoc?.months?.[ym]?.recRemind?.[it.id];
+                return (
+                  <div key={"rec_" + it.id + "_" + ym} style={{ background:"#fff", borderRadius:12, padding:"11px 14px", marginBottom:8, boxShadow:"0 1px 5px rgba(0,0,0,0.06)", borderRight:`4px solid ${late ? "#E53935" : "#E8C547"}` }}>
+                    <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+                      <div style={{ flex:1, minWidth:0 }}>
+                        <div style={{ fontWeight:700, fontSize:14 }}>{it.name}</div>
+                        <div style={{ fontSize:12, color:"#888" }}>🔁 הכנסה קבועה · {HE_MONTHS[Number(ym.slice(5)) - 1]} {ym.slice(0,4)} · {it.vatMode === "incl" ? "כולל מע״מ" : it.vatMode === "none" ? "ללא מע״מ" : "+ מע״מ"}</div>
+                      </div>
+                      <div style={{ fontWeight:800, fontSize:15, whiteSpace:"nowrap", color:"#B45309" }}>₪{fmtNum(it.amount)}</div>
+                      <button onClick={()=>{
+                        const v = window.prompt(`כמה התקבל מ${it.name} עבור ${HE_MONTHS[Number(ym.slice(5)) - 1]}?`, String(it.amount || "")); if (v === null) return;
+                        const n = Number(String(v).replace(/[^\d.]/g, "")); if (!(n > 0)) { alert("סכום לא תקין"); return; }
+                        recSetPaid(it, ym, { date: todayStr(), amount: n });
+                      }} style={{ background:"#2E7D32", color:"#fff", border:"none", borderRadius:8, padding:"7px 11px", fontSize:12.5, fontWeight:700, cursor:"pointer", fontFamily:"Heebo,sans-serif", flexShrink:0 }}>✓ התקבל</button>
+                    </div>
+                    {(waPhone(it.phone) || rm) && (
+                      <div style={{ display:"flex", gap:6, alignItems:"center", marginTop:6, flexWrap:"wrap" }}>
+                        {waPhone(it.phone) && <button onClick={()=>recRemind(it, ym)} style={{ background:"#E7F8EE", color:"#1B8A4B", border:"none", borderRadius:7, padding:"4px 9px", fontSize:11.5, fontWeight:700, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>💬 תזכורת</button>}
+                        {rm && <span style={{ fontSize:11, color:"#888" }}>📨 נשלחה תזכורת {fmtIsoShort(rm)}</span>}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+              {due.length === 0 && recDueL.length === 0 && <div style={{ background:"#fff", borderRadius:14, padding:30, textAlign:"center", border:"1.5px dashed #DDD", color:"#AAA" }}>אין כרגע כסף לגבות 👍<br/><span style={{ fontSize:12 }}>כשמסמנים בפרויקט ששלב תשלום בוצע — הוא מופיע כאן</span></div>}
               {due.map(x => row(x, (
                 <button onClick={()=>{ if (window.confirm(`התקבלו ₪${fmtNum(amt(x))} עבור "${x.cp.desc||"שלב"}" (${x.p.name})?`)) setCp(x, { received:true, receivedAt:new Date().toLocaleDateString("he-IL"), receivedIso:todayStr() }); }}
                   style={{ background:"#2E7D32", color:"#fff", border:"none", borderRadius:8, padding:"7px 11px", fontSize:12.5, fontWeight:700, cursor:"pointer", fontFamily:"Heebo,sans-serif", flexShrink:0 }}>✓ התקבל</button>
