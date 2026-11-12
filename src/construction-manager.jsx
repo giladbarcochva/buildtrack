@@ -121,6 +121,7 @@ const HELP_TOPICS = [
   { icon:"💼", fin:true, title:"מע\"מ — הערכה אוטומטית", body:"בטאב 🧮 הוצאות חודשיות, בכרטיס 💼 מע\"מ, המערכת מעריכה כמה מע\"מ תשלם:\nמע\"מ עסקאות (18% מההכנסות שהתקבלו בחודש) פחות מע\"מ תשומות (18% מההוצאות בפרויקטים, מהתשלומים לקבלני משנה ומהספקים והתקורות).\nלכן חשוב שכל הסכומים יירשמו לפני מע\"מ.\n• תקופת דיווח — בוחרים 'כל חודש', 'כל חודשיים' או מספר חודשים אחר. כשהתקופה ארוכה מחודש מוצג גם סה\"כ לדוח של כל התקופה.\n• מה לא נכלל: שכר, ביטוח לאומי, פנסיה ומס הכנסה (אין עליהם מע\"מ), הוצאות מסוג אוכל (עליהן לא מזדכים, ולכן הן נרשמות בסכום המלא כולל מע\"מ), וכל מה שסומן 'בלי מע\"מ' — קבלן משנה עוסק פטור (בכרטיס הקבלן), ספק או תקורה (ליד השורה), או הוצאה (ליד ההוצאה). חשבונית שנקראה בלי מע\"מ מסומנת כך אוטומטית.\n• אפשר להקליד סכום אחר ידנית; '↺ חזור לחישוב' מחזיר להערכה. סכום במינוס = החזר משוער.\n• המע\"מ לא יורד מהרווח בסיכום העסק — הוא כסף שגובים מהלקוח ומעבירים למדינה.\nזו הערכה בלבד — הדיווח הרשמי נעשה מול רואה החשבון." },
   { icon:"🔔", title:"טאב התראות ושליחה לרואה החשבון", body:"בטאב 🔔 התראות מחליטים מה נשלח, מתי ולמי. המיילים יוצאים בבוקר (6:30–7:30); יום שיוצא בשבת — נשלח ביום ראשון.\n• 📤 שליחה לרואה החשבון — מגדירים את המייל והטלפון שלו, בוחרים חודש ושולחים: דוח שכר ברוטו (PDF) ו/או את כל החשבוניות של החודש — במייל, או בווטסאפ (מהטלפון נפתח חלון השיתוף עם הקבצים). '💬 הודעת סיכום' פותח ווטסאפ עם הודעה מוכנה.\n• דוח השכר: לכל עובד ימים, שעות, תעריף ושכר ברוטו, ובנפרד תוספות אוכל ודלק, ו'שולם עד כה' — מה שכבר שולם לעובד על החודש (כולל מקדמות).\n• לכל התראה: מתג פעיל/כבוי, יום בחודש או מספר ימים, למי (דוח שכר וחשבוניות), ואיך — אוטומטי במייל או רק תזכורת בפעמון ושליחה ידנית.\n• התראות: דוח שכר, חשבוניות, להוציא משכורות (ב-7 לחודש), מע\"מ, אישור הוצאות חודשיות, כסף שלא נגבה, הצעת מחיר בלי תשובה, עובד שלא דיווח.\n• מייל התראות בוקר — הדיווחים לאישור, שעונים שנשכחו וכו'. התזכורות מצטרפות אליו.\n• למי — בכל התראה (וגם במייל הבוקר) בוחרים: אליי / רואה החשבון / שנינו / מייל אחר. ב\"מייל אחר\" אפשר לכתוב כמה כתובות מופרדות בפסיק — למשל דוח השכר למשרד ההנהלת חשבונות והחשבוניות לרואה החשבון. מי שאינו בעל העסק מקבל רק את החלק שלו, בלי כפתור כניסה למערכת." },
   { icon:"💼", title:"עובד שמשולם בחשבונית", body:"עובד קבוע שיש לו עסק ומוציא לך חשבונית: בעריכת העובד בוחרים 'אופן תשלום' ← '💼 חשבונית (עוסק)', ועוסק מורשה (+מע\"מ) או פטור. התעריף לפני מע\"מ.\nהעובד מדווח כרגיל (ימים או שעון) והעלות נכנסת לפרויקטים, אבל הוא לא מופיע בדוח השכר ברוטו לרואה החשבון ולא בעלות מעסיק.\nהתשלום שלו נמצא בצוות ← קבלני משנה ← '💼 עובדים בחשבונית': כמה מגיע לכל חודש (+מע\"מ), '✓ שולם', ו'📎 חשבונית' — החשבונית נשלחת לרואה החשבון עם שאר החשבוניות של החודש. אצל עוסק מורשה המע\"מ נכנס להערכת המע\"מ." },
+  { icon:"🔁", title:"הכנסות קבועות (מנויים, שכירות, חוזי שירות)", fin:true, body:"בכספים ← הכנסות ← '🔁 קבועות' רושמים הכנסה שחוזרת כל חודש: שם, סכום, האם + מע״מ / כולל / ללא, ובאיזה יום בחודש היא אמורה להגיע.\n• בכל חודש מסמנים ✓ שולם (אפשר לשנות את הסכום שהתקבל בפועל), ועוברים בין חודשים בחיצים.\n• ⚠️ לא שולם — אחרי היום שנקבע. עם טלפון: 💬 תזכורת בווטסאפ עם הסכום ופרטי הבנק.\n• מה ששולם נכנס לסיכומי ההכנסות, להערכת המע״מ, ול'לגבות' במסך היום (אם עבר המועד).\n• ✏️ ← הפסק מהחודש — מפסיק בלי למחוק את ההיסטוריה." },
   { icon:"➕", title:"תוספות לעבודה בפרויקט", body:"בדף פרויקט ← כספים ← '➕ תוספות לעבודה' רושמים עבודה שהלקוח ביקש מעבר להסכם — סעיף אחד או כמה (גם מהמחירון: כמות × מחיר).\n• 💬 שלח לאישור — נפתחת הודעת ווטסאפ ללקוח עם הפירוט והסכום המעודכן.\n• ✅ הלקוח אישר — סכום העסקה מתעדכן (עלות הפרויקט + תוספות שאושרו), ונפתח שלב תשלום 'תוספת: …'. הוא עובר לגבייה כרגיל רק כשמסמנים שהשלב בוצע.\n• ↩ בטל אישור — מחזיר לממתין ומוחק את שלב התשלום (רק אם עוד לא סומן לגבייה או התקבל).\nההוצאות של התוספת נרשמות כמו כל הוצאה בפרויקט." },
   { icon:"⛽", title:"דלק לעובד — ליום או לפי ק״מ", body:"בעריכת עובד (טאב עובדים) מפעילים '⛽ הצג לעובד כפתור דלק' ובוחרים:\n• סכום קבוע ליום — העובד מסמן 'נסעתי באוטו' ומקבל את הסכום (פעם אחת ביום).\n• לפי קילומטר — קובעים מחיר לק״מ (למשל ₪1.2). העובד רושם בדיווח כמה ק״מ נסע (עובד עם שעון — ביציאה), והמערכת מחשבת את הסכום.\nבשכר מוצגים סכום הדלק וגם סך הק״מ של החודש, וכך גם בדוח השכר לרואה החשבון ובייצוא לאקסל." },
   { icon:"🍔", title:"תוספת אוכל לעובד", body:"בעריכת עובד (טאב עובדים) מפעילים '🍔 תוספת אוכל לכל יום עבודה' וקובעים סכום ליום. הסכום מתווסף אוטומטית לכל יום עבודה (חצי יום — חצי), כמו הדלק.\nבטאב שכר ובדוח לרואה החשבון האוכל והדלק מופיעים בנפרד מהשכר ברוטו. שינוי הסכום חל מהדיווחים הבאים — חודשים קודמים לא משתנים." },
@@ -1302,6 +1303,14 @@ const vatPeriodMonths = (fin, ym) => {
 };
 // עובד שמקבל תשלום בחשבונית (עוסק) — לא בתלוש: לא בדוח השכר ברוטו, משולם כמו קבלן
 const isInvoiceW = (w) => w?.payMode === "invoice";
+// ===== הכנסות קבועות (מנויים, שכירות, חוזי שירות...) — fin.recurring + תשלומים ב-fin.months[ym].recPaid =====
+const recBase = (it, amt) => it.vatMode === "incl" ? amt / (1 + VAT_RATE) : amt;   // סכום לפני מע"מ
+const recActive = (it, ym) => (!it.since || ym >= it.since) && (!it.until || ym <= it.until);
+const recPaidOf = (fin, ym) => fin?.months?.[ym]?.recPaid || {};
+const recReceived = (fin, ym, vatOnly) => (fin?.recurring || []).reduce((t, it) => {
+  const pd = recPaidOf(fin, ym)[it.id]; if (!pd || (vatOnly && it.vatMode === "none")) return t;
+  return t + recBase(it, Number(pd.amount ?? it.amount) || 0);
+}, 0);
 const vatEstimate = (fin, projects, ym, workers, reports) => {
   let income = 0, exp = 0, subs = 0, fixed = 0, wInv = 0;
   (workers || []).filter(w => isInvoiceW(w) && w.vatType !== "exempt").forEach(w => {
@@ -1313,6 +1322,7 @@ const vatEstimate = (fin, projects, ym, workers, reports) => {
     (p.subcontractors || []).forEach(sc => { if (sc.noVat) return; (sc.payments || []).forEach(pm => { if (pm.paid && ymOf(pm.paidAt) === ym) subs += Number(pm.amount) || 0; }); });
   });
   if (fin && !(fin.startYm && ym < fin.startYm)) finLines(fin, ym).forEach(l => { if ((l.kind === "overhead" || l.kind === "supplier") && !l.noVat) fixed += l.amount; });
+  income += recReceived(fin, ym, true);
   const outV = income * VAT_RATE, inV = (exp + subs + fixed + wInv) * VAT_RATE;
   return { income, exp, subs, fixed, wInv, outV, inV, net: outV - inV };
 };
@@ -1652,7 +1662,17 @@ export default function App() {
   const [orgError, setOrgError] = useState("");    // שגיאת טעינת ארגון
   const [superAdmin, setSuperAdmin] = useState(false); // מצב סופר-אדמין
   const [saOrgs, setSaOrgs] = useState([]);        // רשימת ארגונים לסופר-אדמין
-  const [saNewOrg, setSaNewOrg] = useState({ slug:"", name:"", adminCode:"" });
+  const [saNewOrg, setSaNewOrg] = useState({ slug:"", name:"", adminCode:"", phone:"", contact:"" });
+  // טלפון ואיש קשר לכל קבלן — נשמר בשורת _config (רק הניהול הראשי רואה; שורת הקבלן עצמה גלויה לכולם)
+  const [saContacts, setSaContacts] = useState({});
+  useEffect(() => { if (superAdmin) orgGetConfig().then(c => setSaContacts(c?.settings?.contacts || {})).catch(() => {}); }, [superAdmin]);
+  const saveContact = async (orgId, patch) => {
+    const cfg = await orgGetConfig();
+    const contacts = { ...(cfg?.settings?.contacts || {}), [orgId]: { ...((cfg?.settings?.contacts || {})[orgId] || {}), ...patch } };
+    if (cfg) await orgUpdate(cfg._dbid, { settings: { ...(cfg.settings || {}), contacts } });
+    else await orgInsert({ slug: "_config", name: "_config", active: false, settings: { contacts } });
+    setSaContacts(contacts);
+  };
   const [saCodeInput, setSaCodeInput] = useState("");
   const [termsAccepted, setTermsAccepted] = useState(true); // עד שנטען — לא חוסמים
   const [quotes, setQuotes] = useState([]);
@@ -1730,7 +1750,9 @@ export default function App() {
   const [workPolicy, setWorkPolicy] = useState(null);    // הגדרות דיווח לכל העובדים (שורת _workPolicy — גלויה לעובדים)
   const [finDoc, setFinDoc] = useState(null);            // מודול כספים — הוצאות חודשיות (שורת _finance)
   const [finYm, setFinYm] = useState(todayStr().slice(0,7));
-  const [incView, setIncView] = useState("due");         // הכנסות: due | received | months
+  const [incView, setIncView] = useState("due");         // הכנסות: due | received | months | recurring
+  const [recYm, setRecYm] = useState(todayStr().slice(0,7)); // הכנסות קבועות — החודש המוצג
+  const [recForm, setRecForm] = useState(null);           // הכנסה קבועה בעריכה
   const finSaveRef = useRef(null);
   const secretsRef = useRef({});            // workerId → שורת הקודים הנעולה
   const persistWorkerRef = useRef(null);
@@ -3442,19 +3464,28 @@ async function shareImg() {
           <input value={saNewOrg.name} onChange={e=>setSaNewOrg({...saNewOrg, name:e.target.value})}
             placeholder="שם העסק (למשל: כהן בנייה)" style={{ ...inp, marginBottom:8 }}/>
           <input value={saNewOrg.adminCode} onChange={e=>setSaNewOrg({...saNewOrg, adminCode:e.target.value})}
-            placeholder="קוד מנהל ראשוני" style={{ ...inp, marginBottom:10, letterSpacing:2 }}/>
+            placeholder="קוד מנהל ראשוני" style={{ ...inp, marginBottom:8, letterSpacing:2 }}/>
+          <div style={{ display:"flex", gap:8, marginBottom:10 }}>
+            <input value={saNewOrg.contact} onChange={e=>setSaNewOrg({...saNewOrg, contact:e.target.value})} placeholder="איש קשר (אופציונלי)" style={{ ...inp, flex:1, minWidth:0 }}/>
+            <input value={saNewOrg.phone} onChange={e=>setSaNewOrg({...saNewOrg, phone:e.target.value})} placeholder="טלפון" type="tel" inputMode="tel" style={{ ...inp, flex:1, minWidth:0, direction:"ltr", textAlign:"left" }}/>
+          </div>
           <button onClick={async ()=>{
-            if (!saNewOrg.slug || !saNewOrg.name || !saNewOrg.adminCode) { alert("מלא את כל השדות"); return; }
+            if (!saNewOrg.slug || !saNewOrg.name || !saNewOrg.adminCode) { alert("מלא כתובת, שם וקוד מנהל"); return; }
+            if (saNewOrg.phone.trim() && !waPhone(saNewOrg.phone)) { alert("מספר הטלפון לא תקין"); return; }
             try {
               const created = await orgInsert({ slug: saNewOrg.slug, name: saNewOrg.name, active: true, settings: {} });
               // יצירת רשומת קוד מנהל בארגון החדש
               await fetch(`${SUPABASE_URL}/rest/v1/workers`, { method:"POST", headers:hdrs(),
                 body: JSON.stringify({ data: { _isConfig:true, _adminCode: saNewOrg.adminCode, id: Date.now() }, org_id: created.id }) });
+              if (saNewOrg.phone.trim() || saNewOrg.contact.trim()) { try { await saveContact(created.id, { phone: saNewOrg.phone.trim(), contact: saNewOrg.contact.trim() }); } catch(e) {} }
+              const newPhone = saNewOrg.phone.trim();
               setSaOrgs((await orgGetAll()).filter(o=>o.slug!=="_config"));
-              setSaNewOrg({ slug:"", name:"", adminCode:"" });
+              setSaNewOrg({ slug:"", name:"", adminCode:"", phone:"", contact:"" });
               const link = `${PUBLIC_APP_URL}/${created.slug}`;
               const text = `שלום! מצורף קישור למערכת ניהול האתרים של ${created.name}:\n${link}\n\nפתח את הקישור בטלפון ← לחץ שיתוף ← "הוספה למסך הבית" — וזהו, יש לך אפליקציה 📱`;
-              if (navigator.share) {
+              if (waPhone(newPhone)) {
+                window.open(`https://wa.me/${waPhone(newPhone)}?text=${encodeURIComponent(text)}`, "_blank");
+              } else if (navigator.share) {
                 try { await navigator.share({ title: created.name, text }); } catch(e) {}
               } else {
                 alert(`נוצר! הקישור: ${link}`);
@@ -3471,6 +3502,21 @@ async function shareImg() {
                 <p style={{ margin:0, fontWeight:700, fontSize:15 }}>{o.name}</p>
                 <p style={{ margin:0, fontSize:12, color:"#888", direction:"ltr", textAlign:"right" }}>/{o.slug}</p>
                 <p style={{ margin:"2px 0 0", fontSize:11, color:o.icon?"#2E7D32":"#AAA" }}>{o.icon ? "📱 אייקון מסך בית ✓" : (o.logo ? "📱 אין אייקון — העלה לוגו מחדש" : "")}</p>
+                {(() => { const ct = saContacts[o.id] || saContacts[o._dbid] || {}; const ph = String(ct.phone || "").trim(); return (
+                  <div style={{ display:"flex", alignItems:"center", gap:6, marginTop:5, flexWrap:"wrap" }}>
+                    {ph ? <>
+                      <span style={{ fontSize:13, color:"#333" }}>{ct.contact ? `${ct.contact} · ` : ""}<span dir="ltr">{ph}</span></span>
+                      <a href={`tel:${ph.replace(/[^\d+]/g, "")}`} aria-label="חיוג" style={{ background:"#F2F2EC", borderRadius:7, padding:"3px 8px", fontSize:12, textDecoration:"none" }}>📞</a>
+                      {waPhone(ph) && <a href={`https://wa.me/${waPhone(ph)}`} target="_blank" rel="noreferrer" aria-label="ווטסאפ" style={{ background:"#E7F8EE", borderRadius:7, padding:"3px 8px", fontSize:12, textDecoration:"none" }}>💬</a>}
+                    </> : <span style={{ fontSize:12, color:"#AAA" }}>אין טלפון</span>}
+                    <button onClick={async ()=>{
+                      const nm = window.prompt(`איש קשר ב"${o.name}":`, ct.contact || ""); if (nm === null) return;
+                      const v = window.prompt(`טלפון של "${o.name}":`, ph); if (v === null) return;
+                      if (v.trim() && !waPhone(v)) { alert("מספר הטלפון לא תקין"); return; }
+                      try { await saveContact(o.id ?? o._dbid, { phone: v.trim(), contact: nm.trim() }); } catch(e) { alert("שגיאה: " + e.message); }
+                    }} style={{ background:"none", border:"none", color:"#1A73E8", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif", padding:"2px 4px" }}>{ph ? "✏️ ערוך" : "+ הוסף טלפון"}</button>
+                  </div>
+                ); })()}
               </div>
               <span style={{ fontSize:12, fontWeight:700, color:o.active!==false?"#2E7D32":"#E53935" }}>{o.active!==false?"● פעיל":"● מושהה"}</span>
             </div>
@@ -4442,7 +4488,8 @@ async function shareImg() {
           const siteList = Object.values(groups).filter(g => Object.keys(g.people).length);
           const allPeople = siteList.flatMap(g => Object.values(g.people));
           const onSite = allPeople.filter(x => x.status !== "wait").length;
-          const due = finOn ? projects.flatMap(pr => (pr.clientPayments||[]).filter(cp => cp.due && !cp.received)).reduce((t, cp) => t + Number(cp.amount||0), 0) : 0;
+          const recDue = finOn && !isForeman ? (finDoc?.recurring || []).filter(it => recActive(it, tdy.slice(0,7)) && !recPaidOf(finDoc, tdy.slice(0,7))[it.id] && Number(tdy.slice(8)) > Number(it.day || 1)).reduce((t, it) => t + recBase(it, Number(it.amount)||0), 0) : 0;
+          const due = (finOn ? projects.flatMap(pr => (pr.clientPayments||[]).filter(cp => cp.due && !cp.received)).reduce((t, cp) => t + Number(cp.amount||0), 0) : 0) + recDue;
           const activeCnt = projects.filter(pr => pr.status !== "הושלם" && canSeeProject(pr.id)).length;
           const kNum = (n) => n >= 100000 ? `${Math.round(n/1000)}K` : fmtNum(n);
           const kpis = [
@@ -4703,6 +4750,9 @@ async function shareImg() {
           const thisYm = todayStr().slice(0,7);
           const byMonth = {};
           rec.forEach(x => { const k = ymOf(x.cp.receivedIso || x.cp.receivedAt) || "ללא תאריך"; byMonth[k] = (byMonth[k]||0) + amt(x); });
+          // + הכנסות קבועות שסומנו כשולמו (לפני מע"מ)
+          const finR = finDoc || {};
+          Object.keys(finR.months || {}).forEach(k => { const v = recReceived(finR, k); if (v) byMonth[k] = Math.round(((byMonth[k]||0) + v) * 100) / 100; });
           const monthKeys = Object.keys(byMonth).sort().reverse();
           const maxM = Math.max(1, ...Object.values(byMonth));
           const yearTot = Object.entries(byMonth).filter(([k]) => k.slice(0,4) === thisYm.slice(0,4)).reduce((s,[,v]) => s+v, 0);
@@ -4779,7 +4829,7 @@ async function shareImg() {
               ))}
             </div>
             <div style={{ display:"flex", background:"#F0F0EC", borderRadius:12, padding:3, marginBottom:14, gap:3 }}>
-              {[{k:"due",l:`⏳ לגבייה (${due.length})`},{k:"received",l:"✅ התקבלו"},{k:"months",l:"📊 לפי חודש"}].map(t=>(
+              {[{k:"due",l:`⏳ לגבייה (${due.length})`},{k:"received",l:"✅ התקבלו"},{k:"recurring",l:"🔁 קבועות"},{k:"months",l:"📊 לפי חודש"}].map(t=>(
                 <button key={t.k} onClick={()=>setIncView(t.k)} style={{ flex:1, background:incView===t.k?"#1A1A2E":"transparent", color:incView===t.k?"#E8C547":"#888", border:"none", borderRadius:10, padding:"8px 0", fontWeight:700, fontSize:13, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>{t.l}</button>
               ))}
             </div>
@@ -4791,6 +4841,140 @@ async function shareImg() {
               ), reqBtns(x)))}
               {notYet.length > 0 && <p style={{ margin:"10px 2px 0", fontSize:12, color:"#999" }}>עוד {notYet.length} שלבים (₪{fmtNum(sum(notYet))}) שעדיין לא בוצעו בפרויקטים</p>}
             </>)}
+            {incView==="recurring" && (() => {
+              const fin = finDoc || newFin();
+              const items = fin.recurring || [];
+              const ym = recYm, paid = recPaidOf(fin, ym);
+              const act = items.filter(it => recActive(it, ym));
+              const ended = items.filter(it => it.until && it.until < ym);
+              const shiftYm = (d) => { const [y, m] = ym.split("-").map(Number); const t = new Date(y, m - 1 + d, 1); return `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, "0")}`; };
+              const prevYm = shiftYm(-1);
+              const today = todayStr(), curYm = today.slice(0, 7);
+              const late = (it) => !paid[it.id] && (ym < curYm || (ym === curYm && Number(today.slice(8)) > Number(it.day || 1)));
+              const expTot = act.reduce((t, it) => t + Number(it.amount || 0), 0);
+              const gotTot = act.reduce((t, it) => t + (paid[it.id] ? Number(paid[it.id].amount ?? it.amount) || 0 : 0), 0);
+              const modeL = { plus:"+ מע״מ", incl:"כולל מע״מ", none:"ללא מע״מ" };
+              const setPaid = (it, val) => saveFin(f => {
+                const months = { ...(f.months || {}) }; const mo = { ...(months[ym] || {}) }; const rp = { ...(mo.recPaid || {}) };
+                if (val) rp[it.id] = val; else delete rp[it.id];
+                mo.recPaid = rp; months[ym] = mo; return { ...f, months };
+              }, true);
+              const saveItems = (recurring) => saveFin(f => ({ ...f, recurring }), true);
+              const remind = (it) => {
+                const a = Number(it.amount || 0);
+                const total = it.vatMode === "plus" ? Math.round(a * (1 + VAT_RATE) * 100) / 100 : a;
+                const b = cfgData._bank || {};
+                const bank = [b.bank && `בנק ${b.bank}`, b.branch && `סניף ${b.branch}`, b.account && `חשבון ${b.account}`, b.holder && `על שם ${b.holder}`].filter(Boolean).join(", ");
+                const t = [`שלום${it.contact ? " " + it.contact : ""},`, `תזכורת לתשלום ${it.name} עבור ${HE_MONTHS[Number(ym.slice(5)) - 1]} ${ym.slice(0, 4)}:`,
+                  `*₪${fmtNum(total)}*${it.vatMode === "plus" ? ` (₪${fmtNum(a)} + מע״מ)` : ""}`, bank ? `להעברה: ${bank}` : "", `תודה, ${org?.name || ""}`].filter(Boolean).join("\n");
+                window.open(`https://wa.me/${waPhone(it.phone)}?text=${encodeURIComponent(t)}`, "_blank");
+                saveFin(f => { const months = { ...(f.months || {}) }; const mo = { ...(months[ym] || {}) }; mo.recRemind = { ...(mo.recRemind || {}), [it.id]: today }; months[ym] = mo; return { ...f, months }; }, true);
+              };
+              const reminded = fin.months?.[ym]?.recRemind || {};
+              const card = { background:"#fff", borderRadius:12, padding:"11px 14px", marginBottom:8, boxShadow:"0 1px 5px rgba(0,0,0,0.06)" };
+              const sb = { border:"none", borderRadius:8, padding:"6px 10px", fontSize:12.5, fontWeight:700, cursor:"pointer", fontFamily:"Heebo,sans-serif", flexShrink:0 };
+              return (<>
+                <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", background:"#fff", borderRadius:12, padding:"6px 8px", marginBottom:10, boxShadow:"0 1px 5px rgba(0,0,0,0.06)" }}>
+                  <button onClick={()=>setRecYm(shiftYm(-1))} aria-label="חודש קודם" style={{ ...sb, background:"#F2F2EC", color:"#333", fontSize:16, width:40, height:36 }}>›</button>
+                  <b style={{ fontSize:15 }}>{HE_MONTHS[Number(ym.slice(5)) - 1]} {ym.slice(0, 4)}{ym === curYm ? " · החודש" : ""}</b>
+                  <button onClick={()=>setRecYm(shiftYm(1))} aria-label="חודש הבא" style={{ ...sb, background:"#F2F2EC", color:"#333", fontSize:16, width:40, height:36 }}>‹</button>
+                </div>
+                {act.length > 0 && (
+                  <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:8, marginBottom:12 }}>
+                    {[["צפוי", expTot, "#1A1A2E", "#F2F2EC"], ["✓ שולם", gotTot, "#2E7D32", "#E8F5E9"], ["נשאר", Math.max(0, expTot - gotTot), "#B45309", "#FFF8E1"]].map(([l, v, c, bg]) => (
+                      <div key={l} style={{ background:bg, borderRadius:12, padding:"9px 6px", textAlign:"center" }}>
+                        <div style={{ fontWeight:800, fontSize:15.5, color:c }}>₪{fmtNum(v)}</div>
+                        <div style={{ fontSize:11, color:"#666", marginTop:2 }}>{l}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {act.length === 0 && !recForm && <div style={{ background:"#fff", borderRadius:14, padding:24, textAlign:"center", border:"1.5px dashed #DDD", color:"#999", marginBottom:10, fontSize:13.5, lineHeight:1.6 }}>
+                  כאן רושמים הכנסות שחוזרות כל חודש — מנויים, שכירות, חוזה שירות או אחזקה.<br/>כל חודש מסמנים מי שילם, ושולחים תזכורת בווטסאפ למי שלא.
+                </div>}
+                {act.sort((a, b) => (paid[a.id] ? 1 : 0) - (paid[b.id] ? 1 : 0) || Number(a.day || 1) - Number(b.day || 1)).map(it => {
+                  const pd = paid[it.id], lt = late(it);
+                  return (
+                    <div key={it.id} style={{ ...card, borderRight:`4px solid ${pd ? "#2E7D32" : lt ? "#E53935" : "#E8C547"}` }}>
+                      <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+                        <div style={{ flex:1, minWidth:0 }}>
+                          <div style={{ fontWeight:700, fontSize:14.5 }}>{it.name}</div>
+                          <div style={{ fontSize:12, color:"#777" }}>{modeL[it.vatMode || "plus"]} · ב-{it.day || 1} לחודש{it.contact ? ` · ${it.contact}` : ""}</div>
+                        </div>
+                        <div style={{ fontWeight:800, fontSize:15, whiteSpace:"nowrap", color: pd ? "#2E7D32" : "#1A1A2E" }}>₪{fmtNum(pd ? (pd.amount ?? it.amount) : it.amount)}</div>
+                      </div>
+                      <div style={{ display:"flex", alignItems:"center", gap:6, marginTop:8, flexWrap:"wrap" }}>
+                        {pd ? <>
+                          <span style={{ background:"#E8F5E9", color:"#1B5E20", borderRadius:20, padding:"3px 10px", fontSize:12, fontWeight:700 }}>✓ שולם {fmtIsoShort(pd.date)}</span>
+                          <span style={{ flex:1 }}/>
+                          <button onClick={()=>{ if (window.confirm(`לבטל את הסימון "שולם" של ${it.name}?`)) setPaid(it, null); }} style={{ ...sb, background:"none", color:"#999" }}>↩ בטל</button>
+                        </> : <>
+                          <span style={{ background: lt ? "#FDECEA" : "#FFF8E1", color: lt ? "#B71C1C" : "#7A4F00", borderRadius:20, padding:"3px 10px", fontSize:12, fontWeight:700 }}>{lt ? "⚠️ לא שולם" : "⏳ ממתין"}</span>
+                          {reminded[it.id] && <span style={{ fontSize:11.5, color:"#888" }}>📨 תזכורת {fmtIsoShort(reminded[it.id])}</span>}
+                          <span style={{ flex:1 }}/>
+                          {waPhone(it.phone) && <button onClick={()=>remind(it)} style={{ ...sb, background:"#E7F8EE", color:"#1B8A4B" }}>💬 תזכורת</button>}
+                          <button onClick={()=>{
+                            const v = window.prompt(`כמה התקבל מ${it.name} עבור ${HE_MONTHS[Number(ym.slice(5)) - 1]}? (${modeL[it.vatMode || "plus"]})`, String(it.amount || "")); if (v === null) return;
+                            const n = Number(String(v).replace(/[^\d.]/g, "")); if (!(n > 0)) { alert("סכום לא תקין"); return; }
+                            setPaid(it, { date: today, amount: n });
+                          }} style={{ ...sb, background:"#2E7D32", color:"#fff" }}>✓ שולם</button>
+                        </>}
+                        <button onClick={()=>setRecForm({ ...it })} aria-label="עריכה" style={{ ...sb, background:"#F2F2EC", color:"#555" }}>✏️</button>
+                      </div>
+                    </div>
+                  );
+                })}
+                {!recForm && <button onClick={()=>setRecForm({ id: Date.now(), name:"", contact:"", phone:"", amount:"", vatMode:"plus", day:"1", since: ym, isNew:true })} style={{ ...btnD, width:"100%", marginTop:4 }}>+ הכנסה קבועה</button>}
+                {recForm && (
+                  <div style={{ ...card, border:"1.5px solid #E8C547", marginTop:6 }}>
+                    <p style={{ margin:"0 0 10px", fontWeight:800, fontSize:15 }}>{recForm.isNew ? "➕ הכנסה קבועה חדשה" : "✏️ עריכת הכנסה קבועה"}</p>
+                    <input value={recForm.name} onChange={e=>setRecForm(f=>({ ...f, name:e.target.value }))} placeholder="שם — למשל: כהן בנייה (מנוי BuildTrack)" style={{ ...inp, fontSize:14, marginBottom:8 }}/>
+                    <div style={{ display:"flex", gap:8, marginBottom:8 }}>
+                      <input value={recForm.contact||""} onChange={e=>setRecForm(f=>({ ...f, contact:e.target.value }))} placeholder="איש קשר" style={{ ...inp, fontSize:14, flex:1, minWidth:0 }}/>
+                      <input value={recForm.phone||""} onChange={e=>setRecForm(f=>({ ...f, phone:e.target.value }))} placeholder="טלפון (לתזכורות)" type="tel" inputMode="tel" style={{ ...inp, fontSize:14, flex:1, minWidth:0, direction:"ltr", textAlign:"left" }}/>
+                    </div>
+                    <div style={{ display:"flex", gap:8, alignItems:"center", marginBottom:8 }}>
+                      <input value={recForm.amount} onChange={e=>setRecForm(f=>({ ...f, amount:e.target.value }))} placeholder="₪ בחודש" type="number" inputMode="decimal" style={{ ...inp, fontSize:14, flex:1, minWidth:0 }}/>
+                      <label style={{ display:"flex", alignItems:"center", gap:5, fontSize:13, color:"#555", flexShrink:0 }}>ב-
+                        <input value={recForm.day} onChange={e=>setRecForm(f=>({ ...f, day:e.target.value }))} type="number" min="1" max="31" style={{ ...inp, fontSize:14, width:56, padding:"8px 6px", textAlign:"center" }}/> לחודש</label>
+                    </div>
+                    <div style={{ display:"flex", gap:5, marginBottom:8 }}>
+                      {[{v:"plus",l:"+ מע״מ"},{v:"incl",l:"כולל מע״מ"},{v:"none",l:"ללא מע״מ"}].map(o => { const on = (recForm.vatMode || "plus") === o.v; return (
+                        <button key={o.v} type="button" onClick={()=>setRecForm(f=>({ ...f, vatMode:o.v }))} style={{ flex:1, background:on?"#1A1A2E":"#fff", color:on?"#E8C547":"#666", border:on?"none":"1.5px solid #DDD", borderRadius:8, padding:"7px 0", fontSize:12.5, fontWeight:700, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>{o.l}</button>
+                      ); })}
+                    </div>
+                    <label style={{ display:"flex", alignItems:"center", gap:8, fontSize:13, color:"#555", marginBottom:12 }}>החל מ-
+                      <input type="month" value={recForm.since || ym} onChange={e=>setRecForm(f=>({ ...f, since:e.target.value }))} style={{ ...inp, fontSize:14, flex:1, padding:"7px 10px" }}/></label>
+                    <div style={{ display:"flex", gap:8 }}>
+                      <button onClick={()=>{
+                        const name = String(recForm.name||"").trim(), amount = Number(recForm.amount);
+                        if (!name) { alert("כתוב שם"); return; }
+                        if (!(amount > 0)) { alert("הזן סכום חודשי"); return; }
+                        if (String(recForm.phone||"").trim() && !waPhone(recForm.phone)) { alert("מספר הטלפון לא תקין"); return; }
+                        const day = Math.min(31, Math.max(1, Math.round(Number(recForm.day) || 1)));
+                        const { isNew, ...rest } = recForm;
+                        const it = { ...rest, name, amount, day, phone: String(recForm.phone||"").trim(), contact: String(recForm.contact||"").trim() };
+                        saveItems(isNew ? [...items, it] : items.map(x => x.id === it.id ? it : x)); setRecForm(null);
+                      }} style={{ ...btnD, flex:2 }}>שמור</button>
+                      <button onClick={()=>setRecForm(null)} style={{ ...btnG, flex:1 }}>ביטול</button>
+                    </div>
+                    {!recForm.isNew && (
+                      <div style={{ display:"flex", gap:8, marginTop:10, borderTop:"1px solid #EEE", paddingTop:10 }}>
+                        <button onClick={()=>{ if (!window.confirm(`להפסיק את "${recForm.name}" החל מ${HE_MONTHS[Number(ym.slice(5)) - 1]}?\nההיסטוריה של מה ששולם נשמרת.`)) return;
+                          saveItems(items.map(x => x.id === recForm.id ? { ...x, until: prevYm } : x)); setRecForm(null); }}
+                          style={{ ...sb, flex:1, background:"#FFF8E1", color:"#7A4F00", padding:"8px" }}>⏹ הפסק מהחודש</button>
+                        <button onClick={()=>{
+                          const hasPay = Object.values(fin.months || {}).some(mo => mo?.recPaid?.[recForm.id]);
+                          if (hasPay) { alert("יש לה תשלומים שנרשמו — אפשר רק להפסיק אותה (ההיסטוריה נשמרת)."); return; }
+                          if (window.confirm(`למחוק את "${recForm.name}"?`)) { saveItems(items.filter(x => x.id !== recForm.id)); setRecForm(null); }
+                        }} style={{ ...sb, background:"#FDECEA", color:"#B71C1C", padding:"8px 12px" }}>🗑 מחק</button>
+                      </div>
+                    )}
+                  </div>
+                )}
+                {ended.length > 0 && <p style={{ margin:"12px 2px 0", fontSize:12, color:"#999" }}>הסתיימו: {ended.map(x => x.name).join(" · ")}</p>}
+              </>);
+            })()}
             {incView==="received" && (<>
               {rec.length === 0 && <div style={{ background:"#fff", borderRadius:14, padding:30, textAlign:"center", border:"1.5px dashed #DDD", color:"#AAA" }}>עוד לא סומנו תשלומים שהתקבלו</div>}
               {rec.slice(0, 200).map(x => row(x, (
