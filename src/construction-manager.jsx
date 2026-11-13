@@ -408,6 +408,84 @@ async function quotePdfBase64(q, org, logo) {
   } finally { box.remove(); }
 }
 
+// ===== סיכום תוספות לעבודה (PDF) — פרויקט אחד או כמה, עם סיכום לכל פרויקט וסיכום כללי =====
+// sections: [{ name, client, base, cos }]
+async function changeOrdersPdfBase64(sections, org, logo) {
+  const h2c = await loadScriptOnce("https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js", "html2canvas");
+  await loadScriptOnce("https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js", "jspdf");
+  const e = (x) => String(x ?? "").replace(/[&<>"]/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" }[c]));
+  const nis = (n) => "₪" + Math.round(n).toLocaleString("he-IL");
+  const dmy = (s) => s ? String(s).split("-").reverse().join(".") : "";
+  const STATUS = { approved: "✅ אושרה", rejected: "✖ נדחתה" };
+  const sumOf = (list) => list.reduce((t, c) => t + Number(c.amount || 0), 0);
+  const calc = (s) => {
+    const cos = s.cos || [];
+    const appr = sumOf(cos.filter(c => c.status === "approved"));
+    const pend = sumOf(cos.filter(c => c.status !== "approved" && c.status !== "rejected" && !c.unpriced));
+    const unpriced = cos.filter(c => c.unpriced && c.status !== "rejected" && c.status !== "approved").length;
+    return { appr, pend, unpriced, contract: Number(s.base || 0) + appr };
+  };
+  const cell = "padding:10px 8px;border-bottom:1px solid #EEE;vertical-align:top";
+  const block = (s) => {
+    const k = calc(s);
+    const rows = (s.cos || []).map(c => `<tr>
+      <td style="${cell}"><div style="font-weight:700">${e(c.desc || "תוספת")}</div>
+        ${(c.items || []).length > 1 ? `<div style="color:#777;font-size:12px">${e(c.items.map(l => l.desc).filter(Boolean).join(" · "))}</div>` : ""}
+        ${c.note ? `<div style="color:#888;font-size:12px">${e(c.note)}</div>` : ""}</td>
+      <td style="${cell};color:#555;font-size:14px">${STATUS[c.status] || (c.unpriced ? "💭 ללא מחיר" : "⏳ ממתינה")}</td>
+      <td style="${cell};color:#777;font-size:14px">${dmy(c.date)}</td>
+      <td style="${cell};font-weight:700;text-align:left;white-space:nowrap">${c.unpriced && c.status !== "approved" ? "ייקבע" : nis(Number(c.amount || 0))}</td></tr>`).join("");
+    const box = (label, val, col) => `<div style="flex:1;background:#F7F7F4;border-radius:10px;padding:10px 12px"><div style="color:#888;font-size:12px">${label}</div><div style="font-weight:800;font-size:16px;color:${col}">${val}</div></div>`;
+    return `<div style="margin-bottom:26px;page-break-inside:avoid">
+      <div style="font-size:20px;font-weight:800;border-bottom:2px solid #E8C547;padding-bottom:6px;margin-bottom:8px">${e(s.name)}${s.client ? ` <span style="font-size:14px;color:#888;font-weight:400">· ${e(s.client)}</span>` : ""}</div>
+      ${rows ? `<table style="width:100%;border-collapse:collapse;margin-bottom:10px"><tr>
+        <th style="text-align:right;color:#888;font-size:12px;padding:6px 8px;border-bottom:2px solid #EEE">תוספת</th>
+        <th style="text-align:right;color:#888;font-size:12px;padding:6px 8px;border-bottom:2px solid #EEE">סטטוס</th>
+        <th style="text-align:right;color:#888;font-size:12px;padding:6px 8px;border-bottom:2px solid #EEE">תאריך</th>
+        <th style="text-align:left;color:#888;font-size:12px;padding:6px 8px;border-bottom:2px solid #EEE">סכום</th></tr>${rows}</table>` : `<div style="color:#999;font-size:14px;margin-bottom:10px">אין תוספות</div>`}
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        ${box("עלות מקורית", nis(Number(s.base || 0)), "#1A1A2E")}
+        ${box("תוספות שאושרו", nis(k.appr), "#1B5E20")}
+        ${box("ממתין לאישור", nis(k.pend), "#8A5A00")}
+        ${box("סכום העסקה", nis(k.contract), "#1A1A2E")}
+      </div>
+      ${k.unpriced ? `<div style="color:#3949AB;font-size:12px;margin-top:6px">* ${k.unpriced} תוספות ללא מחיר — ייקבעו בהמשך</div>` : ""}
+    </div>`;
+  };
+  const totals = sections.map(calc).reduce((t, k) => ({ appr: t.appr + k.appr, pend: t.pend + k.pend }), { appr: 0, pend: 0 });
+  const grand = sections.length > 1 ? `<div style="display:flex;gap:8px;flex-wrap:wrap;background:#1A1A2E;color:#fff;border-radius:12px;padding:14px 16px;margin-top:6px">
+      <div style="flex:1"><div style="color:#AAA;font-size:12px">פרויקטים</div><div style="font-weight:800;font-size:16px">${sections.length}</div></div>
+      <div style="flex:1"><div style="color:#AAA;font-size:12px">תוספות שאושרו (סה״כ)</div><div style="font-weight:800;font-size:16px;color:#E8C547">${nis(totals.appr)}</div></div>
+      <div style="flex:1"><div style="color:#AAA;font-size:12px">ממתין לאישור (סה״כ)</div><div style="font-weight:800;font-size:16px">${nis(totals.pend)}</div></div></div>` : "";
+  const box0 = document.createElement("div");
+  box0.style.cssText = "position:fixed;left:-10000px;top:0;width:794px;background:#fff;direction:rtl;font-family:Heebo,Arial,sans-serif;color:#1A1A2E;padding:48px 52px;box-sizing:border-box;font-size:16px";
+  box0.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:4px solid #E8C547;padding-bottom:18px;margin-bottom:26px">
+      <div style="font-size:28px;font-weight:800">${e(org?.name)}</div>${logo ? `<img src="${logo}" style="height:80px;object-fit:contain"/>` : ""}</div>
+    <div style="font-size:26px;font-weight:800;margin-bottom:6px">סיכום תוספות לעבודה</div>
+    <div style="color:#777;font-size:15px;margin-bottom:24px">תאריך: ${e(todayStr())}</div>
+    ${sections.map(block).join("")}
+    ${grand}
+    <div style="text-align:center;color:#AAA;font-size:12px;margin-top:40px">הופק באמצעות BuildTrack</div>`;
+  document.body.appendChild(box0);
+  try {
+    await Promise.all([...box0.querySelectorAll("img")].map(im => im.complete ? 0 : new Promise(r => { im.onload = im.onerror = r; })));
+    const canvas = await h2c(box0, { scale: 2, backgroundColor: "#ffffff", useCORS: true });
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({ unit: "mm", format: "a4", compress: true });
+    const pw = 210, ph = 297;
+    const pageHpx = Math.floor(canvas.width * ph / pw);
+    for (let y = 0, i = 0; y < canvas.height; y += pageHpx, i++) {
+      const slice = document.createElement("canvas");
+      slice.width = canvas.width; slice.height = Math.min(pageHpx, canvas.height - y);
+      slice.getContext("2d").drawImage(canvas, 0, y, canvas.width, slice.height, 0, 0, canvas.width, slice.height);
+      if (i) pdf.addPage();
+      pdf.addImage(slice.toDataURL("image/jpeg", 0.92), "JPEG", 0, 0, pw, slice.height * pw / canvas.width);
+    }
+    return pdf.output("datauristring").split(",")[1];
+  } finally { box0.remove(); }
+}
+
 // ===== פתיחת גיבוי מוצפן (.enc) — אותו פורמט כמו פונקציית daily-backup =====
 // "BTBK" | גרסה 1 | salt(16) | iv(12) | AES-256-GCM(gzip(JSON)), מפתח PBKDF2-SHA256 210,000 סבבים מקוד המנהל
 async function decryptBackup(buf, password) {
@@ -1714,6 +1792,8 @@ export default function App() {
   const [plNew, setPlNew] = useState({ name:"", unit:"נקודה", price:"", priceNoMat:"" });
   const [plFocus, setPlFocus] = useState(null);   // סעיף שמקלידים בו כרגע — להצעות מהמחירון
   const [coEdit, setCoEdit] = useState(null);     // תוספת לעבודה בעריכה (חלון)
+  const [coMail, setCoMail] = useState(null);     // שליחת סיכום תוספות במייל (חלון)
+  const [coMailSending, setCoMailSending] = useState(false);
   const [editQuote, setEditQuote] = useState({ clientName:"", clientPhone:"", title:"", desc:"", amount:"", items:[] });
   const [helpSearch, setHelpSearch] = useState("");
   const [sendYm, setSendYm] = useState(() => shiftYm(todayStr().slice(0,7), -1)); // החודש לשליחה לרואה החשבון
@@ -3262,8 +3342,38 @@ async function shareImg() {
     setQuoteSending(null);
   };
 
+  const sendChangeOrdersEmail = async () => {
+    const m = coMail; if (!m) return;
+    const to = String(m.to || "").trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to)) { alert("כתוב כתובת מייל תקינה"); return; }
+    const toSection = (p) => ({ name: p.name, client: p.clientName || p.client || "", base: Number(p.totalCost || 0), cos: p.changeOrders || [] });
+    const sections = m.scope === "all"
+      ? projects.filter(p => !p._quote && (p.changeOrders || []).length).map(toSection)
+      : (editProj ? [toSection(editProj)] : []);
+    if (!sections.length) { alert("אין תוספות לשלוח"); return; }
+    const subject = m.scope === "all" ? `סיכום תוספות לעבודה — ${org?.name || ""}` : `סיכום תוספות לעבודה — ${sections[0].name}`;
+    const lines = sections.map(s => {
+      const cos = s.cos || [];
+      const appr = cos.filter(c => c.status === "approved").reduce((t, c) => t + Number(c.amount || 0), 0);
+      const pend = cos.filter(c => c.status !== "approved" && c.status !== "rejected" && !c.unpriced).reduce((t, c) => t + Number(c.amount || 0), 0);
+      return { name: s.name, approved: appr, pending: pend, contract: s.base + appr, count: cos.length };
+    });
+    if (!window.confirm(`לשלוח סיכום תוספות ל-${to}?\n\nהמייל יישלח בשם "${org?.name || ""}"${cfgData._email ? `, ועותק יגיע ל-${cfgData._email}` : ""}.`)) return;
+    setCoMailSending(true);
+    try {
+      const pdf = await changeOrdersPdfBase64(sections, org, org?.logo || (org?.slug === "gne" ? LOGO_URL : ""));
+      const r = await fetch(`${SUPABASE_URL}/functions/v1/send-change-orders`, { method: "POST", headers: hdrs(),
+        body: JSON.stringify({ to, subject, message: String(m.msg || "").trim(), lines, pdf, pdfName: `${subject.replace(/[\\/:*?"<>|]/g, "").slice(0, 80)}.pdf`, copyTo: cfgData._email || "", businessName: org?.name || "" }) });
+      const res = await r.json().catch(() => ({}));
+      if (!r.ok || !res.ok) throw new Error(res.error || ("שגיאה " + r.status));
+      alert(`✅ הסיכום נשלח ל-${to}`);
+      setCoMail(null);
+    } catch (e) { alert("השליחה נכשלה: " + e.message); }
+    setCoMailSending(false);
+  };
+
   const inp = { width:"100%", border:"1.5px solid #DDD", borderRadius:10, padding:"10px 14px", fontSize:15, fontFamily:"Heebo,sans-serif", boxSizing:"border-box", background:"#fff", outline:"none" };
-  const OVL = { position:"fixed", inset:0, background:"rgba(0,0,0,0.5)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:999, padding:16 };
+  const OVL ={ position:"fixed", inset:0, background:"rgba(0,0,0,0.5)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:999, padding:16 };
   const MOD = { background:"#fff", borderRadius:18, padding:28, width:"100%", maxWidth:460, direction:"rtl", maxHeight:"90vh", overflowY:"auto" };
   const btnY = { background:"#E8C547", color:"#1A1A2E", border:"none", borderRadius:10, padding:"10px 20px", fontWeight:700, fontSize:14, cursor:"pointer", fontFamily:"Heebo,sans-serif" };
   const btnD = { background:"#1A1A2E", color:"#E8C547", border:"none", borderRadius:10, padding:"10px 20px", fontWeight:700, fontSize:14, cursor:"pointer", fontFamily:"Heebo,sans-serif" };
@@ -5922,6 +6032,7 @@ async function shareImg() {
                     c.note || "", "נבקש את אישורך בהודעה חוזרת 🙏", org?.name || ""].filter(Boolean).join("\n");
                 };
                 const approve = (c) => {
+                  if (c.unpriced || !(Number(c.amount) > 0)) { alert("קודם קבע מחיר לתוספת (✏️), ורק אז אפשר לאשר אותה"); return; }
                   if (!window.confirm(`הלקוח אישר את התוספת "${c.desc || "תוספת"}" (₪${fmtNum(c.amount)})?\n\nסכום העסקה יתעדכן, ויתווסף שלב תשלום חדש — הוא יעבור לגבייה רק כשתסמן שהשלב בוצע.`)) return;
                   const payId = Date.now();
                   const cp = [...(editProj.clientPayments || []), { id: payId, desc: `תוספת: ${c.desc || "תוספת"}`, amount: String(c.amount), received: false, coId: c.id }];
@@ -5935,14 +6046,20 @@ async function shareImg() {
                   saveCo(del ? cos.filter(x => x.id !== c.id) : cos.map(x => x.id === c.id ? { ...x, status: "pending", approvedAt: "", payId: null } : x), cp);
                 };
                 const chip = (c) => c.status === "approved" ? { t: `✅ אושר${c.approvedAt ? " " + c.approvedAt.split("-").reverse().slice(0,2).join(".") : ""}`, bg:"#E8F5E9", fg:"#1B5E20" }
-                  : c.status === "rejected" ? { t: "✖ נדחה", bg:"#F2F2EC", fg:"#666" } : { t: c.sentAt ? "⏳ נשלח — ממתין לאישור" : "⏳ ממתין לאישור", bg:"#FFF4D6", fg:"#7A4F00" };
+                  : c.status === "rejected" ? { t: "✖ נדחה", bg:"#F2F2EC", fg:"#666" }
+                  : c.unpriced ? { t: "💭 ללא מחיר — ייקבע בהמשך", bg:"#E8EAF6", fg:"#3949AB" }
+                  : { t: c.sentAt ? "⏳ נשלח — ממתין לאישור" : "⏳ ממתין לאישור", bg:"#FFF4D6", fg:"#7A4F00" };
                 const sb = { border:"none", borderRadius:8, padding:"6px 10px", fontSize:12, fontWeight:700, cursor:"pointer", fontFamily:"Heebo,sans-serif" };
                 return (
                   <div id="bt-co-sec" style={{ scrollMarginTop:70, background:"#fff", borderRadius:14, padding:"16px 20px", marginBottom:14, boxShadow:"0 2px 8px rgba(0,0,0,0.07)" }}>
                     <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:10 }}>
                       <h3 style={{ margin:0, fontSize:15, fontWeight:700 }}>➕ תוספות לעבודה</h3>
-                      <button onClick={()=>setCoEdit({ id: Date.now(), desc:"", note:"", items:[{ id: Date.now()+1, desc:"", qty:"", unit:"", unitPrice:"", amount:"" }], isNew:true })}
-                        style={{ background:"#1A1A2E", color:"#E8C547", border:"none", borderRadius:7, padding:"4px 12px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700 }}>+ תוספת</button>
+                      <div style={{ display:"flex", gap:6 }}>
+                        {cos.length > 0 && <button onClick={()=>setCoMail({ scope:"one", to: editProj.clientEmail || "", msg:"" })}
+                          style={{ background:"#F2F2EC", color:"#1A1A2E", border:"none", borderRadius:7, padding:"4px 12px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700 }}>📧 שלח סיכום</button>}
+                        <button onClick={()=>setCoEdit({ id: Date.now(), desc:"", note:"", items:[{ id: Date.now()+1, desc:"", qty:"", unit:"", unitPrice:"", amount:"" }], isNew:true })}
+                          style={{ background:"#1A1A2E", color:"#E8C547", border:"none", borderRadius:7, padding:"4px 12px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700 }}>+ תוספת</button>
+                      </div>
                     </div>
                     {cos.length === 0 && <p style={{ margin:0, fontSize:13, color:"#AAA" }}>עבודה שהלקוח ביקש מעבר להסכם — רושמים, שולחים לו לאישור, וכשהוא מאשר סכום העסקה מתעדכן ונפתח שלב תשלום.</p>}
                     {cos.map(c => { const ch = chip(c); return (
@@ -5952,13 +6069,14 @@ async function shareImg() {
                             <p style={{ margin:0, fontSize:14, fontWeight:700 }}>{c.desc || "תוספת"}</p>
                             {(c.items||[]).length > 1 && <p style={{ margin:"2px 0 0", fontSize:12, color:"#777" }}>{c.items.map(l => l.desc).filter(Boolean).join(" · ")}</p>}
                           </div>
-                          <b style={{ fontSize:15, whiteSpace:"nowrap" }}>₪{fmtNum(c.amount)}</b>
+                          {c.unpriced ? <b style={{ fontSize:13, whiteSpace:"nowrap", color:"#3949AB" }}>ללא מחיר</b> : <b style={{ fontSize:15, whiteSpace:"nowrap" }}>₪{fmtNum(c.amount)}</b>}
                         </div>
                         <div style={{ display:"flex", flexWrap:"wrap", gap:6, alignItems:"center", marginTop:8 }}>
                           <span style={{ background:ch.bg, color:ch.fg, borderRadius:20, padding:"3px 10px", fontSize:12, fontWeight:700 }}>{ch.t}</span>
                           <span style={{ flex:1 }}/>
-                          {c.status !== "approved" && <button onClick={()=>{ const t = coText(c); const ph = waPhone(editProj.clientPhone); window.open(`https://wa.me/${ph}?text=${encodeURIComponent(t)}`, "_blank"); saveCo(cos.map(x => x.id === c.id ? { ...x, sentAt: todayStr() } : x)); }} style={{ ...sb, background:"#E8F5E9", color:"#1B5E20" }}>💬 שלח לאישור</button>}
-                          {c.status !== "approved" && <button onClick={()=>approve(c)} style={{ ...sb, background:"#1A1A2E", color:"#E8C547" }}>✅ הלקוח אישר</button>}
+                          {c.unpriced && c.status !== "approved" && c.status !== "rejected" && <span style={{ fontSize:12, color:"#666" }}>✏️ קבע מחיר לפני שליחה לאישור</span>}
+                          {c.status !== "approved" && !c.unpriced && <button onClick={()=>{ const t = coText(c); const ph = waPhone(editProj.clientPhone); window.open(`https://wa.me/${ph}?text=${encodeURIComponent(t)}`, "_blank"); saveCo(cos.map(x => x.id === c.id ? { ...x, sentAt: todayStr() } : x)); }} style={{ ...sb, background:"#E8F5E9", color:"#1B5E20" }}>💬 שלח לאישור</button>}
+                          {c.status !== "approved" && !c.unpriced && <button onClick={()=>approve(c)} style={{ ...sb, background:"#1A1A2E", color:"#E8C547" }}>✅ הלקוח אישר</button>}
                           {c.status === "pending" && <button onClick={()=>{ if (window.confirm("לסמן שהלקוח דחה את התוספת?")) saveCo(cos.map(x => x.id === c.id ? { ...x, status:"rejected" } : x)); }} style={{ ...sb, background:"#F2F2EC", color:"#555" }}>✖ נדחה</button>}
                           {c.status !== "approved" && <button onClick={()=>setCoEdit({ ...c, items: (c.items||[]).length ? c.items : [{ id: Date.now(), desc: c.desc, qty:"", unit:"", unitPrice:"", amount: String(c.amount||"") }] })} aria-label="עריכה" style={{ ...sb, background:"#F2F2EC", color:"#555" }}>✏️</button>}
                           {c.status === "approved" && <button onClick={()=>unapprove(c, false)} style={{ ...sb, background:"#F2F2EC", color:"#555" }}>↩ בטל אישור</button>}
@@ -5971,6 +6089,7 @@ async function shareImg() {
                         {base > 0 && <span style={{ color:"#555" }}>עלות מקורית: <b>₪{fmtNum(base)}</b></span>}
                         <span style={{ color:"#2E7D32" }}>תוספות שאושרו: <b>₪{fmtNum(appr)}</b></span>
                         {pend > 0 && <span style={{ color:"#B26A00" }}>ממתין לאישור: <b>₪{fmtNum(pend)}</b></span>}
+                        {cos.filter(c => c.unpriced && c.status !== "rejected" && c.status !== "approved").length > 0 && <span style={{ color:"#3949AB" }}>ללא מחיר: <b>{cos.filter(c => c.unpriced && c.status !== "rejected" && c.status !== "approved").length}</b></span>}
                         {base > 0 && <span style={{ color:"#1A1A2E" }}>סכום העסקה: <b>₪{fmtNum(base + appr)}</b></span>}
                       </div>
                     )}
@@ -8115,9 +8234,10 @@ async function shareImg() {
           const desc = String(coEdit.desc||"").trim() || (its[0]?.desc || "").trim();
           if (!desc) { alert("כתוב מה התוספת"); return; }
           const amount = Math.round(its.reduce((t, l) => t + coLineAmt(l), 0) * 100) / 100;
-          if (!(amount > 0)) { alert("הזן סכום לתוספת"); return; }
+          const unpriced = !(amount > 0) && !!coEdit.unpriced;
+          if (!(amount > 0) && !unpriced) { alert("הזן סכום לתוספת, או סמן 'בלי מחיר — ייקבע בהמשך'"); return; }
           const { isNew, ...rest } = coEdit;
-          const co = { ...rest, desc, items: its, amount, status: coEdit.status || "pending", date: coEdit.date || todayStr() };
+          const co = { ...rest, desc, items: its, amount, unpriced, status: coEdit.status || "pending", date: coEdit.date || todayStr() };
           const list = editProj.changeOrders || [];
           const changeOrders = isNew ? [...list, co] : list.map(x => x.id === co.id ? co : x);
           setEditProj(p => ({ ...p, changeOrders })); updateProjField(detailProject, { changeOrders });
@@ -8161,12 +8281,51 @@ async function shareImg() {
                 <span style={{ fontSize:13, fontWeight:600, display:"block", marginBottom:5 }}>הערה ללקוח (אופציונלי)</span>
                 <input value={coEdit.note||""} onChange={e=>setCoEdit(c=>({ ...c, note:e.target.value }))} placeholder="למשל: כולל חומר, לביצוע בשבוע הבא" style={{ ...inp, fontSize:14 }}/>
               </label>
+              <label style={{ display:"flex", gap:8, alignItems:"center", marginBottom:10, fontSize:13, fontWeight:600, background:"#F7F7F4", borderRadius:10, padding:"9px 11px", cursor: total > 0 ? "default" : "pointer", opacity: total > 0 ? 0.5 : 1 }}>
+                <input type="checkbox" disabled={total > 0} checked={!!coEdit.unpriced && !(total > 0)} onChange={e=>setCoEdit(c=>({ ...c, unpriced:e.target.checked }))} style={{ width:17, height:17, accentColor:"#1A1A2E" }}/>
+                בלי מחיר לעכשיו — ייקבע בהמשך
+              </label>
               <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", background:"#1A1A2E", color:"#fff", borderRadius:10, padding:"10px 14px", marginBottom:12 }}>
-                <span style={{ fontSize:13 }}>סה״כ התוספת (לפני מע״מ)</span><b style={{ color:"#E8C547", fontSize:17 }}>₪{fmtNum(total)}</b>
+                <span style={{ fontSize:13 }}>סה״כ התוספת (לפני מע״מ)</span><b style={{ color:"#E8C547", fontSize:17 }}>{total > 0 ? `₪${fmtNum(total)}` : "ייקבע"}</b>
               </div>
               <div style={{ display:"flex", gap:8 }}>
                 <button onClick={save} style={{ ...btnD, flex:2 }}>שמור</button>
                 <button onClick={()=>setCoEdit(null)} style={{ ...btnG, flex:1 }}>ביטול</button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* MODAL: שליחת סיכום תוספות במייל */}
+      {coMail && editProj && (() => {
+        const withCos = projects.filter(p => !p._quote && (p.changeOrders || []).length);
+        const cnt = coMail.scope === "all" ? withCos.length : 1;
+        const fi = { ...inp, fontSize:14 };
+        const scopeBtn = (k, label) => (
+          <button onClick={()=>setCoMail(m=>({ ...m, scope:k }))} style={{ flex:1, border:"none", borderRadius:9, padding:"9px 6px", fontSize:13, fontWeight:700, cursor:"pointer", fontFamily:"Heebo,sans-serif", background: coMail.scope === k ? "#1A1A2E" : "#F0F0EC", color: coMail.scope === k ? "#E8C547" : "#555" }}>{label}</button>
+        );
+        return (
+          <div onClick={()=>!coMailSending && setCoMail(null)} style={OVL}>
+            <div onClick={e=>e.stopPropagation()} style={MOD}>
+              <h3 style={{ margin:"0 0 4px", fontWeight:800, fontSize:17 }}>📧 שליחת סיכום תוספות</h3>
+              <p style={{ margin:"0 0 12px", fontSize:12.5, color:"#777" }}>קובץ PDF עם כל התוספות, סטטוס, ותקציר לכל פרויקט</p>
+              <div style={{ display:"flex", gap:6, marginBottom:12 }}>
+                {scopeBtn("one", `פרויקט זה (${editProj.name})`)}
+                {scopeBtn("all", `כל הפרויקטים (${withCos.length})`)}
+              </div>
+              <label style={{ display:"block", marginBottom:10 }}>
+                <span style={{ fontSize:13, fontWeight:600, display:"block", marginBottom:5 }}>למי לשלוח?</span>
+                <input type="email" dir="ltr" value={coMail.to} onChange={e=>setCoMail(m=>({ ...m, to:e.target.value }))} placeholder="name@gmail.com" style={{ ...fi, textAlign:"left" }}/>
+              </label>
+              <label style={{ display:"block", marginBottom:12 }}>
+                <span style={{ fontSize:13, fontWeight:600, display:"block", marginBottom:5 }}>הודעה (אופציונלי)</span>
+                <textarea value={coMail.msg} onChange={e=>setCoMail(m=>({ ...m, msg:e.target.value }))} rows={3} placeholder="למשל: מצורף סיכום התוספות לעבודה, נשמח לאישורך" style={{ ...fi, resize:"vertical" }}/>
+              </label>
+              <p style={{ margin:"0 0 14px", fontSize:12, color:"#888" }}>{cnt ? `${coMail.scope === "all" ? cnt + " פרויקטים עם תוספות" : "פרויקט אחד"} · ` : ""}{cfgData._email ? `עותק יישלח ל-${cfgData._email}` : "הגדר מייל עסק בהגדרות כדי לקבל עותק"}</p>
+              <div style={{ display:"flex", gap:8 }}>
+                <button onClick={sendChangeOrdersEmail} disabled={coMailSending} style={{ ...btnD, flex:2, opacity: coMailSending ? 0.6 : 1 }}>{coMailSending ? "שולח…" : "📧 שלח"}</button>
+                <button onClick={()=>setCoMail(null)} disabled={coMailSending} style={{ ...btnG, flex:1 }}>ביטול</button>
               </div>
             </div>
           </div>
