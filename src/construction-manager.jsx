@@ -3406,7 +3406,12 @@ async function shareImg() {
     setCoMailSending(true);
     setCoMailStage("pdf");
     try {
-      const pdf = await withTimeout(changeOrdersPdfBase64(sections, org, org?.logo || (org?.slug === "gne" ? LOGO_URL : "")), 60000, "יצירת ה-PDF לקחה יותר מדי זמן. נסה עם פחות תוספות או בחיבור טוב יותר");
+      let pdf = null;
+      try {
+        pdf = await withTimeout(changeOrdersPdfBase64(sections, org, org?.logo || (org?.slug === "gne" ? LOGO_URL : "")), 60000, "יצירת ה-PDF לקחה יותר מדי זמן");
+      } catch (pe) {
+        if (!window.confirm(`לא הצלחתי ליצור קובץ PDF (${pe.message}).\n\nלשלוח את הסיכום בגוף המייל בלי קובץ מצורף?`)) { setCoMailSending(false); setCoMailStage(""); return; }
+      }
       setCoMailStage("send");
       const r = await withTimeout(fetch(`${SUPABASE_URL}/functions/v1/send-change-orders`, { method: "POST", headers: hdrs(),
         body: JSON.stringify({ to, message: String(m.msg || "").trim(), pdf, pdfName: `סיכום תוספות - ${String(sections.length === 1 ? sections[0].name : org?.name || "").replace(/[\\/:*?"<>|]/g, "").slice(0, 60)}.pdf`, projectDbid: m.scope === "all" ? null : (editProj._dbid || null) }) }), 60000, "השרת לא ענה תוך דקה. בדוק את החיבור ונסה שוב");

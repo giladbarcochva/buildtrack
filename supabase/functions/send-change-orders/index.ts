@@ -45,7 +45,7 @@ function summarize(data: any) {
   return { cos, appr, pend, unpriced, base, contract: base + appr };
 }
 
-function changeOrdersHtml(orgName: string, projects: any[], message: string) {
+function changeOrdersHtml(orgName: string, projects: any[], message: string, hasPdf: boolean) {
   const blocks = projects.map((p) => {
     const s = summarize(p.data);
     const rows = s.cos.map((c) => `<tr>
@@ -73,9 +73,9 @@ function changeOrdersHtml(orgName: string, projects: any[], message: string) {
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;background:#fff;border-radius:14px;padding:26px 24px" dir="rtl">
   <tr><td style="border-bottom:3px solid #E8C547;padding-bottom:14px;font-size:22px;font-weight:800">${esc(orgName)}</td></tr>
   <tr><td style="padding-top:18px">
-    ${message ? `<div style="font-size:14px;color:#333;white-space:pre-wrap;margin-bottom:16px">${esc(message)}</div>` : `<div style="font-size:14px;color:#555;margin-bottom:16px">מצורף סיכום התוספות לעבודה.</div>`}
+    ${message ? `<div style="font-size:14px;color:#333;white-space:pre-wrap;margin-bottom:16px">${esc(message)}</div>` : `<div style="font-size:14px;color:#555;margin-bottom:16px">${hasPdf ? "מצורף סיכום התוספות לעבודה." : "סיכום התוספות לעבודה:"}</div>`}
     ${blocks}
-    <div style="font-size:12px;color:#888;margin-top:8px">הקובץ המלא מצורף כ-PDF. לשאלות — השב/י למייל הזה.</div>
+    <div style="font-size:12px;color:#888;margin-top:8px">${hasPdf ? "הקובץ המלא מצורף כ-PDF. " : ""}לשאלות — השב/י למייל הזה.</div>
   </td></tr>
   <tr><td style="text-align:center;color:#AAA;font-size:11px;padding-top:22px">נשלח באמצעות BuildTrack</td></tr>
 </table></td></tr></table></body></html>`;
@@ -98,9 +98,12 @@ Deno.serve(async (req) => {
     const b = await req.json();
     const to = String(b.to || "").trim();
     if (!EMAIL_RE.test(to)) return json({ error: "כתובת מייל לא תקינה" }, 400);
-    if (!b.pdf || typeof b.pdf !== "string") return json({ error: "חסר קובץ PDF" }, 400);
-    const pdfOk = b.pdf.length < 11_000_000 && atob(b.pdf.slice(0, 8)).startsWith("%PDF");
-    if (!pdfOk) return json({ error: "קובץ ה-PDF לא תקין" }, 400);
+    // PDF אופציונלי: בלי קובץ הסיכום המלא כבר נמצא בגוף המייל
+    const hasPdf = !!b.pdf && typeof b.pdf === "string";
+    if (hasPdf) {
+      const pdfOk = b.pdf.length < 11_000_000 && atob(b.pdf.slice(0, 8)).startsWith("%PDF");
+      if (!pdfOk) return json({ error: "קובץ ה-PDF לא תקין" }, 400);
+    }
     const message = String(b.message || "").slice(0, 2000);
 
     const [org] = await db(`organizations?id=eq.${encodeURIComponent(orgId)}&select=id,slug,name,active,settings`);
@@ -138,8 +141,8 @@ Deno.serve(async (req) => {
         bcc: [bizEmail],
         reply_to: bizEmail,
         subject,
-        html: changeOrdersHtml(name, projects, message),
-        attachments: [{ filename: pdfName, content: b.pdf }],
+        html: changeOrdersHtml(name, projects, message, hasPdf),
+        attachments: hasPdf ? [{ filename: pdfName, content: b.pdf }] : [],
       }),
     });
     const res = await r.text();
