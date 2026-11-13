@@ -1761,6 +1761,7 @@ export default function App() {
   const [mgTab,      setMgTab]      = useState("today");
   const [canInstall, doInstall]    = useInstallPrompt();
   const [showGuide, setShowGuide] = useState(false);
+  const [docHtml, setDocHtml] = useState(null); // דף הצעת מחיר בתוך האפליקציה (באפליקציה מותקנת חלון חדש נתקע בלי חזרה)
   const [detailId,   setDetailId]   = useState(null);
   const [projTab,    setProjTab]    = useState("active"); // "active" | "completed"
   const [newPM,      setNewPM]      = useState(false);
@@ -2857,8 +2858,11 @@ async function shareImg() {
 }
 </scr` + `ipt>
 </body></html>`;
+    // באפליקציה מותקנת / בטלפון — בתוך האפליקציה עם כפתור חזרה. במחשב — לשונית חדשה (נוח להדפסה)
+    const mobile = isStandaloneApp() || /android|iphone|ipad|ipod/i.test(navigator.userAgent || "");
+    if (mobile) { setDocHtml(html); return; }
     const w = window.open("", "_blank");
-    if (!w) { alert("יש לאפשר חלונות קופצים בדפדפן"); return; }
+    if (!w) { setDocHtml(html); return; }
     w.document.write(html);
     w.document.close();
   };
@@ -7904,6 +7908,15 @@ async function shareImg() {
       </main>
 
       {tour && TOURS[tour] && <Tour key={tour} steps={TOURS[tour]} onDone={endTour}/>}
+      {docHtml && (
+        <div style={{ position:"fixed", inset:0, zIndex:4000, background:"#F5F5F0", display:"flex", flexDirection:"column" }}>
+          <div style={{ background:"#1A1A2E", padding:"calc(env(safe-area-inset-top, 0px) + 8px) 12px 8px", display:"flex", alignItems:"center", gap:8, direction:"rtl" }}>
+            <button onClick={()=>setDocHtml(null)} style={{ background:"#E8C547", color:"#1A1A2E", border:"none", borderRadius:10, padding:"9px 16px", fontSize:14, fontWeight:800, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>→ חזרה לאפליקציה</button>
+            <span style={{ color:"#C9C9D6", fontSize:12.5 }}>תצוגת הלקוח</span>
+          </div>
+          <iframe title="הצעת מחיר" srcDoc={docHtml} allow="web-share; clipboard-write" style={{ flex:1, width:"100%", border:"none", background:"#F5F5F0" }}/>
+        </div>
+      )}
 
       {/* ===== כפתור + הוספה מהירה ===== */}
       {(() => {
