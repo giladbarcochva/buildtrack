@@ -3401,19 +3401,12 @@ async function shareImg() {
       ? projects.filter(p => !p._quote && (p.changeOrders || []).length).map(toSection)
       : (editProj ? [toSection(editProj)] : []);
     if (!sections.length) { alert("אין תוספות לשלוח"); return; }
-    const subject = m.scope === "all" ? `סיכום תוספות לעבודה — ${org?.name || ""}` : `סיכום תוספות לעבודה — ${sections[0].name}`;
-    const lines = sections.map(s => {
-      const cos = s.cos || [];
-      const appr = cos.filter(c => c.status === "approved").reduce((t, c) => t + Number(c.amount || 0), 0);
-      const pend = cos.filter(c => c.status !== "approved" && c.status !== "rejected" && !c.unpriced).reduce((t, c) => t + Number(c.amount || 0), 0);
-      return { name: s.name, approved: appr, pending: pend, contract: s.base + appr, count: cos.length };
-    });
     if (!window.confirm(`לשלוח סיכום תוספות ל-${to}?\n\nהמייל יישלח בשם "${org?.name || ""}"${cfgData._email ? `, ועותק יגיע ל-${cfgData._email}` : ""}.`)) return;
     setCoMailSending(true);
     try {
       const pdf = await changeOrdersPdfBase64(sections, org, org?.logo || (org?.slug === "gne" ? LOGO_URL : ""));
       const r = await fetch(`${SUPABASE_URL}/functions/v1/send-change-orders`, { method: "POST", headers: hdrs(),
-        body: JSON.stringify({ to, subject, message: String(m.msg || "").trim(), lines, pdf, pdfName: `${subject.replace(/[\\/:*?"<>|]/g, "").slice(0, 80)}.pdf`, copyTo: cfgData._email || "", businessName: org?.name || "" }) });
+        body: JSON.stringify({ to, message: String(m.msg || "").trim(), pdf, pdfName: `סיכום תוספות - ${String(sections.length === 1 ? sections[0].name : org?.name || "").replace(/[\\/:*?"<>|]/g, "").slice(0, 60)}.pdf`, projectDbid: m.scope === "all" ? null : (editProj._dbid || null) }) });
       const res = await r.json().catch(() => ({}));
       if (!r.ok || !res.ok) throw new Error(res.error || ("שגיאה " + r.status));
       alert(`✅ הסיכום נשלח ל-${to}`);
