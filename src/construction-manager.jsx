@@ -1671,7 +1671,15 @@ export default function App() {
   const saveContact = async (orgId, patch) => {
     const cfg = await orgGetConfig();
     const contacts = { ...(cfg?.settings?.contacts || {}), [orgId]: { ...((cfg?.settings?.contacts || {})[orgId] || {}), ...patch } };
-    if (cfg) await orgUpdate(cfg._dbid, { settings: { ...(cfg.settings || {}), contacts } });
+    if (cfg) {
+      // שמירה עם בדיקה שהשורה באמת התעדכנה (אחרת מציגים שגיאה ולא "נשמר" מדומה)
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/organizations?id=eq.${cfg._dbid}`, {
+        method: "PATCH", headers: { ...hdrs(), "Prefer": "return=representation" },
+        body: JSON.stringify({ settings: { ...(cfg.settings || {}), contacts } })
+      });
+      const rows = await r.json().catch(() => null);
+      if (!r.ok || !Array.isArray(rows) || !rows.length) throw new Error(rows?.message || `לא נשמר (${r.status})`);
+    }
     else await orgInsert({ slug: "_config", name: "_config", active: false, settings: { contacts } });
     setSaContacts(contacts);
   };
@@ -3512,10 +3520,12 @@ async function shareImg() {
                       {waPhone(ph) && <a href={`https://wa.me/${waPhone(ph)}`} target="_blank" rel="noreferrer" aria-label="ווטסאפ" style={{ background:"#E7F8EE", borderRadius:7, padding:"3px 8px", fontSize:12, textDecoration:"none" }}>💬</a>}
                     </> : <span style={{ fontSize:12, color:"#AAA" }}>אין טלפון</span>}
                     <button onClick={async ()=>{
-                      const nm = window.prompt(`איש קשר ב"${o.name}":`, ct.contact || ""); if (nm === null) return;
-                      const v = window.prompt(`טלפון של "${o.name}":`, ph); if (v === null) return;
+                      let v = window.prompt(`📞 מספר טלפון של "${o.name}":`, ph); if (v === null) return;
+                      let nm = window.prompt(`👤 שם איש הקשר ב"${o.name}" (לא חובה):`, ct.contact || ""); if (nm === null) nm = ct.contact || "";
+                      // הוקלד מספר בשדה השם ולא בשדה הטלפון — מתקנים לבד
+                      if (!v.trim() && waPhone(nm)) { v = nm; nm = ct.contact || ""; }
                       if (v.trim() && !waPhone(v)) { alert("מספר הטלפון לא תקין"); return; }
-                      try { await saveContact(o.id ?? o._dbid, { phone: v.trim(), contact: nm.trim() }); } catch(e) { alert("שגיאה: " + e.message); }
+                      try { await saveContact(o.id ?? o._dbid, { phone: v.trim(), contact: nm.trim() }); } catch(e) { alert("שגיאה בשמירה: " + e.message); }
                     }} style={{ background:"none", border:"none", color:"#1A73E8", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif", padding:"2px 4px" }}>{ph ? "✏️ ערוך" : "+ הוסף טלפון"}</button>
                   </div>
                 ); })()}
