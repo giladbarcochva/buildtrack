@@ -1794,6 +1794,7 @@ export default function App() {
   const [coEdit, setCoEdit] = useState(null);     // תוספת לעבודה בעריכה (חלון)
   const [coMail, setCoMail] = useState(null);     // שליחת סיכום תוספות במייל (חלון)
   const [coMailSending, setCoMailSending] = useState(false);
+  const [coUpBusy, setCoUpBusy] = useState(null);  // id של תוספת שתמונותיה בהעלאה
   const [editQuote, setEditQuote] = useState({ clientName:"", clientPhone:"", title:"", desc:"", amount:"", items:[] });
   const [helpSearch, setHelpSearch] = useState("");
   const [sendYm, setSendYm] = useState(() => shiftYm(todayStr().slice(0,7), -1)); // החודש לשליחה לרואה החשבון
@@ -3340,6 +3341,55 @@ async function shareImg() {
       alert(`✅ ההצעה נשלחה ל-${res.to}\nעותק נשלח אליך ל-${cfgData._email}`);
     } catch (e) { alert("השליחה נכשלה: " + e.message); }
     setQuoteSending(null);
+  };
+
+  // ===== תמונות לתוספת =====
+  const saveCoList = (changeOrders) => { setEditProj(p => ({ ...p, changeOrders })); updateProjField(detailProject, { changeOrders }); };
+  // inModal: התמונה נשמרת עם התוספת בלחיצה על "שמור"; אחרת נשמרת מיד בכרטיס
+  const addCoPhotos = async (c, files, inModal) => {
+    const list = Array.from(files || []).filter(f => f.type && f.type.startsWith("image/"));
+    if (!list.length) return;
+    setCoUpBusy(c.id);
+    const got = [];
+    try {
+      for (const f of list) {
+        const dataUrl = await compressImage(f, 1600, 0.82);
+        const blob = await (await fetch(dataUrl)).blob();
+        const path = `${CURRENT_ORG?.slug || "default"}/${detailProject.id}/changeorders/${c.id}/${Date.now()}_${Math.random().toString(36).slice(2, 6)}.jpg`;
+        const url = await withTimeout(storageUpload(new File([blob], "photo.jpg", { type: "image/jpeg" }), path), 60000, "העלאת התמונה לקחה יותר מדי זמן");
+        got.push({ id: `${Date.now()}_${Math.random().toString(36).slice(2, 6)}`, url, path });
+      }
+    } catch (err) { alert("העלאת תמונה נכשלה: " + err.message); }
+    setCoUpBusy(null);
+    if (!got.length) return;
+    if (inModal) setCoEdit(x => ({ ...x, photos: [...(x.photos || []), ...got] }));
+    else saveCoList((editProj.changeOrders || []).map(x => x.id === c.id ? { ...x, photos: [...(x.photos || []), ...got] } : x));
+  };
+  const delCoPhoto = (c, ph, inModal) => {
+    if (!window.confirm("למחוק את התמונה?")) return;
+    if (inModal) { setCoEdit(x => ({ ...x, photos: (x.photos || []).filter(p => p.id !== ph.id) })); return; }
+    storageDelete(ph.path).catch(() => {});
+    saveCoList((editProj.changeOrders || []).map(x => x.id === c.id ? { ...x, photos: (x.photos || []).filter(p => p.id !== ph.id) } : x));
+  };
+  const photoRow = (c, inModal) => {
+    const busy = coUpBusy === c.id;
+    return (
+      <div style={{ display:"flex", flexWrap:"wrap", gap:8, alignItems:"center" }}>
+        {(c.photos || []).map(p => (
+          <div key={p.id} style={{ position:"relative", width:56, height:56, flex:"0 0 56px" }}>
+            <img src={p.url} alt="תמונה של התוספת" loading="lazy" onClick={()=>window.open(p.url, "_blank")}
+              style={{ width:56, height:56, objectFit:"cover", borderRadius:8, border:"1px solid #E6E6E0", cursor:"pointer", display:"block" }}/>
+            <button onClick={()=>delCoPhoto(c, p, inModal)} aria-label="מחק תמונה"
+              style={{ position:"absolute", top:-6, left:-6, width:22, height:22, borderRadius:11, border:"none", background:"#1A1A2E", color:"#fff", fontSize:12, cursor:"pointer", padding:0, lineHeight:"22px" }}>✕</button>
+          </div>
+        ))}
+        <label style={{ width:56, height:56, flex:"0 0 56px", boxSizing:"border-box", borderRadius:8, border:"1.5px dashed #C9C9C0", display:"flex", alignItems:"center", justifyContent:"center", cursor: busy ? "wait" : "pointer", fontSize:20, background:"#FAFAF7", opacity: busy ? 0.6 : 1 }}>
+          {busy ? "…" : "📷"}
+          <input type="file" accept="image/*" multiple disabled={busy} style={{ display:"none" }}
+            onChange={e=>{ const fs = [...(e.target.files || [])]; e.target.value = ""; addCoPhotos(c, fs, inModal); }}/>
+        </label>
+      </div>
+    );
   };
 
   const sendChangeOrdersEmail = async () => {
@@ -6071,6 +6121,7 @@ async function shareImg() {
                           </div>
                           {c.unpriced ? <b style={{ fontSize:13, whiteSpace:"nowrap", color:"#3949AB" }}>ללא מחיר</b> : <b style={{ fontSize:15, whiteSpace:"nowrap" }}>₪{fmtNum(c.amount)}</b>}
                         </div>
+                        <div style={{ marginTop:8 }}>{photoRow(c, false)}</div>
                         <div style={{ display:"flex", flexWrap:"wrap", gap:6, alignItems:"center", marginTop:8 }}>
                           <span style={{ background:ch.bg, color:ch.fg, borderRadius:20, padding:"3px 10px", fontSize:12, fontWeight:700 }}>{ch.t}</span>
                           <span style={{ flex:1 }}/>
@@ -8055,6 +8106,7 @@ async function shareImg() {
         const run = (act, pid) => {
           if (act === "expense") goProject(pid, "money", () => { const el = document.getElementById("bt-qexp-desc"); if (el) { el.scrollIntoView({ block:"center" }); el.focus(); } });
           else if (act === "payment") goProject(pid, "money", () => document.getElementById("bt-pay-sec")?.scrollIntoView({ block:"start" }));
+          else if (act === "co") goProject(pid, "money", () => setCoEdit({ id: Date.now(), desc:"", note:"", items:[{ id: Date.now()+1, desc:"", qty:"", unit:"", unitPrice:"", amount:"" }], isNew:true }));
           else if (act === "summary") { setFabOpen(null); openSummary(pid, todayStr()); }
         };
         const tomorrow = () => {
@@ -8072,6 +8124,7 @@ async function shareImg() {
           { k:"invoice", l:"צלם חשבונית", sub:"ה-AI קורא ומכניס להוצאות", bg:"#FFF4D6", fg:"#7A4F00", proj:true, icon: ic(<><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></>) },
           { k:"expense", l:"הוצאה", sub:"דלק, אוכל, חומר קטן", bg:"#FCE4EC", fg:"#9F1239", proj:true, icon: ic(<><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/></>) },
           ...(!isForeman ? [{ k:"payment", l:"תשלום מלקוח", sub:"שלבי קבלת תשלום", bg:"#E8F5E9", fg:"#1B5E20", proj:true, icon: ic(<><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/></>) }] : []),
+          ...(!isForeman ? [{ k:"co", l:"תוספת", sub:"עבודה שהלקוח ביקש מעבר להסכם", bg:"#FDF2E9", fg:"#9A3412", proj:true, icon: ic(<><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></>) }] : []),
           ...(!isForeman ? [{ k:"quote", l:"הצעת מחיר", sub:"מהמחירון, כמות × מחיר", bg:"#EDE9FE", fg:"#5B21B6", icon: ic(<><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/></>) }] : []),
           { k:"cal", l:"שיבוץ למחר", sub:"מי עובד איפה", bg:"#E3F2FD", fg:"#0D47A1", icon: ic(<><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></>) },
           { k:"summary", l:"סיכום יום", sub:"מה נעשה באתר היום", bg:"#ECECE6", fg:"#1A1A2E", proj:true, icon: ic(<><rect x="6" y="4" width="12" height="17" rx="2"/><path d="M9 4V3h6v1M9 11l2 2 4-4"/></>) },
@@ -8281,6 +8334,10 @@ async function shareImg() {
                 <span style={{ fontSize:13, fontWeight:600, display:"block", marginBottom:5 }}>הערה ללקוח (אופציונלי)</span>
                 <input value={coEdit.note||""} onChange={e=>setCoEdit(c=>({ ...c, note:e.target.value }))} placeholder="למשל: כולל חומר, לביצוע בשבוע הבא" style={{ ...inp, fontSize:14 }}/>
               </label>
+              <div style={{ marginBottom:12 }}>
+                <span style={{ fontSize:13, fontWeight:600, display:"block", marginBottom:6 }}>📷 תמונות (אופציונלי)</span>
+                {photoRow(coEdit, true)}
+              </div>
               <label style={{ display:"flex", gap:8, alignItems:"center", marginBottom:10, fontSize:13, fontWeight:600, background:"#F7F7F4", borderRadius:10, padding:"9px 11px", cursor: total > 0 ? "default" : "pointer", opacity: total > 0 ? 0.5 : 1 }}>
                 <input type="checkbox" disabled={total > 0} checked={!!coEdit.unpriced && !(total > 0)} onChange={e=>setCoEdit(c=>({ ...c, unpriced:e.target.checked }))} style={{ width:17, height:17, accentColor:"#1A1A2E" }}/>
                 בלי מחיר לעכשיו — ייקבע בהמשך
