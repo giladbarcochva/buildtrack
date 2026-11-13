@@ -6098,7 +6098,7 @@ async function shareImg() {
                     <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:10 }}>
                       <h3 style={{ margin:0, fontSize:15, fontWeight:700 }}>➕ תוספות לעבודה</h3>
                       <div style={{ display:"flex", gap:6 }}>
-                        {cos.length > 0 && <button onClick={()=>setCoMail({ scope:"one", to: editProj.clientEmail || "", msg:"" })}
+                        {cos.length > 0 && <button onClick={()=>setCoMail({ scope:"one", to: cfgData._coMailTo || editProj.clientEmail || "", msg:"" })}
                           style={{ background:"#F2F2EC", color:"#1A1A2E", border:"none", borderRadius:7, padding:"4px 12px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700 }}>📧 שלח סיכום</button>}
                         <button onClick={()=>setCoEdit({ id: Date.now(), desc:"", note:"", items:[{ id: Date.now()+1, desc:"", qty:"", unit:"", unitPrice:"", amount:"" }], isNew:true })}
                           style={{ background:"#1A1A2E", color:"#E8C547", border:"none", borderRadius:7, padding:"4px 12px", fontSize:12, cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700 }}>+ תוספת</button>
@@ -8008,6 +8008,13 @@ async function shareImg() {
               <input type="email" dir="ltr" value={bizEmailInput} onChange={e=>setBizEmailInput(e.target.value)} placeholder="name@gmail.com" style={{ ...inp, marginBottom:10, textAlign:"left" }}/>
               <button onClick={saveBizEmail} style={{ ...btnD, width:"100%" }}>שמור מייל</button>
               {cfgData._email && <p style={{ margin:"8px 0 0", fontSize:12, color:"#2E7D32" }}>✓ שמור: <span dir="ltr">{cfgData._email}</span></p>}
+              {cfgData._email && (
+                <div style={{ marginTop:14, paddingTop:12, borderTop:"1px solid #F0F0EC" }}>
+                  <span style={{ fontSize:13, fontWeight:700, display:"block", marginBottom:4 }}>📎 מייל קבוע לסיכום תוספות</span>
+                  <p style={{ margin:"0 0 8px", fontSize:12, color:"#888", lineHeight:1.5 }}>הכתובת הזו תתמלא אוטומטית בחלון שליחת הסיכום (למשל רואה חשבון או מייל אחר). אם השדה ריק — ימולא מייל הלקוח של הפרויקט.</p>
+                  <input type="email" dir="ltr" defaultValue={cfgData._coMailTo || ""} placeholder="name@gmail.com" onBlur={e=>{ const v = e.target.value.trim(); if (v === (cfgData._coMailTo || "")) return; if (v && !/^[^\s@<>"']+@[^\s@<>"']+\.[a-z]{2,}$/i.test(v)) { alert("כתובת המייל לא תקינה"); e.target.value = cfgData._coMailTo || ""; return; } saveCfgPatch({ _coMailTo: v }); }} style={{ ...inp, textAlign:"left" }}/>
+                </div>
+              )}
               {cfgData._email && (
                 <label style={{ display:"flex", alignItems:"flex-start", gap:9, marginTop:14, paddingTop:12, borderTop:"1px solid #F0F0EC", cursor:"pointer" }}>
                   <input type="checkbox" checked={cfgData._alertsEmail !== false} style={{ width:18, height:18, marginTop:2, accentColor:"#1A1A2E" }}
