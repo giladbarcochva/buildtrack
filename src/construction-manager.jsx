@@ -738,23 +738,11 @@ function applyOrgIcons(o) {
 // (אותו היגיון קיים גם ב-index.html לפתיחה הראשונה)
 function setOrgManifest(slug, name, icon) {
   try {
-    const origin = location.origin;
-    const abs = (u) => /^(https?:|data:)/.test(u) ? u : origin + (u.startsWith("/") ? "" : "/") + u;
-    const nm = name || "BuildTrack";
-    const m = {
-      name: nm, short_name: nm.length > 12 ? nm.slice(0, 12) : nm,
-      description: "מערכת ניהול בנייה",
-      id: "/" + slug, start_url: origin + "/" + slug, scope: origin + "/",
-      display: "standalone", background_color: "#F5F5F0", theme_color: "#1A1A2E",
-      lang: "he", dir: "rtl",
-      icons: [
-        { src: abs(icon || "/apple-touch-icon.png"), sizes: "512x512", type: "image/png", purpose: "any" },
-        { src: abs("/icon-192.png"), sizes: "192x192", type: "image/png", purpose: "any" },
-      ].filter((x, i) => i === 0 || !icon),
-    };
+    // כתובת אמיתית מהשרת (api/manifest.js) — באנדרואיד data: לא מאפשר התקנה כאפליקציה
+    const ic = icon && /^https:/.test(icon) ? icon : "";
+    const href = `/api/manifest?s=${encodeURIComponent(slug)}&n=${encodeURIComponent(name || "BuildTrack")}${ic ? "&i=" + encodeURIComponent(ic) : ""}`;
     let l = document.querySelector('link[rel="manifest"]');
     if (!l) { l = document.createElement("link"); l.rel = "manifest"; document.head.appendChild(l); }
-    const href = "data:application/manifest+json," + encodeURIComponent(JSON.stringify(m));
     if (l.getAttribute("href") !== href) l.setAttribute("href", href);
   } catch (e) {}
 }

@@ -77,6 +77,9 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
+  // קובץ ההתקנה מהשרת — תמיד מהרשת (שם/לוגו יכולים להשתנות)
+  if (url.origin === self.location.origin && url.pathname.startsWith("/api/")) return;
+
   // 2. קבצי האפליקציה (JS/CSS/תמונות מהאתר) — מהמכשיר קודם (שמם משתנה בכל עדכון)
   if (url.origin === self.location.origin) {
     event.respondWith((async () => {
