@@ -1794,6 +1794,7 @@ export default function App() {
   const [coEdit, setCoEdit] = useState(null);     // תוספת לעבודה בעריכה (חלון)
   const [coMail, setCoMail] = useState(null);     // שליחת סיכום תוספות במייל (חלון)
   const [coMailSending, setCoMailSending] = useState(false);
+  const [coMailStage, setCoMailStage] = useState("");  // "pdf" | "send" — לתצוגה בזמן השליחה
   const [coUpBusy, setCoUpBusy] = useState(null);  // id של תוספת שתמונותיה בהעלאה
   const [editQuote, setEditQuote] = useState({ clientName:"", clientPhone:"", title:"", desc:"", amount:"", items:[] });
   const [helpSearch, setHelpSearch] = useState("");
@@ -3403,16 +3404,18 @@ async function shareImg() {
     if (!sections.length) { alert("אין תוספות לשלוח"); return; }
     if (!window.confirm(`לשלוח סיכום תוספות ל-${to}?\n\nהמייל יישלח בשם "${org?.name || ""}"${cfgData._email ? `, ועותק יגיע ל-${cfgData._email}` : ""}.`)) return;
     setCoMailSending(true);
+    setCoMailStage("pdf");
     try {
-      const pdf = await changeOrdersPdfBase64(sections, org, org?.logo || (org?.slug === "gne" ? LOGO_URL : ""));
-      const r = await fetch(`${SUPABASE_URL}/functions/v1/send-change-orders`, { method: "POST", headers: hdrs(),
-        body: JSON.stringify({ to, message: String(m.msg || "").trim(), pdf, pdfName: `סיכום תוספות - ${String(sections.length === 1 ? sections[0].name : org?.name || "").replace(/[\\/:*?"<>|]/g, "").slice(0, 60)}.pdf`, projectDbid: m.scope === "all" ? null : (editProj._dbid || null) }) });
+      const pdf = await withTimeout(changeOrdersPdfBase64(sections, org, org?.logo || (org?.slug === "gne" ? LOGO_URL : "")), 60000, "יצירת ה-PDF לקחה יותר מדי זמן. נסה עם פחות תוספות או בחיבור טוב יותר");
+      setCoMailStage("send");
+      const r = await withTimeout(fetch(`${SUPABASE_URL}/functions/v1/send-change-orders`, { method: "POST", headers: hdrs(),
+        body: JSON.stringify({ to, message: String(m.msg || "").trim(), pdf, pdfName: `סיכום תוספות - ${String(sections.length === 1 ? sections[0].name : org?.name || "").replace(/[\\/:*?"<>|]/g, "").slice(0, 60)}.pdf`, projectDbid: m.scope === "all" ? null : (editProj._dbid || null) }) }), 60000, "השרת לא ענה תוך דקה. בדוק את החיבור ונסה שוב");
       const res = await r.json().catch(() => ({}));
       if (!r.ok || !res.ok) throw new Error(res.error || ("שגיאה " + r.status));
       alert(`✅ הסיכום נשלח ל-${to}`);
       setCoMail(null);
     } catch (e) { alert("השליחה נכשלה: " + e.message); }
-    setCoMailSending(false);
+    setCoMailSending(false); setCoMailStage("");
   };
 
   const inp = { width:"100%", border:"1.5px solid #DDD", borderRadius:10, padding:"10px 14px", fontSize:15, fontFamily:"Heebo,sans-serif", boxSizing:"border-box", background:"#fff", outline:"none" };
@@ -8381,7 +8384,7 @@ async function shareImg() {
               </label>
               <p style={{ margin:"0 0 14px", fontSize:12, color:"#888" }}>{cnt ? `${coMail.scope === "all" ? cnt + " פרויקטים עם תוספות" : "פרויקט אחד"} · ` : ""}{cfgData._email ? `עותק יישלח ל-${cfgData._email}` : "הגדר מייל עסק בהגדרות כדי לקבל עותק"}</p>
               <div style={{ display:"flex", gap:8 }}>
-                <button onClick={sendChangeOrdersEmail} disabled={coMailSending} style={{ ...btnD, flex:2, opacity: coMailSending ? 0.6 : 1 }}>{coMailSending ? "שולח…" : "📧 שלח"}</button>
+                <button onClick={sendChangeOrdersEmail} disabled={coMailSending} style={{ ...btnD, flex:2, opacity: coMailSending ? 0.6 : 1 }}>{coMailSending ? (coMailStage === "pdf" ? "מכין PDF…" : "שולח…") : "📧 שלח"}</button>
                 <button onClick={()=>setCoMail(null)} disabled={coMailSending} style={{ ...btnG, flex:1 }}>ביטול</button>
               </div>
             </div>
