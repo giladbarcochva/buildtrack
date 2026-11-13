@@ -100,7 +100,7 @@ const PLANS = {
 };
 // ===== תוכן מסך העזרה =====
 const HELP_TOPICS = [
-  { icon:"🔑", title:"כניסה למערכת", body:"במסך הפתיחה שלוש כניסות:\n• כניסת עובד — עם הקוד האישי שהמנהל הגדיר לעובד.\n• כניסת מנהל עבודה — עם קוד מנהל העבודה (מוגדר בטאב מנהלי עבודה).\n• כניסת מנהל — עם קוד המנהל של העסק.\nאת הקישור של העסק מוסיפים למסך הבית: פותחים בדפדפן ← שיתוף ← הוספה למסך הבית — ומקבלים אייקון כמו אפליקציה." },
+  { icon:"🔑", title:"כניסה למערכת", body:"במסך הפתיחה שלוש כניסות:\n• כניסת עובד — עם הקוד האישי שהמנהל הגדיר לעובד.\n• כניסת מנהל עבודה — עם קוד מנהל העבודה (מוגדר בטאב מנהלי עבודה).\n• כניסת מנהל — עם קוד המנהל של העסק.\nאת הקישור של העסק מתקינים כאפליקציה בטלפון — מדריך עם תמונות (סמסונג ואייפון) בכפתור '📲 מדריך התקנה בטלפון' כאן למעלה, וגם במסך הכניסה ('איך מתקינים את האפליקציה בטלפון?'). עובד שנכנס מהדפדפן רואה כפתור 'התקן את האפליקציה' עם אותו מדריך." },
   { icon:"🧭", title:"איך מתמצאים במערכת", body:"בתחתית המסך יש סרגל עם 5 אזורים:\n• היום — מסך הבית: מי בשטח, מה ממתין לאישור, כמה לגבות, ורשימת 'דורש טיפול' עם מעבר ישיר לכל דבר.\n• פרויקטים — כל הפרויקטים ודף כל פרויקט.\n• צוות — דיווחים, יומן, עובדים, שכר, קבלני משנה ומנהלי עבודה (בחירה בשורת הכפתורים למעלה).\n• כספים — הכנסות, הוצאות חודשיות והצעות מחיר.\n• עוד — ציוד, סיכומי יום, התראות ודוחות, הגדרות ועזרה.\nהמספר האדום על 'צוות' = דיווחים שממתינים לאישור.\nהכפתור הצהוב + (משמאל למטה) — הוספה מהירה מכל מסך: צילום חשבונית, הוצאה, תשלום מלקוח, הצעת מחיר, שיבוץ למחר וסיכום יום. מתוך דף פרויקט — הפרויקט כבר נבחר; אחרת בוחרים פרויקט מהרשימה.\nבדף פרויקט: למעלה תמונת מצב (סכום העסקה, נגבה, הוצאות, נשאר לגבות) ומתחת 5 לשוניות — סקירה (הצעד הבא, סיכומי יום, דגשים, תיאור, מיקום), כספים (נתונים, סה\"כ הוצאות, שלבי תשלום, הוצאות), שלבים, צוות (עובדים, קבלני משנה, פרטי ניהול, אימות מיקום, דיווחים) וקבצים (חשבוניות ותוכניות)." },
   { icon:"📝", title:"דיווח יומי של עובד", body:"העובד נכנס עם הקוד שלו, בוחר פרויקט (מוצגים רק פרויקטים שהוא משויך אליהם — השיוך בכפתור 'שייך עובדים' בפרויקט; אפשר לבטל את חובת השיוך בטאב עובדים ← ⚙️ הגדרות דיווח, ואז כל עובד רואה את כל הפרויקטים הפעילים), בוחר יום מלא או חצי יום, מסמן דלק אם נסע ברכב, ולוחץ שלח.\n• אי אפשר לדווח פעמיים על אותו תאריך.\n• דיווח על תאריך שעבר נכנס ל'ממתינים לאישור' אצל המנהל ולא נספר בשכר עד שמאושר.\n• אי אפשר לדווח על תאריך עתידי.\n• שיבוץ ביומן — נקבע בטאב עובדים ← ⚙️ הגדרות דיווח: 'חובה לכולם' (מדווחים רק ביום ובפרויקט ששובצו), 'רק למי שמשובץ ביומן' (ברירת מחדל: עובד שלא מנוהל ביומן מדווח חופשי), או 'לא מחייב' (היומן לתכנון בלבד).\n• בטאב 'היומן שלי' העובד רואה את הימים שהוא משובץ בהם." },
   { icon:"⏱️", title:"עובד שעתי — שעון נוכחות", body:"גם עובד יומי יכול לעבוד עם שעון: בעריכת העובד מפעילים '⏱️ שעון נוכחות'. השכר נשאר לפי יום; אם הוא עבד יותר מ-9 שעות — מגיעה התראה (בפעמון ובמייל הבוקר), ובטאב דיווחים מחליטים: '💰 לשלם נוספות' (125% / 150% לפי היומית חלקי 9) או '✓ בלי תוספת'.\nמעבר בין אתרים באותו יום: סוגרים שעון באתר הראשון ופותחים שעון חדש באתר הבא. היום נחשב יום אחד, העלות מתחלקת בין הפרויקטים לפי השעות, שעות נוספות (בשעתי) מחושבות על סך שעות היום, ודלק ואוכל — פעם אחת ביום.\nעובד יומי בלי שעון שעבד בשני פרויקטים: מדווח חצי יום על כל פרויקט.\nעובד שהוגדר כשעתי רואה שעון נוכחות במקום טופס דיווח: בוחר פרויקט ← ▶️ כניסה בתחילת היום ← 🛑 יציאה בסיומו.\nחישוב השכר: 9 שעות ראשונות 100%, שעות 10-11 לפי 125%, משעה 12 לפי 150%.\nשכח לסגור? המנהל רואה 'שעון תקוע' בטאב דיווחים ומתקן עם כפתור '✏️ שעות'.\nאם בפרויקט הוגדר אימות מיקום — בפתיחת השעון הטלפון יבקש אישור גישה למיקום (פעם ראשונה בלבד). במצב 'חסימה' ניתן לפתוח שעון רק בקרבת האתר." },
@@ -694,6 +694,29 @@ if (typeof window !== "undefined") {
     btInstallSubs.forEach(f => f(false));
   });
 }
+// מדריך התקנה לטלפון (תמונות עם חצים) — סמסונג/אנדרואיד ואייפון
+const isStandaloneApp = () => { try { return window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true; } catch(e) { return false; } };
+function InstallGuide({ onClose }) {
+  const [os, setOs] = useState(() => /iphone|ipad|ipod/i.test(navigator.userAgent || "") ? "ios" : "android");
+  return (
+    <div onClick={onClose} style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.7)", zIndex:3000, display:"flex", alignItems:"flex-start", justifyContent:"center", overflowY:"auto", padding:"16px 10px", direction:"rtl", fontFamily:"Heebo,sans-serif" }}>
+      <div onClick={e=>e.stopPropagation()} style={{ background:"#fff", borderRadius:18, width:"100%", maxWidth:480, overflow:"hidden" }}>
+        <div style={{ display:"flex", alignItems:"center", gap:8, padding:"12px 14px", background:"#1A1A2E", position:"sticky", top:0 }}>
+          <div style={{ flex:1, color:"#E8C547", fontWeight:800, fontSize:16 }}>📲 התקנת האפליקציה בטלפון</div>
+          <button onClick={onClose} aria-label="סגור" style={{ background:"rgba(255,255,255,0.12)", color:"#fff", border:"none", borderRadius:8, width:34, height:34, fontSize:18, cursor:"pointer" }}>✕</button>
+        </div>
+        <div style={{ display:"flex", gap:6, padding:"10px 12px", background:"#F5F5F0" }}>
+          {[["android","🤖 סמסונג / אנדרואיד"],["ios","🍎 אייפון"]].map(([k,l]) => (
+            <button key={k} onClick={()=>setOs(k)} style={{ flex:1, background:os===k?"#1A1A2E":"#fff", color:os===k?"#E8C547":"#555", border:"1px solid #DDD", borderRadius:10, padding:"9px 0", fontWeight:700, fontSize:14, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>{l}</button>
+          ))}
+        </div>
+        <img src={os === "ios" ? "/guide/iphone.jpg" : "/guide/samsung.jpg"} alt="מדריך התקנה" style={{ display:"block", width:"100%" }}/>
+        <div style={{ padding:12 }}><button onClick={onClose} style={{ width:"100%", background:"#E8C547", color:"#1A1A2E", border:"none", borderRadius:12, padding:13, fontWeight:800, fontSize:15, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>הבנתי</button></div>
+      </div>
+    </div>
+  );
+}
+
 function useInstallPrompt() {
   const [can, setCan] = useState(!!btInstallEvt);
   useEffect(() => { btInstallSubs.add(setCan); return () => { btInstallSubs.delete(setCan); }; }, []);
@@ -1737,6 +1760,7 @@ export default function App() {
 
   const [mgTab,      setMgTab]      = useState("today");
   const [canInstall, doInstall]    = useInstallPrompt();
+  const [showGuide, setShowGuide] = useState(false);
   const [detailId,   setDetailId]   = useState(null);
   const [projTab,    setProjTab]    = useState("active"); // "active" | "completed"
   const [newPM,      setNewPM]      = useState(false);
@@ -3708,7 +3732,9 @@ async function shareImg() {
         <button onClick={()=>{ setScreen("wLogin"); setCodeInput(""); setCodeError(false); }} style={{ ...btnY, fontSize:16, padding:15, borderRadius:14 }}>👷 כניסת עובד</button>
         <button onClick={()=>{ setScreen("fLogin"); setCodeInput(""); setCodeError(false); }} style={{ fontSize:16, padding:15, borderRadius:14, background:"rgba(232,197,71,0.15)", color:"#E8C547", border:"1px solid rgba(232,197,71,0.35)", cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700 }}>🦺 כניסת מנהל עבודה</button>
         <button onClick={()=>{ setScreen("mLogin"); setCodeInput(""); setCodeError(false); }} style={{ fontSize:16, padding:15, borderRadius:14, background:"rgba(255,255,255,0.08)", color:"#ccc", border:"1px solid rgba(255,255,255,0.15)", cursor:"pointer", fontFamily:"Heebo,sans-serif", fontWeight:700 }}>🔐 כניסת מנהל</button>
+        {!isStandaloneApp() && <button onClick={()=>setShowGuide(true)} style={{ marginTop:10, background:"none", border:"none", color:"#E8C547", fontSize:14, fontWeight:700, cursor:"pointer", fontFamily:"Heebo,sans-serif", textDecoration:"underline", textUnderlineOffset:4 }}>📲 איך מתקינים את האפליקציה בטלפון?</button>}
       </div>
+      {showGuide && <InstallGuide onClose={()=>setShowGuide(false)}/>}
     </div>
   );
 
@@ -3790,6 +3816,12 @@ async function shareImg() {
         <button onClick={()=>{ setLoggedWorker(null); if (loggedForeman) { setScreen("foreman"); } else { setScreen("home"); } }} style={{ background:"rgba(255,255,255,0.1)", color:"#ccc", border:"none", borderRadius:8, padding:"5px 12px", fontSize:13, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>{loggedForeman ? "← חזרה לניהול" : "יציאה"}</button>
       </header>
       <div style={{ maxWidth:440, margin:"0 auto", padding:"26px 16px" }}>
+        {showGuide && <InstallGuide onClose={()=>setShowGuide(false)}/>}
+        {!isStandaloneApp() && (
+          <button onClick={()=>setShowGuide(true)} style={{ display:"flex", alignItems:"center", gap:8, width:"100%", background:"#FFF8E1", color:"#1A1A2E", border:"1.5px solid #E8C547", borderRadius:12, padding:"10px 14px", marginBottom:16, fontSize:14, fontWeight:700, cursor:"pointer", fontFamily:"Heebo,sans-serif", textAlign:"right" }}>
+            📲 <span style={{ flex:1 }}>התקן את האפליקציה בטלפון<br/><span style={{ fontWeight:500, fontSize:12.5, color:"#777" }}>אייקון על המסך — נכנסים בלחיצה אחת</span></span> ←
+          </button>
+        )}
         <h2 style={{ margin:"0 0 4px", fontWeight:800, fontSize:21 }}>שלום, {loggedWorker?.name} 👋</h2>
         <p style={{ margin:"0 0 16px", color:"#777", fontSize:14 }}>{workerView==="report" ? "דווח על יום העבודה שלך" : "הימים שאתה משובץ בהם"}</p>
 
@@ -7680,6 +7712,11 @@ async function shareImg() {
               style={{ display:"flex", alignItems:"center", gap:8, width:"100%", background:"#1A1A2E", color:"#E8C547", border:"none", borderRadius:12, padding:"12px 14px", margin:"10px 0 12px", fontSize:14, fontWeight:700, cursor:"pointer", fontFamily:"Heebo,sans-serif" }}>
               🧭 סיור מודרך במערכת <span style={{ color:"#C9C9D6", fontWeight:500, fontSize:12.5 }}>— מתחיל במסך "היום", וממשיך בכל אזור שתיכנס אליו</span>
             </button>
+            <button onClick={()=>setShowGuide(true)}
+              style={{ display:"flex", alignItems:"center", gap:8, width:"100%", background:"#FFF8E1", color:"#1A1A2E", border:"1.5px solid #E8C547", borderRadius:12, padding:"12px 14px", margin:"0 0 12px", fontSize:14, fontWeight:700, cursor:"pointer", fontFamily:"Heebo,sans-serif", textAlign:"right" }}>
+              📲 מדריך התקנה בטלפון <span style={{ color:"#777", fontWeight:500, fontSize:12.5 }}>— סמסונג ואייפון, עם תמונות. אפשר לשלוח גם לעובדים</span>
+            </button>
+            {showGuide && <InstallGuide onClose={()=>setShowGuide(false)}/>}
             <p style={{ margin:"0 0 14px", color:"#777", fontSize:13 }}>לחצו על נושא לפתיחה, או חפשו מילה</p>
             <input value={helpSearch} onChange={e=>setHelpSearch(e.target.value)} placeholder="🔍 חיפוש — למשל: דלק, שיבוץ, קבלן..."
               style={{ width:"100%", boxSizing:"border-box", border:"1.5px solid #DDD", borderRadius:12, padding:"11px 14px", fontSize:14, fontFamily:"Heebo,sans-serif", outline:"none", background:"#fff", marginBottom:14 }}/>
